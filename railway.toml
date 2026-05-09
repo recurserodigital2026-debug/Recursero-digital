@@ -1,8 +1,0 @@
-[build]
-buildCommand = "npm run build"
-
-[deploy]
-startCommand = "npm run start"
-
-[deploy.variables]
-RAILPACK_INSTALL_CMD = "npm install --include=dev && cd backend && npm install --include=dev && cd ../frontend/recursero-digital && npm install --include=dev"
