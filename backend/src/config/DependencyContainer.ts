@@ -42,6 +42,7 @@ import { EnableStudentUseCase } from '../core/usecases/EnableStudentUseCase';
 import { UpdateTeacherUseCase } from '../core/usecases/UpdateTeacherUseCase';
 import { DeleteTeacherUseCase } from '../core/usecases/DeleteTeacherUseCase';
 import { EnableTeacherUseCase } from '../core/usecases/EnableTeacherUseCase';
+import { RemoveCourseFromStudentUseCase } from '../core/usecases/RemoveCourseFromStudentUseCase';
 
 
 export class DependencyContainer {
@@ -81,6 +82,7 @@ export class DependencyContainer {
     private _updateTeacherUseCase: UpdateTeacherUseCase | null = null;
     private _deleteTeacherUseCase: DeleteTeacherUseCase | null = null;
     private _enableTeacherUseCase: EnableTeacherUseCase | null = null;
+    private _removeCourseFromStudentUseCase: RemoveCourseFromStudentUseCase | null = null;
 
 
     private constructor() {
@@ -447,6 +449,16 @@ export class DependencyContainer {
             );
         }
         return this._deleteTeacherUseCase;
+    }
+
+    public get removeCourseFromStudentUseCase(): RemoveCourseFromStudentUseCase {
+        if (!this._removeCourseFromStudentUseCase) {
+            this._removeCourseFromStudentUseCase = new RemoveCourseFromStudentUseCase(
+                this.studentRepository,
+                this.courseRepository
+            );
+        }
+        return this._removeCourseFromStudentUseCase;
     }
 
     public get enableTeacherUseCase(): EnableTeacherUseCase {

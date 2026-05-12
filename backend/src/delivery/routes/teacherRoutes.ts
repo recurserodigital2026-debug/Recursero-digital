@@ -9,6 +9,8 @@ router.get('/', protectAdminRoute(), teacherController.getAllTeachers);
 router.post('/:teacherId/courses', protectAdminRoute(), teacherController.assignTeacherToCourses);
 router.get('/me/courses', protectTeacherOrAdminRoute(), teacherController.getTeacherCourses);
 router.get('/me/courses/:courseId', protectTeacherRoute(), teacherController.getMyCourseDetails);
+router.post('/me/courses/:courseId/students', protectTeacherRoute(), teacherController.assignStudentToCourse);
+router.delete('/me/courses/:courseId/students/:studentId', protectTeacherRoute(), teacherController.removeStudentFromCourse);
 
 router.patch('/:teacherId', protectAdminRoute(), teacherController.updateTeacher);
 

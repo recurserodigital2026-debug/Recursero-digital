@@ -151,10 +151,10 @@ const getTeacherCourses = async (req: AuthenticatedRequest, res: Response): Prom
     }
 };
 
-const getMyCourseDetails = async (req: Request, res: Response): Promise<void> => {
+const getMyCourseDetails = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
         const { courseId } = req.params as { courseId: string };
-        
+
         if (!courseId) {
             res.status(400).json({ error: 'courseId es requerido' });
             return;
@@ -165,6 +165,11 @@ const getMyCourseDetails = async (req: Request, res: Response): Promise<void> =>
         const course = await container.courseRepository.findById(courseId);
         if (!course) {
             res.status(404).json({ error: 'Curso no encontrado' });
+            return;
+        }
+
+        if (req.user && course.teacher_id !== req.user.id) {
+            res.status(403).json({ error: 'No tenés permiso para acceder a este curso' });
             return;
         }
 
@@ -341,12 +346,84 @@ const enableTeacher = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+const assignStudentToCourse = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const { courseId } = req.params as { courseId: string };
+        const { studentId } = req.body as { studentId: string };
+
+        if (!studentId) {
+            res.status(400).json({ error: 'studentId es requerido' });
+            return;
+        }
+
+        const container = DependencyContainer.getInstance();
+
+        const course = await container.courseRepository.findById(courseId);
+        if (!course) {
+            res.status(404).json({ error: 'Curso no encontrado' });
+            return;
+        }
+
+        if (!req.user || course.teacher_id !== req.user.id) {
+            res.status(403).json({ error: 'No tenés permiso para modificar este curso' });
+            return;
+        }
+
+        await container.assignCourseToStudentUseCase.execute({ studentId, courseId });
+
+        res.status(200).json({ message: 'Alumno asignado al curso correctamente' });
+    } catch (error: any) {
+        if (error.message === 'Estudiante no encontrado') {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+        console.error('Error en assignStudentToCourse:', error);
+        res.status(500).json({ error: error?.message ?? 'Error interno del servidor' });
+    }
+};
+
+const removeStudentFromCourse = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const { courseId, studentId } = req.params as { courseId: string; studentId: string };
+
+        const container = DependencyContainer.getInstance();
+
+        const course = await container.courseRepository.findById(courseId);
+        if (!course) {
+            res.status(404).json({ error: 'Curso no encontrado' });
+            return;
+        }
+
+        if (!req.user || course.teacher_id !== req.user.id) {
+            res.status(403).json({ error: 'No tenés permiso para modificar este curso' });
+            return;
+        }
+
+        await container.removeCourseFromStudentUseCase.execute({ studentId, courseId });
+
+        res.status(200).json({ message: 'Alumno removido del curso correctamente' });
+    } catch (error: any) {
+        if (error.message === 'Estudiante no encontrado' || error.message === 'Curso no encontrado') {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+        if (error.message === 'El estudiante no pertenece a este curso') {
+            res.status(400).json({ error: error.message });
+            return;
+        }
+        console.error('Error en removeStudentFromCourse:', error);
+        res.status(500).json({ error: error?.message ?? 'Error interno del servidor' });
+    }
+};
+
 export const teacherController = {
     addTeacher,
     getAllTeachers,
     assignTeacherToCourses,
     getTeacherCourses,
     getMyCourseDetails,
+    assignStudentToCourse,
+    removeStudentFromCourse,
     updateTeacher,
     deleteTeacher,
     enableTeacher

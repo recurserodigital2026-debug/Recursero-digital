@@ -219,6 +219,25 @@ export class PostgreSQLStudentRepository implements StudentRepository {
     }
   }
 
+  async removeCourseFromStudent(studentId: string): Promise<void> {
+    try {
+      const result = await this.db.query(
+        `SELECT id FROM students WHERE id = $1 AND enable = true`,
+        [studentId]
+      );
+      if (result.rows.length === 0) {
+        throw new Error('Estudiante no encontrado');
+      }
+      await this.db.query(
+        `UPDATE students SET course_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [studentId]
+      );
+    } catch (error) {
+      console.error('Error al remover curso del estudiante:', error);
+      throw error;
+    }
+  }
+
   async getEnrollmentDate(studentId: string): Promise<Date | null> {
     try {
       const result = await this.db.query(
