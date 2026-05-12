@@ -2,6 +2,7 @@ import { StudentRepository } from '../core/infrastructure/StudentRepository';
 import { Student } from '../core/models/Student';
 import { User, UserRole } from '../core/models/User';
 import { DatabaseConnection } from './DatabaseConnection';
+import { StudentAlreadyExistsError } from '../core/models/exceptions/StudentAlreadyExistsError';
 
 export class PostgreSQLStudentRepository implements StudentRepository {
   private db: DatabaseConnection;
@@ -68,7 +69,10 @@ export class PostgreSQLStudentRepository implements StudentRepository {
           true 
         ]
       );
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === '23505') {
+        throw new StudentAlreadyExistsError('Ya existe un estudiante con ese username o DNI');
+      }
       console.error('Error al agregar estudiante:', error);
       throw error;
     }

@@ -346,6 +346,24 @@ const enableTeacher = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+const getAllStudentsForTeacher = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const container = DependencyContainer.getInstance();
+        const students = await container.studentRepository.getAllStudents();
+        res.status(200).json({
+            students: students.map(s => ({
+                id: s.id,
+                name: s.name,
+                lastname: s.lastname,
+                courseId: s.courseId
+            }))
+        });
+    } catch (error) {
+        console.error('Error en getAllStudentsForTeacher:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
 const assignStudentToCourse = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
         const { courseId } = req.params as { courseId: string };
@@ -422,6 +440,7 @@ export const teacherController = {
     assignTeacherToCourses,
     getTeacherCourses,
     getMyCourseDetails,
+    getAllStudentsForTeacher,
     assignStudentToCourse,
     removeStudentFromCourse,
     updateTeacher,
