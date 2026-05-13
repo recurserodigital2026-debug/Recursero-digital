@@ -114,11 +114,11 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
               </div>
               <div className="tip-item">
                 <div className="tip-title">Nivel 2</div>
-                <div className="tip-text">Encuentra el factor. Divide el resultado por el número conocido</div>
+                <div className="tip-text">Por 10, 100, 1000. ¡Solo agrega ceros!</div>
               </div>
               <div className="tip-item">
                 <div className="tip-title">Nivel 3</div>
-                <div className="tip-text">Por 10, 100, 1000. ¡Solo agrega ceros!</div>
+                <div className="tip-text">Encuentra el factor. Divide el resultado por el número conocido</div>
               </div>
             </>
           )}

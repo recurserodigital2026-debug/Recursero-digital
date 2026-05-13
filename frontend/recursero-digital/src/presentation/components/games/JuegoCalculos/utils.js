@@ -1,3 +1,4 @@
+import { generateWithRetry } from "../../../../utils/generateWithRetry";
 
 export const formatNumber = (num) => {
     return num.toLocaleString('es-ES');
@@ -104,39 +105,63 @@ const generateSubtractQuestion = (config) => {
     };
 };
 
-const generateMultiplyQuestion = (config) => {
-    const { min = 2, max = 10, hasUnknown = false, multiplier = null } = config;
-    
-    if (multiplier && Array.isArray(multiplier)) {
-        const base = Math.floor(Math.random() * (max - min + 1)) + min;
-        const mult = multiplier[Math.floor(Math.random() * multiplier.length)];
-        const respuesta = base * mult;
-        
-        return {
-            pregunta: `${formatNumber(base)} x ${formatNumber(mult)} =`,
-            respuesta: respuesta
-        };
-    } else if (hasUnknown) {
-        const factor1 = Math.floor(Math.random() * (max - min + 1)) + min;
-        const factor2 = Math.floor(Math.random() * (max - min + 1)) + min;
-        const resultado = factor1 * factor2;
-        
-        return {
-            pregunta: `${formatNumber(factor1)} x ___ = ${formatNumber(resultado)}`,
-            respuesta: factor2
-        };
-    } else {
-        const factor1 = Math.floor(Math.random() * (max - min + 1)) + min;
-        const factor2 = Math.floor(Math.random() * (max - min + 1)) + min;
+const generateMultiplyQuestion = (config, withUnknown = false) => {
+   const nivel = Number(config.nivel);
+
+    if (nivel === 1) {
+        const tablas = [2, 3, 4, 5, 6, 7, 8, 9];
+        const factor1 = tablas[Math.floor(Math.random() * tablas.length)];
+        const factor2 = tablas[Math.floor(Math.random() * tablas.length)];
         const respuesta = factor1 * factor2;
-        
+
+        if(withUnknown) {
+            return{
+                pregunta: `${formatNumber(factor1)} x ___? = ${formatNumber(respuesta)}`,
+                respuesta: factor2
+            };
+        }
         return {
             pregunta: `${formatNumber(factor1)} x ${formatNumber(factor2)} =`,
-            respuesta: respuesta
+            respuesta
+        };
+    }
+
+    if(nivel === 2) {
+        const factor1 = Math.floor(Math.random() * 10) + 1;
+        const opciones = [10, 100, 1000];
+        const factor2 = opciones[Math.floor(Math.random() * opciones.length)];
+        const respuesta = factor1 * factor2;
+
+        if(withUnknown) {
+            return {
+                pregunta: `${formatNumber(factor1)} x ___? = ${formatNumber(respuesta)}`,
+                respuesta: factor2
+            };
+        }
+        return {
+            pregunta: `${formatNumber(factor1)} x ${formatNumber(factor2)} =`,
+            respuesta
+        };
+    }
+    
+    if(nivel === 3) {
+        const NRO_REDONDOS = [20, 30, 40, 50, 60, 70, 80, 90, 200, 300, 400, 500, 600, 700, 800, 900];
+        const factor1 = Math.floor(Math.random() * 5) + 1;
+        const factor2 = NRO_REDONDOS[Math.floor(Math.random() * NRO_REDONDOS.length)];
+        const respuesta = factor1 * factor2;
+
+        if(withUnknown) {
+            return {
+                pregunta: `${formatNumber(factor1)} x ___? = ${formatNumber(respuesta)}`,
+                respuesta: factor2
+            };
+        }
+        return {
+            pregunta: `${formatNumber(factor1)} x ${formatNumber(factor2)} =`,
+            respuesta
         };
     }
 };
-
 
 export const operationConfig = {
     suma: {
@@ -199,30 +224,45 @@ export const getQuestionsForLevel = (operation, levelNumber, levelConfig) => {
     const activitiesCount = levelConfig.activitiesCount || 5;
     const questions = [];
     
-    for (let i = 0; i < activitiesCount; i++) {
-        let question;
-        
         switch (operation) {
-            case 'suma':
-                question = generateSumQuestion(config);
+            case 'suma': {
+                for(let i = 0; i < activitiesCount; i++) {
+                    questions.push(generateSumQuestion(config));
+                }
                 break;
-            case 'resta':
-                question = generateSubtractQuestion(config);
+            }
+            case 'resta': {
+                for(let i = 0; i < activitiesCount; i++) {
+                    questions.push(generateSubtractQuestion(config));
+                }
                 break;
-            case 'multiplicacion':
-                question = generateMultiplyQuestion(config);
+            }
+            case 'multiplicacion': {
+                const indices = [0, 1, 2, 3, 4];
+                const unknownIndices = indices
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 2);
+
+                const seen = new Set();
+
+                for (let i = 0; i < activitiesCount; i++) {
+                    const withUnknown = unknownIndices.includes(i);
+
+                    const question = generateWithRetry(
+                        () => generateMultiplyQuestion({ ...config, nivel: parseInt(levelNumber) }, withUnknown),
+                        (candidate) => !seen.has(candidate.pregunta) && (parseInt(levelNumber) !== 3 || candidate.respuesta <= 1000)
+                    );
+                    seen.add(question.pregunta);
+                    questions.push(question);
+                }
                 break;
-            default:
+            }
+            default: 
                 console.warn(`Operación desconocida: ${operation}`);
                 return [];
         }
-        
-        questions.push(question);
-    }
-    
-    return questions;
+        return questions;
 };
-
 
 export const validateAnswer = (userAnswer, correctAnswer) => {
     return parseInt(userAnswer) === correctAnswer;
