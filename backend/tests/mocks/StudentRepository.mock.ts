@@ -123,6 +123,13 @@ export class MockStudentRepository implements StudentRepository {
     }
   }
 
+  async removeCourseFromStudent(studentId: string): Promise<void> {
+    const student = this.students.find(s => s.id === studentId);
+    if (student) {
+      student.courseId = null;
+    }
+  }
+
   async getEnrollmentDate(studentId: string): Promise<Date | null> {
     const student = this.students.find(s => s.id === studentId);
     return student ? new Date() : null;
