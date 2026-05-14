@@ -9,5 +9,5 @@ export const generateWithRetry = (generatorFn, isValidFn, maxRetries = 15) => {
         intentos++;
     }
     console.error("GenerateWithRetry: No se puede generar un cálculo válido luego de varios intentos.");
-    return { num1: 1, num2: 1, res: 1, isFallback: true};
+    return { pregunta: "1 x 1 =", respuesta: 1, isFallback: true};
 };
