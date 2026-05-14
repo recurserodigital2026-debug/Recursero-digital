@@ -75,6 +75,50 @@ export const updateCourseGameStatus = async (courseGameId, isEnabled) => {
   return await response.json();
 };
 
+export const getAllStudentsForTeacher = async () => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/teacher/me/students`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  return await response.json();
+};
+
+export const assignStudentToCourse = async (courseId, studentId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/teacher/me/courses/${courseId}/students`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ studentId })
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Error al asignar alumno');
+  }
+  return await response.json();
+};
+
+export const removeStudentFromCourse = async (courseId, studentId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/teacher/me/courses/${courseId}/students/${studentId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Error al remover alumno');
+  }
+  return await response.json();
+};
+
 export const getStudentDetails = async (studentId) => {
   const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE_URL}/students/${studentId}/details`, {

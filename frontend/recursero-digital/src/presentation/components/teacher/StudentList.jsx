@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCourseStudents } from '../../../infrastructure/adapters/api/teacherApi';
 import '../../styles/components/StudentList.css';
 
-const StudentList = ({ courseId, onSelectStudent }) => {
+const StudentList = ({ courseId, onSelectStudent, onRemoveStudent, removingId }) => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -214,6 +214,18 @@ const StudentList = ({ courseId, onSelectStudent }) => {
                   <button className="action-btn view-profile">
                     Ver Perfil
                   </button>
+                  {onRemoveStudent && (
+                    <button
+                      className="action-btn remove-student"
+                      disabled={removingId === student.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveStudent(student.id, student.name, student.lastname);
+                      }}
+                    >
+                      {removingId === student.id ? 'Removiendo...' : 'Remover'}
+                    </button>
+                  )}
                 </div>
               </div>
             );

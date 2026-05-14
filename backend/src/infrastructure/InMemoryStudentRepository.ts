@@ -149,6 +149,24 @@ export class InMemoryStudentRepository implements StudentRepository {
     );
   }
 
+  async removeCourseFromStudent(studentId: string): Promise<void> {
+    const index = this.students.findIndex(s => s.id === studentId);
+    if (index === -1) {
+      throw new Error('Estudiante no encontrado');
+    }
+    const current = this.students[index];
+    this.students[index] = new StudentEntity(
+      current.id,
+      current.userId,
+      current.username,
+      current.passwordHash,
+      current.name,
+      current.lastname,
+      current.dni,
+      null
+    );
+  }
+
   async getEnrollmentDate(studentId: string): Promise<Date | null> {
     const student = this.students.find(s => s.id === studentId);
     return student ? new Date() : null;

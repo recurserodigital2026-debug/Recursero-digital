@@ -9,6 +9,7 @@ export interface StudentRepository {
     deleteStudent(id: string): Promise<void>; 
     enableStudent(id: string): Promise<void>; 
     assignCourseToStudent(studentId: string, courseId: string): Promise<void>;
+    removeCourseFromStudent(studentId: string): Promise<void>;
     getEnrollmentDate(studentId: string): Promise<Date | null>;
     getStudentsByCourseId(courseId: string): Promise<Student[]>;
 }

@@ -2,6 +2,7 @@ import { StudentRepository } from '../core/infrastructure/StudentRepository';
 import { Student } from '../core/models/Student';
 import { User, UserRole } from '../core/models/User';
 import { DatabaseConnection } from './DatabaseConnection';
+import { StudentAlreadyExistsError } from '../core/models/exceptions/StudentAlreadyExistsError';
 
 export class PostgreSQLStudentRepository implements StudentRepository {
   private db: DatabaseConnection;
@@ -68,7 +69,10 @@ export class PostgreSQLStudentRepository implements StudentRepository {
           true 
         ]
       );
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === '23505') {
+        throw new StudentAlreadyExistsError('Ya existe un estudiante con ese username o DNI');
+      }
       console.error('Error al agregar estudiante:', error);
       throw error;
     }
@@ -215,6 +219,25 @@ export class PostgreSQLStudentRepository implements StudentRepository {
       );
     } catch (error) {
       console.error('Error al asignar curso a estudiante:', error);
+      throw error;
+    }
+  }
+
+  async removeCourseFromStudent(studentId: string): Promise<void> {
+    try {
+      const result = await this.db.query(
+        `SELECT id FROM students WHERE id = $1 AND enable = true`,
+        [studentId]
+      );
+      if (result.rows.length === 0) {
+        throw new Error('Estudiante no encontrado');
+      }
+      await this.db.query(
+        `UPDATE students SET course_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [studentId]
+      );
+    } catch (error) {
+      console.error('Error al remover curso del estudiante:', error);
       throw error;
     }
   }
