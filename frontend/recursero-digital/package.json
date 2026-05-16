@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "start": "serve -s dist"
+    "start": "serve -s dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
@@ -41,6 +43,7 @@
     "tailwindcss": "^4.1.13",
     "vite": "^7.1.2",
     "vite-plugin-pwa": "^1.0.3",
+    "vitest": "^2.1.9",
     "workbox-window": "^7.3.0"
   }
 }

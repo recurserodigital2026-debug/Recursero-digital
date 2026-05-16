@@ -4,104 +4,34 @@ export const formatNumber = (num) => {
     return num.toLocaleString('es-ES');
 };
 
+const pickMultiple = (lo, hi, step) => {
+    const firstK = Math.ceil(lo / step);
+    const lastK = Math.floor(hi / step);
+    return step * (firstK + Math.floor(Math.random() * (lastK - firstK + 1)));
+};
+
 const generateSumQuestion = (config) => {
-    const { min = 10, max = 50, minResult = 20, maxResult = 100 } = config;
-    
-    const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
-    const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
-    
-    const respuesta = num1 + num2;
-    
-    if (respuesta < minResult || respuesta > maxResult) {
-        const targetResult = Math.floor(Math.random() * (maxResult - minResult + 1)) + minResult;
-        const adjustedNum1 = Math.floor(Math.random() * (targetResult - min + 1)) + min;
-        const adjustedNum2 = targetResult - adjustedNum1;
-        
-        if (adjustedNum2 >= min && adjustedNum2 <= max) {
-            return {
-                pregunta: `${formatNumber(adjustedNum1)} + ${formatNumber(adjustedNum2)} =`,
-                respuesta: targetResult
-            };
-        }
-    }
-    
+    const { min = 10, max = 50, minResult = 20, maxResult = 100, step = 1 } = config;
+
+    const num1 = pickMultiple(min, max, step);
+    const num2 = pickMultiple(Math.max(min, minResult - num1), Math.min(max, maxResult - num1), step);
+
     return {
         pregunta: `${formatNumber(num1)} + ${formatNumber(num2)} =`,
-        respuesta: respuesta
+        respuesta: num1 + num2
     };
 };
 
 const generateSubtractQuestion = (config) => {
-    const { min = 20, max = 100, minResult = 10, maxResult = 50 } = config;
-    
-    // Para resta, el minuendo debe ser mayor que el sustraendo
-    // Asegurar que el resultado esté en el rango esperado y que ambos números sean positivos
-    
-    // Primero, asegurar que el targetResult pueda caber en el rango
-    // El targetResult máximo posible es max - min (diferencia entre max y min)
-    const maxPossibleResult = max - min;
-    const adjustedMaxResult = Math.min(maxResult, maxPossibleResult);
-    const adjustedMinResult = Math.min(minResult, adjustedMaxResult);
-    
-    // Generar el resultado objetivo dentro del rango ajustado
-    const targetResult = Math.floor(Math.random() * (adjustedMaxResult - adjustedMinResult + 1)) + adjustedMinResult;
-    
-    // Calcular el rango válido para el sustraendo
-    // El minuendo = sustraendo + targetResult debe estar entre min y max
-    // Por lo tanto: min <= sustraendo + targetResult <= max
-    // Esto implica: sustraendo <= (max - targetResult) y sustraendo >= min
-    const maxSustraendo = max - targetResult;
-    const minSustraendo = min;
-    
-    // Validar que haya un rango válido
-    if (maxSustraendo < minSustraendo) {
-        // Si no hay espacio, usar el rango completo y ajustar el resultado
-        const sustraendo = Math.floor(Math.random() * (max - min + 1)) + min;
-        const minuendo = Math.min(max, sustraendo + Math.min(targetResult, max - sustraendo));
-        const finalResult = minuendo - sustraendo;
-        
-        return {
-            pregunta: `${formatNumber(minuendo)} − ${formatNumber(sustraendo)} =`,
-            respuesta: finalResult
-        };
-    }
-    
-    // Generar sustraendo dentro del rango válido
-    const sustraendo = Math.floor(Math.random() * (maxSustraendo - minSustraendo + 1)) + minSustraendo;
-    const minuendo = sustraendo + targetResult;
-    
-    // Validación final: asegurar que ambos números estén en el rango y sean positivos
-    if (minuendo > max || minuendo < min || sustraendo < min || sustraendo > max || sustraendo <= 0 || minuendo <= 0) {
-        // Ajustar usando límites seguros
-        const safeMinuendo = Math.min(max, Math.max(min, minuendo));
-        const safeSustraendo = Math.max(min, Math.min(max, safeMinuendo - targetResult));
-        
-        // Asegurar que el sustraendo sea positivo y menor que el minuendo
-        if (safeSustraendo > 0 && safeSustraendo < safeMinuendo) {
-            const finalResult = safeMinuendo - safeSustraendo;
-            return {
-                pregunta: `${formatNumber(safeMinuendo)} − ${formatNumber(safeSustraendo)} =`,
-                respuesta: finalResult
-            };
-        }
-    }
-    
-    // Asegurar que ambos números sean positivos
-    if (sustraendo <= 0 || minuendo <= 0 || sustraendo >= minuendo) {
-        // Regenerar con valores seguros
-        const safeSustraendo = Math.max(1, Math.floor(Math.random() * (max - min + 1)) + min);
-        const safeMinuendo = Math.min(max, safeSustraendo + Math.min(targetResult, max - safeSustraendo));
-        const safeResult = safeMinuendo - safeSustraendo;
-        
-        return {
-            pregunta: `${formatNumber(safeMinuendo)} − ${formatNumber(safeSustraendo)} =`,
-            respuesta: safeResult
-        };
-    }
-    
+    const { min = 20, max = 100, minResult = 10, maxResult = 50, step = 1 } = config;
+
+    const result = pickMultiple(minResult, maxResult, step);
+    const sustraendo = pickMultiple(min, max - result, step);
+    const minuendo = sustraendo + result;
+
     return {
         pregunta: `${formatNumber(minuendo)} − ${formatNumber(sustraendo)} =`,
-        respuesta: targetResult
+        respuesta: result
     };
 };
 
@@ -226,14 +156,26 @@ export const getQuestionsForLevel = (operation, levelNumber, levelConfig) => {
     
         switch (operation) {
             case 'suma': {
-                for(let i = 0; i < activitiesCount; i++) {
-                    questions.push(generateSumQuestion(config));
+                const seen = new Set();
+                for (let i = 0; i < activitiesCount; i++) {
+                    const q = generateWithRetry(
+                        () => generateSumQuestion(config),
+                        (c) => !seen.has(c.pregunta)
+                    );
+                    seen.add(q.pregunta);
+                    questions.push(q);
                 }
                 break;
             }
             case 'resta': {
-                for(let i = 0; i < activitiesCount; i++) {
-                    questions.push(generateSubtractQuestion(config));
+                const seen = new Set();
+                for (let i = 0; i < activitiesCount; i++) {
+                    const q = generateWithRetry(
+                        () => generateSubtractQuestion(config),
+                        (c) => !seen.has(c.pregunta)
+                    );
+                    seen.add(q.pregunta);
+                    questions.push(q);
                 }
                 break;
             }

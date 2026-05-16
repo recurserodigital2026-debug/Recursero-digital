@@ -14,3 +14,11 @@ package-lock.json
 .idea
 *.swp
 *.swo
+
+# Local backup folder (not for commit)
+/_backup/
+
+# Local-only files (not tracked in main)
+/CLAUDE.md
+/LICENSE
+/.github/workflows/backend-tests.yml
