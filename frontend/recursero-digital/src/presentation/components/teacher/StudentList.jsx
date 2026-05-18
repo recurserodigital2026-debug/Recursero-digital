@@ -6,10 +6,6 @@ const StudentList = ({ courseId, onSelectStudent, onRemoveStudent, removingId })
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const courseName = (() => {
-    try { return JSON.parse(localStorage.getItem('cursoSeleccionado'))?.nombre || '—'; }
-    catch { return '—'; }
-  })();
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -128,7 +124,7 @@ const StudentList = ({ courseId, onSelectStudent, onRemoveStudent, removingId })
                   </div>
                   <div className="student-info">
                     <h3 className="student-name">{student.name} {student.lastname}</h3>
-                    <p className="student-course">📚 {courseName}</p>
+                    <p className="student-course">👥 {student.group || '—'}</p>
                     <p className="student-progress-label">
                       Progreso: <span className={`score-${getScoreColor(calculateTotalProgress(student))}`}>
                         {calculateTotalProgress(student)}%

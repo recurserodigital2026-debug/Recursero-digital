@@ -265,9 +265,11 @@ export class PostgreSQLStudentRepository implements StudentRepository {
   async getStudentsByCourseId(courseId: string): Promise<Student[]> {
     try {
       const result = await this.db.query(
-        `SELECT s.*, u.id as user_id, u.username, u.password_hash, u.role 
-         FROM students s 
-         JOIN users u ON s.user_id = u.id 
+        `SELECT s.*, u.id as user_id, u.username, u.password_hash, u.role,
+                g.name as group_name
+         FROM students s
+         JOIN users u ON s.user_id = u.id
+         LEFT JOIN grupos g ON s.group_id = g.id
          WHERE s.course_id = $1 AND s.enable = true
          ORDER BY s.created_at DESC`,
         [courseId]
@@ -282,7 +284,8 @@ export class PostgreSQLStudentRepository implements StudentRepository {
           row.dni,
           row.course_id,
           user,
-          row.group_id || null
+          row.group_id || null,
+          row.group_name || null
         );
       });
     } catch (error) {

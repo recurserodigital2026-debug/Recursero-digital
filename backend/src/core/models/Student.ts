@@ -7,6 +7,7 @@ export class Student {
     dni: string;
     courseId: string | null;
     groupId: string | null;
+    groupName: string | null;
     user: User;
 
     constructor(
@@ -16,7 +17,8 @@ export class Student {
         dni: string,
         courseId: string | null,
         user: User,
-        groupId: string | null = null
+        groupId: string | null = null,
+        groupName: string | null = null
     ) {
         this.id = id;
         this.name = name;
@@ -24,6 +26,7 @@ export class Student {
         this.dni = dni;
         this.courseId = courseId;
         this.groupId = groupId;
+        this.groupName = groupName;
         this.user = user;
     }
 

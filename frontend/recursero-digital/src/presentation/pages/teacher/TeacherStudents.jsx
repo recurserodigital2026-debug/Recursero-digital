@@ -198,8 +198,8 @@ const TeacherStudents = () => {
                     <span>{selectedStudent.name}</span>
                   </div>
                   <div className="info-item">
-                    <label>Curso:</label>
-                    <span>{selectedCourseName}</span>
+                    <label>Grupo:</label>
+                    <span>{selectedStudent.group}</span>
                   </div>
                   <div className="info-item">
                     <label>Progreso total:</label>
