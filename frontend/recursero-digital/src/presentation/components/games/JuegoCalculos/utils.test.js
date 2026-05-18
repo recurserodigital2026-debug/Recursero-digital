@@ -7,6 +7,16 @@ const sumaConfigs = {
     3: { config: { min: 1000, max: 5000, minResult: 2000, maxResult: 10000, step: 1000 }, activitiesCount: 5 },
 };
 
+const sumaDoublesConfig = {
+    config: { kind: 'doubles', min: 10, max: 5000, step: 10, maxResult: 10000 },
+    activitiesCount: 5,
+};
+
+const sumaSumToRoundConfig = {
+    config: { kind: 'sum_to_round', step: 10, minResult: 100, maxResult: 10000, roundTargets: [100, 1000, 10000] },
+    activitiesCount: 5,
+};
+
 const restaConfigs = {
     1: { config: { min: 20, max: 100, minResult: 10, maxResult: 50, step: 10 }, activitiesCount: 5 },
     2: { config: { min: 200, max: 800, minResult: 100, maxResult: 500, step: 100 }, activitiesCount: 5 },
@@ -59,6 +69,64 @@ describe('JuegoCalculos suma', () => {
             }
         });
     }
+
+    describe('L4 doubles', () => {
+        const { min, max, step, maxResult } = sumaDoublesConfig.config;
+
+        it('every question is a + a, both operands equal, multiples of step, 2a in range (200 sessions)', () => {
+            for (let i = 0; i < 200; i++) {
+                const questions = getQuestionsForLevel('suma', 4, sumaDoublesConfig);
+                expect(questions).toHaveLength(5);
+                for (const q of questions) {
+                    const { a, b } = parseSumQuestion(q.pregunta);
+                    expect(a, q.pregunta).toBe(b);
+                    expect(a % step, q.pregunta).toBe(0);
+                    expect(a, q.pregunta).toBeGreaterThanOrEqual(min);
+                    expect(a, q.pregunta).toBeLessThanOrEqual(max);
+                    expect(q.respuesta).toBe(2 * a);
+                    expect(q.respuesta).toBeLessThanOrEqual(maxResult);
+                }
+            }
+        });
+
+        it('5 questions in a session are unique', () => {
+            for (let i = 0; i < 100; i++) {
+                const questions = getQuestionsForLevel('suma', 4, sumaDoublesConfig);
+                const preguntas = questions.map(q => q.pregunta);
+                expect(new Set(preguntas).size, `dup in: ${preguntas.join(' | ')}`).toBe(preguntas.length);
+            }
+        });
+    });
+
+    describe('L5 sum_to_round', () => {
+        const { step, minResult, maxResult, roundTargets } = sumaSumToRoundConfig.config;
+
+        it('respuesta is a roundTarget in range, operands multiples of step, sum to target (200 sessions)', () => {
+            for (let i = 0; i < 200; i++) {
+                const questions = getQuestionsForLevel('suma', 5, sumaSumToRoundConfig);
+                expect(questions).toHaveLength(5);
+                for (const q of questions) {
+                    const { a, b } = parseSumQuestion(q.pregunta);
+                    expect(roundTargets, q.pregunta).toContain(q.respuesta);
+                    expect(q.respuesta).toBeGreaterThanOrEqual(minResult);
+                    expect(q.respuesta).toBeLessThanOrEqual(maxResult);
+                    expect(a % step, q.pregunta).toBe(0);
+                    expect(b % step, q.pregunta).toBe(0);
+                    expect(a, q.pregunta).toBeGreaterThanOrEqual(step);
+                    expect(b, q.pregunta).toBeGreaterThanOrEqual(step);
+                    expect(a + b, q.pregunta).toBe(q.respuesta);
+                }
+            }
+        });
+
+        it('5 questions in a session are unique', () => {
+            for (let i = 0; i < 100; i++) {
+                const questions = getQuestionsForLevel('suma', 5, sumaSumToRoundConfig);
+                const preguntas = questions.map(q => q.pregunta);
+                expect(new Set(preguntas).size, `dup in: ${preguntas.join(' | ')}`).toBe(preguntas.length);
+            }
+        });
+    });
 });
 
 describe('JuegoCalculos resta', () => {

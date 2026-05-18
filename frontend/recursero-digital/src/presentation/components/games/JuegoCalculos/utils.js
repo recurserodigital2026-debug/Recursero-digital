@@ -10,7 +10,7 @@ const pickMultiple = (lo, hi, step) => {
     return step * (firstK + Math.floor(Math.random() * (lastK - firstK + 1)));
 };
 
-const generateSumQuestion = (config) => {
+const generateRoundOperandsSum = (config) => {
     const { min = 10, max = 50, minResult = 20, maxResult = 100, step = 1 } = config;
 
     const num1 = pickMultiple(min, max, step);
@@ -20,6 +20,40 @@ const generateSumQuestion = (config) => {
         pregunta: `${formatNumber(num1)} + ${formatNumber(num2)} =`,
         respuesta: num1 + num2
     };
+};
+
+const generateDoublesSum = (config) => {
+    const { min = 10, max = 50, maxResult = 100, step = 1 } = config;
+    const upper = Math.min(max, Math.floor(maxResult / 2));
+    const a = pickMultiple(min, upper, step);
+    return {
+        pregunta: `${formatNumber(a)} + ${formatNumber(a)} =`,
+        respuesta: 2 * a
+    };
+};
+
+const DEFAULT_ROUND_TARGETS = [100, 1000, 10000];
+
+const generateSumToRoundResult = (config) => {
+    const { step = 1, minResult = 0, maxResult = Infinity, roundTargets = DEFAULT_ROUND_TARGETS } = config;
+    const candidates = roundTargets.filter((t) => t >= minResult && t <= maxResult);
+    const target = candidates[Math.floor(Math.random() * candidates.length)];
+    const a = pickMultiple(step, target - step, step);
+    return {
+        pregunta: `${formatNumber(a)} + ${formatNumber(target - a)} =`,
+        respuesta: target
+    };
+};
+
+const SUM_GENERATORS = {
+    round_operands: generateRoundOperandsSum,
+    doubles: generateDoublesSum,
+    sum_to_round: generateSumToRoundResult,
+};
+
+const generateSumQuestion = (config) => {
+    const gen = SUM_GENERATORS[config.kind] || generateRoundOperandsSum;
+    return gen(config);
 };
 
 const generateSubtractQuestion = (config) => {
@@ -124,7 +158,7 @@ export const levelConfig = [
         number: 1
     },
     {
-        name: 'Nivel 2', 
+        name: 'Nivel 2',
         description: '¡Intermedio! Un poco más difícil',
         color: 'from-blue-400 to-indigo-500',
         textColor: 'text-blue-600',
@@ -132,12 +166,40 @@ export const levelConfig = [
     },
     {
         name: 'Nivel 3',
-        description: '¡Experto! El desafío máximo', 
+        description: '¡Experto! El desafío máximo',
         color: 'from-purple-400 to-pink-500',
         textColor: 'text-purple-600',
         number: 3
+    },
+    {
+        name: 'Nivel 4',
+        description: 'Sumas dobles: números iguales',
+        color: 'from-yellow-400 to-orange-500',
+        textColor: 'text-orange-600',
+        number: 4
+    },
+    {
+        name: 'Nivel 5',
+        description: 'Sumas complementarias: 100, 1.000, 10.000',
+        color: 'from-pink-400 to-rose-500',
+        textColor: 'text-rose-600',
+        number: 5
     }
 ];
+
+// Suma has extra levels (L4, L5) that live at backend levels 10 and 11 to avoid
+// disturbing the existing 1-9 mapping used by resta and multiplicación.
+const SUMA_EXTRA_BACKEND_LEVELS = { 4: 10, 5: 11 };
+const OPERATION_OFFSET = { suma: 0, resta: 3, multiplicacion: 6 };
+
+export const getBackendLevel = (operation, localLevel) => {
+    if (operation === 'suma' && SUMA_EXTRA_BACKEND_LEVELS[localLevel]) {
+        return SUMA_EXTRA_BACKEND_LEVELS[localLevel];
+    }
+    return localLevel + OPERATION_OFFSET[operation];
+};
+
+export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 5 : 3);
 
 
 export const getTotalActivities = (levelConfig) => {
@@ -226,7 +288,7 @@ export const getLevelNumber = (level) => {
 
 export const calculateScore = (level, attempts = 1) => {
     const levelNumber = parseInt(level.replace('nivel', ''));
-    const baseScore = 50 * levelNumber;
+    const baseScore = Math.min(50 * levelNumber, 150);
     const penalty = (attempts - 1) * 10;
     return Math.max(10, baseScore - penalty);
 };
@@ -258,15 +320,15 @@ export const getRandomMotivation = () => {
     return messages[Math.floor(Math.random() * messages.length)];
 };
 
-export const getNextLevel = (currentLevel) => {
-    switch(currentLevel) {
-        case 'nivel1': return 'nivel2';
-        case 'nivel2': return 'nivel3';
-        case 'nivel3': return null;
-        default: return null;
-    }
+export const getNextLevel = (currentLevel, operation) => {
+    const n = parseInt(String(currentLevel).replace('nivel', ''), 10);
+    if (!n) return null;
+    const max = operation ? getLevelCountForOperation(operation) : 3;
+    return n < max ? `nivel${n + 1}` : null;
 };
 
-export const isLastLevel = (level) => {
-    return level === 'nivel3';
+export const isLastLevel = (level, operation) => {
+    const n = parseInt(String(level).replace('nivel', ''), 10);
+    const max = operation ? getLevelCountForOperation(operation) : 3;
+    return n >= max;
 };

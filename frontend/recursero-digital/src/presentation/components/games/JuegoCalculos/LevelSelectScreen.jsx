@@ -1,12 +1,13 @@
 import React from 'react';
-import { levelConfig, operationConfig, getTotalActivities } from './utils';
+import { levelConfig, operationConfig, getTotalActivities, getLevelCountForOperation } from './utils';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 
 const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
   const operationInfo = operationConfig[operation];
   const { isLevelUnlocked } = useUserProgress();
 
-  const levelIcons = ['🎯', '⚡', '🚀'];
+  const levelIcons = ['🎯', '⚡', '🚀', '🌟', '👑'];
+  const visibleLevels = levelConfig.slice(0, getLevelCountForOperation(operation));
 
   return (
     <div className="game-container">
@@ -29,7 +30,7 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
           </h1>
 
           <div className="level-grid">
-            {levelConfig.map((level, index) => {
+            {visibleLevels.map((level, index) => {
               const levelNumber = index + 1;
               const levelKey = `nivel${levelNumber}`;
               const totalQuestions = getTotalActivities(operation, levelKey);
@@ -85,6 +86,14 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
               <div className="tip-item">
                 <div className="tip-title">Nivel 3</div>
                 <div className="tip-text">Números de miles. ¡El desafío máximo!</div>
+              </div>
+              <div className="tip-item">
+                <div className="tip-title">Nivel 4</div>
+                <div className="tip-text">Sumas dobles: el mismo número dos veces (200 + 200, 1.000 + 1.000)</div>
+              </div>
+              <div className="tip-item">
+                <div className="tip-title">Nivel 5</div>
+                <div className="tip-text">Sumas que dan resultados redondos: 100, 1.000 o 10.000</div>
               </div>
             </>
           )}
