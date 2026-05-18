@@ -244,6 +244,142 @@ export const exportCourseData = async (courseId, format = 'csv') => {
   return response.blob();
 };
 
+export const getStudentGameAssignments = async (studentId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/student/${studentId}/games/assignments`, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Error al obtener asignaciones');
+  }
+  return await response.json();
+};
+
+export const assignGameToStudent = async (studentId, gameId, level) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/student/${studentId}/games/${gameId}`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ level })
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Error al asignar juego');
+  }
+  return await response.json();
+};
+
+export const removeGameFromStudent = async (studentId, gameId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/student/${studentId}/games/${gameId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Error al desasignar juego');
+  }
+  return await response.json();
+};
+
+export const updateStudentGame = async (studentId, gameId, level, isEnabled) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/student/${studentId}/games/${gameId}`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ level, isEnabled })
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Error al actualizar asignación');
+  }
+  return await response.json();
+};
+
+const authHeaders = () => {
+  const token = localStorage.getItem('token');
+  return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+};
+
+export const getGruposByCourse = async (courseId) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/course/${courseId}`, { headers: authHeaders() });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al obtener grupos'); }
+  return await res.json();
+};
+
+export const createGrupo = async (name, courseId) => {
+  const res = await fetch(`${API_BASE_URL}/grupos`, {
+    method: 'POST', headers: authHeaders(), body: JSON.stringify({ name, courseId })
+  });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al crear grupo'); }
+  return await res.json();
+};
+
+export const deleteGrupo = async (groupId) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/${groupId}`, { method: 'DELETE', headers: authHeaders() });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al eliminar grupo'); }
+  return await res.json();
+};
+
+export const getGrupoStudents = async (groupId) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/students`, { headers: authHeaders() });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al obtener alumnos del grupo'); }
+  return await res.json();
+};
+
+export const assignStudentToGrupo = async (groupId, studentId) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/students/${studentId}`, {
+    method: 'POST', headers: authHeaders()
+  });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al agregar alumno al grupo'); }
+  return await res.json();
+};
+
+export const removeStudentFromGrupo = async (groupId, studentId) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/students/${studentId}`, {
+    method: 'DELETE', headers: authHeaders()
+  });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al remover alumno del grupo'); }
+  return await res.json();
+};
+
+export const getGrupoGames = async (groupId) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/games`, { headers: authHeaders() });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al obtener juegos del grupo'); }
+  return await res.json();
+};
+
+export const assignGameToGrupo = async (groupId, gameId, level) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/games/${gameId}`, {
+    method: 'POST', headers: authHeaders(), body: JSON.stringify({ level })
+  });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al asignar juego al grupo'); }
+  return await res.json();
+};
+
+export const removeGameFromGrupo = async (groupId, gameId) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/games/${gameId}`, {
+    method: 'DELETE', headers: authHeaders()
+  });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al remover juego del grupo'); }
+  return await res.json();
+};
+
+export const updateGrupoGame = async (groupId, gameId, level, isEnabled) => {
+  const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/games/${gameId}`, {
+    method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ level, isEnabled })
+  });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al actualizar juego del grupo'); }
+  return await res.json();
+};
+
+export const getAllGamesWithLevels = async () => {
+  const res = await fetch(`${API_BASE_URL}/games/all-with-levels`, { headers: authHeaders() });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al obtener juegos'); }
+  return await res.json();
+};
+
 export const MOCK_DATA = {
   teacherProfile: {
     id: "teacher_1",

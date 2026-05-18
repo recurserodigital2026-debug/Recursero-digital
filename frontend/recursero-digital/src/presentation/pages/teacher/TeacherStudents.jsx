@@ -14,12 +14,13 @@ const TeacherStudents = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [currentView, setCurrentView] = useState('list');
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedCourseName, setSelectedCourseName] = useState('');
   const [loading, setLoading] = useState(true);
 
   // Estado para remover
   const [removingId, setRemovingId] = useState(null);
-  const [confirmRemove, setConfirmRemove] = useState(null); // { id, name, lastname }
-  const [listKey, setListKey] = useState(0); // fuerza re-render de StudentList
+  const [confirmRemove, setConfirmRemove] = useState(null);
+  const [listKey, setListKey] = useState(0);
 
   // Estado para el modal de agregar
   const [showAddModal, setShowAddModal] = useState(false);
@@ -28,7 +29,7 @@ const TeacherStudents = () => {
   const [loadingAll, setLoadingAll] = useState(false);
   const [search, setSearch] = useState('');
   const [assigningId, setAssigningId] = useState(null);
-  const [feedback, setFeedback] = useState(null); // { type: 'success'|'error', msg }
+  const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
     const cursoGuardado = localStorage.getItem('cursoSeleccionado');
@@ -37,6 +38,7 @@ const TeacherStudents = () => {
         const curso = JSON.parse(cursoGuardado);
         if (curso && curso.id) {
           setSelectedCourse(curso.id.toString());
+          setSelectedCourseName(curso.nombre || curso.name || '');
           setLoading(false);
         } else {
           navigate('/docente');
@@ -196,8 +198,8 @@ const TeacherStudents = () => {
                     <span>{selectedStudent.name}</span>
                   </div>
                   <div className="info-item">
-                    <label>Juegos Jugados:</label>
-                    <span>{selectedStudent.totalGamesPlayed}</span>
+                    <label>Curso:</label>
+                    <span>{selectedCourseName}</span>
                   </div>
                   <div className="info-item">
                     <label>Progreso total:</label>
@@ -248,7 +250,6 @@ const TeacherStudents = () => {
         )}
       </div>
 
-      {/* Modal confirmar remover */}
       {confirmRemove && (
         <div className="ts-modal-overlay" onClick={() => setConfirmRemove(null)}>
           <div className="ts-modal" onClick={e => e.stopPropagation()}>
@@ -262,7 +263,6 @@ const TeacherStudents = () => {
         </div>
       )}
 
-      {/* Modal agregar alumno */}
       {showAddModal && (
         <div className="ts-modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="ts-modal ts-modal--wide" onClick={e => e.stopPropagation()}>

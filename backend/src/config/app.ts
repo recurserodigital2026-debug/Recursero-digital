@@ -7,6 +7,7 @@ import statisticsRoutes from '../delivery/routes/statisticsRoutes';
 import courseRoutes from '../delivery/routes/courseRoutes';
 import teacherRoutes from "../delivery/routes/teacherRoutes";
 import gameRoutes from "../delivery/routes/gameRoutes";
+import grupoRoutes from "../delivery/routes/grupoRoutes";
 
 const app: Application = express();
 
@@ -28,6 +29,7 @@ app.use("/api/teacher", teacherRoutes);
 app.use("/api/statistics", statisticsRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/games", gameRoutes);
+app.use("/api/grupos", grupoRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Servidor Express funcionando correctamente");

@@ -30,6 +30,8 @@ export default function MainLayout({ children, userRole = "alumno" }) {
       setActiveTab("games");
     } else if (path.includes('/estadisticas')) {
       setActiveTab("statistics");
+    } else if (path.includes('/grupos')) {
+      setActiveTab("groups");
     } else {
       setActiveTab("home");
     }
@@ -43,6 +45,7 @@ export default function MainLayout({ children, userRole = "alumno" }) {
     : userRole === "docente"
     ? [
         { id: "home", label: "🏠 Inicio", path: "/docente/dashboard" },
+        { id: "groups", label: "👥 Grupos", path: "/docente/grupos" },
         { id: "statistics", label: "📊 Estadísticas", path: "/docente/estadisticas" }
       ]
     : [

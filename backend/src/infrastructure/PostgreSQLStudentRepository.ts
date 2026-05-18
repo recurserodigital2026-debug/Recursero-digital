@@ -96,7 +96,8 @@ export class PostgreSQLStudentRepository implements StudentRepository {
           row.lastname,
           row.dni,
           row.course_id,
-          user
+          user,
+          row.group_id || null
         );
       });
     } catch (error) {
@@ -127,7 +128,8 @@ export class PostgreSQLStudentRepository implements StudentRepository {
         row.lastname,
         row.dni,
         row.course_id,
-        user
+        user,
+        row.group_id || null
       );
     } catch (error) {
       console.error('Error al buscar estudiante por ID:', error);
@@ -279,7 +281,8 @@ export class PostgreSQLStudentRepository implements StudentRepository {
           row.lastname,
           row.dni,
           row.course_id,
-          user
+          user,
+          row.group_id || null
         );
       });
     } catch (error) {

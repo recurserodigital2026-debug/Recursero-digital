@@ -1,0 +1,400 @@
+.tg-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.tg-container {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 1.5rem;
+}
+
+.tg-loading {
+  text-align: center;
+  color: rgba(255,255,255,0.7);
+  padding: 3rem;
+  font-size: 1.1rem;
+}
+
+.tg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.tg-header h1 {
+  color: #ffffff;
+  font-size: 1.8rem;
+  margin: 0;
+  text-shadow: 0 0 10px rgb(136, 239, 179), 0 0 30px rgb(136, 239, 179);
+}
+
+.tg-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.tg-detail-header h2 {
+  color: #ffffff;
+  font-size: 1.6rem;
+  margin: 0;
+  text-shadow: 0 0 10px rgb(136, 239, 179), 0 0 30px rgb(136, 239, 179);
+  flex: 1;
+  text-align: center;
+}
+
+.tg-empty {
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  padding: 2rem;
+  font-size: 1rem;
+}
+
+/* Groups grid */
+.tg-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.tg-group-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+
+.tg-group-card:hover {
+  background: rgba(255,255,255,0.18);
+  transform: translateY(-2px);
+}
+
+.tg-group-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.tg-group-info {
+  flex: 1;
+}
+
+.tg-group-info h3 {
+  color: #ffffff;
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+}
+
+.tg-group-stats {
+  display: flex;
+  gap: 0.75rem;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.8rem;
+}
+
+/* Tabs */
+.tg-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 0.5rem;
+}
+
+.tg-tab {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.7);
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.tg-tab:hover {
+  background: rgba(255,255,255,0.1);
+  color: #ffffff;
+}
+
+.tg-tab--active {
+  background: rgba(136, 239, 179, 0.2);
+  border-color: rgb(136, 239, 179);
+  color: #ffffff;
+}
+
+/* Tab content */
+.tg-tab-content {
+  padding: 0.5rem 0;
+}
+
+.tg-tab-toolbar {
+  margin-bottom: 1rem;
+}
+
+/* Students list */
+.tg-students-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tg-student-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255,255,255,0.07);
+  border-radius: 0.5rem;
+  padding: 0.6rem 1rem;
+  transition: background 0.15s;
+}
+
+.tg-student-row--enrolled {
+  opacity: 0.65;
+}
+
+.tg-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(136, 239, 179, 0.3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.tg-name {
+  flex: 1;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+/* Games list */
+.tg-games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tg-game-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255,255,255,0.07);
+  border-radius: 0.5rem;
+  padding: 0.6rem 1rem;
+}
+
+.tg-game-name {
+  flex: 1;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.tg-level-badge {
+  background: rgba(136, 239, 179, 0.25);
+  color: rgb(136, 239, 179);
+  border: 1px solid rgba(136, 239, 179, 0.4);
+  border-radius: 1rem;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Buttons */
+.tg-btn-primary {
+  background: rgba(136, 239, 179, 0.2);
+  border: 1px solid rgba(136, 239, 179, 0.5);
+  color: rgb(136, 239, 179);
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.tg-btn-primary:hover:not(:disabled) {
+  background: rgba(136, 239, 179, 0.35);
+}
+
+.tg-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tg-btn-danger {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #f87171;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.tg-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.35);
+}
+
+.tg-btn-danger-sm {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.tg-btn-danger-sm:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.tg-btn-remove {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.tg-btn-remove:hover { background: rgba(239, 68, 68, 0.25); }
+
+.tg-btn-assign {
+  background: rgba(136, 239, 179, 0.1);
+  border: 1px solid rgba(136, 239, 179, 0.3);
+  color: rgb(136, 239, 179);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.tg-btn-assign:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.tg-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.tg-modal {
+  background: #1a1f35;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  color: #ffffff;
+}
+
+.tg-modal--wide {
+  max-width: 560px;
+}
+
+.tg-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.tg-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.tg-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.tg-modal-subtitle {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.tg-modal-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tg-input {
+  width: 100%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 0.5rem;
+  color: #ffffff;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.tg-input::placeholder { color: rgba(255,255,255,0.4); }
+.tg-input:focus { outline: none; border-color: rgb(136, 239, 179); }
+
+/* Toast */
+.tg-toast {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  z-index: 2000;
+  font-weight: 500;
+}
+
+.tg-toast--success {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+}
+
+.tg-toast--error {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}

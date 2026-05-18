@@ -9,9 +9,7 @@ export class DatabaseConnection {
   private constructor() {
     this.pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      }
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
 
     this.pool.on('error', (err) => {
