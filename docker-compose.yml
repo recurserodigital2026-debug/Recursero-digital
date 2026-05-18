@@ -14,7 +14,7 @@ services:
       - DB_USER=admindb
       - DB_PASSWORD=recursero2025
       - JWT_SECRET=tu-jwt-secret-super-seguro-local
-      - GEMINI_API_KEY=AIzaSyB2qf_PZfiaW9NuGSODUwTLC-W4LCS13QA
+      - GEMINI_API_KEY=AIzaSyCm_crt9izIwshxuW9L7asBOXOEql06_Z8
       - GEMINI_MODEL=gemini-2.5-flash
     networks:
       - recursero-network
