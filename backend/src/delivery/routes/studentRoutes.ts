@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import { studentController, studentExtendedController } from '../controllers/studentController';
-import { protectAdminRoute, protectRoute } from '../middleware/authMiddleWare';
+import { protectAdminRoute, protectRoute, protectTeacherOrAdminRoute } from '../middleware/authMiddleWare';
 import { UserRole } from '../../core/models/User';
 
 const router: Router = express.Router();
@@ -17,5 +17,10 @@ router.delete('/:studentId', protectAdminRoute(), studentController.deleteStuden
 router.patch('/:studentId/enable', protectAdminRoute(), studentController.enableStudent);
 
 router.post('/:studentId/courses', protectAdminRoute(), studentExtendedController.assignCourseToStudent);
+
+router.get('/:studentId/games/assignments', protectTeacherOrAdminRoute(), studentController.getStudentGameAssignments);
+router.post('/:studentId/games/:gameId', protectTeacherOrAdminRoute(), studentController.assignGameToStudent);
+router.delete('/:studentId/games/:gameId', protectTeacherOrAdminRoute(), studentController.removeGameFromStudent);
+router.patch('/:studentId/games/:gameId', protectTeacherOrAdminRoute(), studentController.updateStudentGame);
 
 export default router;

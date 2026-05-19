@@ -1,6 +1,8 @@
 import { GetStudentGamesUseCase, GetStudentGamesRequest } from '../../../src/core/usecases/GetStudentGamesUseCase';
 import { MockStudentRepository } from '../../mocks/StudentRepository.mock';
 import { MockCourseRepository } from '../../mocks/CourseRepository.mock';
+import { MockStudentGameRepository } from '../../mocks/StudentGameRepository.mock';
+import { MockGrupoRepository } from '../../mocks/GrupoRepository.mock';
 import { StudentEntity } from '../../../src/infrastructure/entities/StudentEntity';
 import { CourseGame } from '../../../src/core/models/CourseGame';
 import { Game } from '../../../src/core/models/Game';
@@ -11,19 +13,27 @@ describe('GetStudentGamesUseCase', () => {
     let getStudentGamesUseCase: GetStudentGamesUseCase;
     let mockStudentRepository: MockStudentRepository;
     let mockCourseRepository: MockCourseRepository;
+    let mockStudentGameRepository: MockStudentGameRepository;
+    let mockGrupoRepository: MockGrupoRepository;
 
     beforeEach(() => {
         mockStudentRepository = new MockStudentRepository();
         mockCourseRepository = new MockCourseRepository();
+        mockStudentGameRepository = new MockStudentGameRepository();
+        mockGrupoRepository = new MockGrupoRepository();
         getStudentGamesUseCase = new GetStudentGamesUseCase(
             mockStudentRepository,
-            mockCourseRepository
+            mockCourseRepository,
+            mockStudentGameRepository,
+            mockGrupoRepository
         );
     });
 
     afterEach(() => {
         mockStudentRepository.clearStudents();
         mockCourseRepository.clearCourses();
+        mockStudentGameRepository.clear();
+        mockGrupoRepository.clear();
     });
 
     describe('When execute', () => {

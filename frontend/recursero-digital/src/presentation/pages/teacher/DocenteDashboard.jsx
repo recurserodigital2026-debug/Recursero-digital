@@ -112,12 +112,6 @@ export default function DocenteDashboard() {
             <p>Gestiona el progreso de tus estudiantes</p>
           </div>
 
-          <div className="accion-card" onClick={() => navigate('/docente/juegos')}>
-            <div className="accion-icon">🎯</div>
-            <h3>Configurar Juegos</h3>
-            <p>Asigna y configura actividades</p>
-          </div>
-
           <div className="accion-card" onClick={() => navigate('/docente/reportes')}>
             <div className="accion-icon">📊</div>
             <h3>Ver Reportes</h3>
@@ -128,6 +122,12 @@ export default function DocenteDashboard() {
             <div className="accion-icon">📈</div>
             <h3>Estadísticas del Curso</h3>
             <p>Visualiza métricas y análisis detallados</p>
+          </div>
+
+          <div className="accion-card" onClick={() => navigate('/docente/grupos')}>
+            <div className="accion-icon">👥</div>
+            <h3>Grupos</h3>
+            <p>Crea grupos y asigna juegos por grupo</p>
           </div>
         </div>
       </div>

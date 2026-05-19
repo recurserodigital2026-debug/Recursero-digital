@@ -92,40 +92,44 @@ export const gameController = {
 
     getAllGamesWithLevels: async (req: Request, res: Response): Promise<void> => {
         try {
-            const allLevels = await container.gameLevelRepository.findAll();
-            
+            const db = (container.gameLevelRepository as any).db;
+            const result = await db.query(
+                `SELECT gl.*, g.name as game_name
+                 FROM games_levels gl
+                 JOIN games g ON gl.game_id = g.id
+                 ORDER BY gl.game_id, gl.level ASC`
+            );
+
             const gamesMap = new Map<string, any>();
-            
-            allLevels.forEach(level => {
-                const gameId = level.getGameId();
-                
+
+            result.rows.forEach((row: any) => {
+                const gameId = row.game_id;
                 if (!gamesMap.has(gameId)) {
                     gamesMap.set(gameId, {
-                        gameId: gameId,
+                        gameId,
+                        gameName: row.game_name,
                         levels: []
                     });
                 }
-                
-                const game = gamesMap.get(gameId);
-                game.levels.push({
-                    id: level.getId(),
-                    level: level.getLevel(),
-                    name: level.getName(),
-                    description: level.getDescription(),
-                    difficulty: level.getDifficulty(),
-                    activitiesCount: level.getActivitiesCount(),
-                    config: level.getConfig(),
-                    isActive: level.getIsActive()
+                gamesMap.get(gameId).levels.push({
+                    id: row.id,
+                    level: row.level,
+                    name: row.name,
+                    description: row.description,
+                    difficulty: row.difficulty,
+                    activitiesCount: row.activities_count,
+                    config: row.config,
+                    isActive: row.is_active
                 });
             });
-            
+
             const games = Array.from(gamesMap.values()).map(game => ({
                 ...game,
                 levels: game.levels.sort((a: any, b: any) => a.level - b.level),
                 totalLevels: game.levels.length,
                 activeLevels: game.levels.filter((l: any) => l.isActive).length
             }));
-            
+
             res.status(200).json({ games });
         } catch (error: any) {
             console.error('Error en getAllGamesWithLevels:', error);

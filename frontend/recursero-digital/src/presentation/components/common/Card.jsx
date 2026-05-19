@@ -45,10 +45,12 @@ export function Card() {
         const response = await apiRequest('/student/me/games');
 
         if (response.ok && response.data && Array.isArray(response.data.games)) {
+          const source = response.data.source || 'course';
           const transformedGames = response.data.games
             .filter((courseGame) => courseGame?.game)
             .map((courseGame) => {
               const gameData = courseGame.game;
+              const assignedLevel = (source === 'student' || source === 'group') ? (courseGame.level ?? courseGame.orderIndex ?? null) : null;
               return {
                 id: gameData.id,
                 name: gameData.name,
@@ -56,7 +58,8 @@ export function Card() {
                 imageUrl: resolveGameImage(gameData.imageUrl),
                 route: gameData.route || '/alumno/juegos',
                 difficultyLevel: gameData.difficultyLevel ?? 1,
-                orderIndex: courseGame.orderIndex ?? 0
+                orderIndex: courseGame.orderIndex ?? 0,
+                assignedLevel,
               };
             });
 
@@ -85,8 +88,8 @@ export function Card() {
     return <div className="container">Cargando juegos...</div>;
   }
 
-  if (error ||games.length === 0) {
-    return <div className="container">Por el momento no tienes juegos asignados.</div>;
+  if (error || games.length === 0) {
+    return <div className="sin-juegos-container"><div className="sin-juegos-card"><div className="sin-juegos-emoji">📚</div><h2 className="sin-juegos-titulo">Todavía no tenés un curso asignado</h2><p className="sin-juegos-texto">Aguardá a que tu docente te asigne uno y acá van a aparecer tus juegos 🎮</p></div></div>;
   }
 
     return (
@@ -99,7 +102,13 @@ export function Card() {
                             <img src={game.imageUrl} alt={game.name} className="imagegame"/>
                             <div className='textgame'>
                                 <h2 className="titlegame">{game.name}</h2>
-                                <p className="descriptiongame">{game.description}</p>
+                                {game.assignedLevel ? (
+                                  <p className="descriptiongame card-nivel-asignado">
+                                    Nivel asignado: <strong>Nivel {game.assignedLevel}</strong>
+                                  </p>
+                                ) : (
+                                  <p className="descriptiongame">{game.description}</p>
+                                )}
                                 <button className="buttongame" onClick={() => handleJugar(game.route)}>Jugar</button>
                             </div>
                         </box>

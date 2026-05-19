@@ -10,6 +10,7 @@ interface StudentDetails {
     name: string;
     lastname: string;
     userName: string;
+    group: string | null;
     enrollmentDate: string | null;
     totalGamesPlayed: number;
     averageScore: number;
@@ -81,6 +82,7 @@ export class GetCourseStudentsUseCase {
             name: student.name,
             lastname: student.lastname,
             userName: student.getUsername(),
+            group: student.groupName,
             enrollmentDate,
             totalGamesPlayed: aggregatedStats.totalGamesPlayed,
             averageScore: aggregatedStats.averageScore,

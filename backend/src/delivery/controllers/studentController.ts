@@ -210,7 +210,89 @@ const enableStudent = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-export const studentController = { addStudent, getMyGames, getAllStudents, updateStudent, deleteStudent, enableStudent };
+const getStudentGameAssignments = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { studentId } = req.params as { studentId: string };
+        const result = await dependencyContainer.getStudentGameAssignmentsUseCase.execute(studentId);
+        res.status(200).json(result);
+    } catch (error: any) {
+        if (error.message === 'Estudiante no encontrado') {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+        console.error('Error en getStudentGameAssignments:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+const assignGameToStudent = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { studentId, gameId } = req.params as { studentId: string; gameId: string };
+        const { level } = req.body as { level: number };
+
+        if (!level) {
+            res.status(400).json({ error: 'El nivel es requerido' });
+            return;
+        }
+
+        await dependencyContainer.assignGameToStudentUseCase.execute(studentId, gameId, Number(level));
+        res.status(200).json({ message: 'Juego asignado al alumno correctamente' });
+    } catch (error: any) {
+        if (error.message === 'Estudiante no encontrado') {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+        if (error.message.includes('nivel')) {
+            res.status(400).json({ error: error.message });
+            return;
+        }
+        console.error('Error en assignGameToStudent:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+const removeGameFromStudent = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { studentId, gameId } = req.params as { studentId: string; gameId: string };
+        await dependencyContainer.removeGameFromStudentUseCase.execute(studentId, gameId);
+        res.status(200).json({ message: 'Juego desasignado del alumno correctamente' });
+    } catch (error: any) {
+        if (error.message === 'Estudiante no encontrado') {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+        console.error('Error en removeGameFromStudent:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+const updateStudentGame = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { studentId, gameId } = req.params as { studentId: string; gameId: string };
+        const { level, isEnabled } = req.body as { level: number; isEnabled: boolean };
+
+        if (level === undefined || isEnabled === undefined) {
+            res.status(400).json({ error: 'level e isEnabled son requeridos' });
+            return;
+        }
+
+        await dependencyContainer.updateStudentGameUseCase.execute(studentId, gameId, Number(level), Boolean(isEnabled));
+        res.status(200).json({ message: 'Asignación actualizada correctamente' });
+    } catch (error: any) {
+        if (error.message === 'Asignación no encontrada') {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+        if (error.message.includes('nivel')) {
+            res.status(400).json({ error: error.message });
+            return;
+        }
+        console.error('Error en updateStudentGame:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+export const studentController = { addStudent, getMyGames, getAllStudents, updateStudent, deleteStudent, enableStudent, getStudentGameAssignments, assignGameToStudent, removeGameFromStudent, updateStudentGame };
 
 export const assignCourseToStudent = async (req: Request, res: Response): Promise<void> => {
     try {

@@ -366,6 +366,153 @@
   cursor: not-allowed;
 }
 
+/* ── Barra y botón configurar juegos ── */
+.sgam-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.sgam-btn-config {
+  background: linear-gradient(135deg, #a78bfa, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.sgam-btn-config:hover { opacity: 0.85; }
+
+/* ── Modal de asignación de juegos ── */
+.sgam-modal { max-width: 580px; }
+
+.sgam-subtitle {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+
+.sgam-toast {
+  padding: 0.5rem 1rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+.sgam-toast--success { background: #22c55e; }
+.sgam-toast--error   { background: #ef4444; }
+
+.sgam-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 380px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.sgam-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.6rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: border-color 0.2s;
+}
+.sgam-row--active {
+  border-color: rgba(110,231,183,0.4);
+  background: rgba(110,231,183,0.07);
+}
+
+.sgam-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.sgam-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sgam-level-badge {
+  font-size: 0.72rem;
+  background: rgba(110,231,183,0.2);
+  color: #6ee7b7;
+  padding: 0.15rem 0.55rem;
+  border-radius: 1rem;
+  white-space: nowrap;
+}
+
+.sgam-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.sgam-select {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+}
+.sgam-select:focus { border-color: #6ee7b7; }
+.sgam-select option { background: #1e293b; color: #fff; }
+
+.sgam-toggle {
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.sgam-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
+.sgam-toggle--on  { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }
+.sgam-toggle--off { background: linear-gradient(135deg, #6ee7b7, #3b82f6); color: #fff; }
+.sgam-toggle--on:hover:not(:disabled)  { background: rgba(239,68,68,0.35); }
+
+.sgam-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.sgam-btn-save {
+  background: linear-gradient(135deg, #6ee7b7, #3b82f6);
+  border: none;
+  color: #fff;
+  padding: 0.5rem 1.4rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.sgam-btn-save:hover:not(:disabled) { opacity: 0.85; }
+.sgam-btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
 @media (max-width: 768px) {
   .teacher-students {
     padding: 1rem;

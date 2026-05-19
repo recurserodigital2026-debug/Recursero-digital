@@ -204,3 +204,60 @@
     font-size: 13px;
   }
 }
+
+.sin-juegos-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2rem;
+}
+
+.sin-juegos-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 30px;
+  padding: 50px 60px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 560px;
+  width: 100%;
+  font-family: 'Fredoka', cursive;
+}
+
+.sin-juegos-emoji {
+  font-size: 64px;
+  margin-bottom: 1rem;
+}
+
+.sin-juegos-titulo {
+  font-size: 28px;
+  color: white;
+  margin: 0 0 1rem 0;
+  font-family: 'Fredoka', cursive;
+  text-shadow:
+    -1.5px -1.5px 0 #7c3aed,
+     1.5px -1.5px 0 #7c3aed,
+    -1.5px  1.5px 0 #7c3aed,
+     1.5px  1.5px 0 #7c3aed;
+}
+
+.sin-juegos-texto {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.8;
+  margin: 0;
+  font-family: 'Fredoka', cursive;
+}
+
+.card-nivel-asignado {
+  color: #6ee7b7;
+  font-weight: 500;
+}
+
+.card-nivel-asignado strong {
+  color: #fff;
+  font-weight: 700;
+}

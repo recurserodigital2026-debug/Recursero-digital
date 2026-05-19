@@ -43,6 +43,20 @@ import { UpdateTeacherUseCase } from '../core/usecases/UpdateTeacherUseCase';
 import { DeleteTeacherUseCase } from '../core/usecases/DeleteTeacherUseCase';
 import { EnableTeacherUseCase } from '../core/usecases/EnableTeacherUseCase';
 import { RemoveCourseFromStudentUseCase } from '../core/usecases/RemoveCourseFromStudentUseCase';
+import { PostgreSQLStudentGameRepository } from '../infrastructure/PostgreSQLStudentGameRepository';
+import { AssignGameToStudentUseCase } from '../core/usecases/AssignGameToStudentUseCase';
+import { RemoveGameFromStudentUseCase } from '../core/usecases/RemoveGameFromStudentUseCase';
+import { UpdateStudentGameUseCase } from '../core/usecases/UpdateStudentGameUseCase';
+import { GetStudentGameAssignmentsUseCase } from '../core/usecases/GetStudentGameAssignmentsUseCase';
+import { PostgreSQLGrupoRepository } from '../infrastructure/PostgreSQLGrupoRepository';
+import { CreateGrupoUseCase } from '../core/usecases/CreateGrupoUseCase';
+import { DeleteGrupoUseCase } from '../core/usecases/DeleteGrupoUseCase';
+import { GetGruposByCourseUseCase } from '../core/usecases/GetGruposByCourseUseCase';
+import { AssignStudentToGrupoUseCase } from '../core/usecases/AssignStudentToGrupoUseCase';
+import { RemoveStudentFromGrupoUseCase } from '../core/usecases/RemoveStudentFromGrupoUseCase';
+import { AssignGameToGrupoUseCase } from '../core/usecases/AssignGameToGrupoUseCase';
+import { RemoveGameFromGrupoUseCase } from '../core/usecases/RemoveGameFromGrupoUseCase';
+import { UpdateGrupoGameUseCase } from '../core/usecases/UpdateGrupoGameUseCase';
 
 
 export class DependencyContainer {
@@ -83,6 +97,20 @@ export class DependencyContainer {
     private _deleteTeacherUseCase: DeleteTeacherUseCase | null = null;
     private _enableTeacherUseCase: EnableTeacherUseCase | null = null;
     private _removeCourseFromStudentUseCase: RemoveCourseFromStudentUseCase | null = null;
+    private _studentGameRepository: PostgreSQLStudentGameRepository | null = null;
+    private _assignGameToStudentUseCase: AssignGameToStudentUseCase | null = null;
+    private _removeGameFromStudentUseCase: RemoveGameFromStudentUseCase | null = null;
+    private _updateStudentGameUseCase: UpdateStudentGameUseCase | null = null;
+    private _getStudentGameAssignmentsUseCase: GetStudentGameAssignmentsUseCase | null = null;
+    private _grupoRepository: PostgreSQLGrupoRepository | null = null;
+    private _createGrupoUseCase: CreateGrupoUseCase | null = null;
+    private _deleteGrupoUseCase: DeleteGrupoUseCase | null = null;
+    private _getGruposByCourseUseCase: GetGruposByCourseUseCase | null = null;
+    private _assignStudentToGrupoUseCase: AssignStudentToGrupoUseCase | null = null;
+    private _removeStudentFromGrupoUseCase: RemoveStudentFromGrupoUseCase | null = null;
+    private _assignGameToGrupoUseCase: AssignGameToGrupoUseCase | null = null;
+    private _removeGameFromGrupoUseCase: RemoveGameFromGrupoUseCase | null = null;
+    private _updateGrupoGameUseCase: UpdateGrupoGameUseCase | null = null;
 
 
     private constructor() {
@@ -277,14 +305,126 @@ export class DependencyContainer {
         return this._getGameStatisticsUseCase;
     }
 
+    public get studentGameRepository(): PostgreSQLStudentGameRepository {
+        if (!this._studentGameRepository) {
+            this._studentGameRepository = new PostgreSQLStudentGameRepository();
+        }
+        return this._studentGameRepository;
+    }
+
+    public get grupoRepository(): PostgreSQLGrupoRepository {
+        if (!this._grupoRepository) {
+            this._grupoRepository = new PostgreSQLGrupoRepository();
+        }
+        return this._grupoRepository;
+    }
+
     public get getStudentGamesUseCase(): GetStudentGamesUseCase {
         if (!this._getStudentGamesUseCase) {
             this._getStudentGamesUseCase = new GetStudentGamesUseCase(
                 this.studentRepository,
-                this.courseRepository
+                this.courseRepository,
+                this.studentGameRepository,
+                this.grupoRepository
             );
         }
         return this._getStudentGamesUseCase;
+    }
+
+    public get createGrupoUseCase(): CreateGrupoUseCase {
+        if (!this._createGrupoUseCase) {
+            this._createGrupoUseCase = new CreateGrupoUseCase(this.grupoRepository, this.uuidGenerator);
+        }
+        return this._createGrupoUseCase;
+    }
+
+    public get deleteGrupoUseCase(): DeleteGrupoUseCase {
+        if (!this._deleteGrupoUseCase) {
+            this._deleteGrupoUseCase = new DeleteGrupoUseCase(this.grupoRepository);
+        }
+        return this._deleteGrupoUseCase;
+    }
+
+    public get getGruposByCourseUseCase(): GetGruposByCourseUseCase {
+        if (!this._getGruposByCourseUseCase) {
+            this._getGruposByCourseUseCase = new GetGruposByCourseUseCase(this.grupoRepository);
+        }
+        return this._getGruposByCourseUseCase;
+    }
+
+    public get assignStudentToGrupoUseCase(): AssignStudentToGrupoUseCase {
+        if (!this._assignStudentToGrupoUseCase) {
+            this._assignStudentToGrupoUseCase = new AssignStudentToGrupoUseCase(this.grupoRepository, this.studentRepository);
+        }
+        return this._assignStudentToGrupoUseCase;
+    }
+
+    public get removeStudentFromGrupoUseCase(): RemoveStudentFromGrupoUseCase {
+        if (!this._removeStudentFromGrupoUseCase) {
+            this._removeStudentFromGrupoUseCase = new RemoveStudentFromGrupoUseCase(this.grupoRepository);
+        }
+        return this._removeStudentFromGrupoUseCase;
+    }
+
+    public get assignGameToGrupoUseCase(): AssignGameToGrupoUseCase {
+        if (!this._assignGameToGrupoUseCase) {
+            this._assignGameToGrupoUseCase = new AssignGameToGrupoUseCase(this.grupoRepository, this.uuidGenerator);
+        }
+        return this._assignGameToGrupoUseCase;
+    }
+
+    public get removeGameFromGrupoUseCase(): RemoveGameFromGrupoUseCase {
+        if (!this._removeGameFromGrupoUseCase) {
+            this._removeGameFromGrupoUseCase = new RemoveGameFromGrupoUseCase(this.grupoRepository);
+        }
+        return this._removeGameFromGrupoUseCase;
+    }
+
+    public get updateGrupoGameUseCase(): UpdateGrupoGameUseCase {
+        if (!this._updateGrupoGameUseCase) {
+            this._updateGrupoGameUseCase = new UpdateGrupoGameUseCase(this.grupoRepository);
+        }
+        return this._updateGrupoGameUseCase;
+    }
+
+    public get assignGameToStudentUseCase(): AssignGameToStudentUseCase {
+        if (!this._assignGameToStudentUseCase) {
+            this._assignGameToStudentUseCase = new AssignGameToStudentUseCase(
+                this.studentGameRepository,
+                this.studentRepository,
+                this.uuidGenerator
+            );
+        }
+        return this._assignGameToStudentUseCase;
+    }
+
+    public get removeGameFromStudentUseCase(): RemoveGameFromStudentUseCase {
+        if (!this._removeGameFromStudentUseCase) {
+            this._removeGameFromStudentUseCase = new RemoveGameFromStudentUseCase(
+                this.studentGameRepository,
+                this.studentRepository
+            );
+        }
+        return this._removeGameFromStudentUseCase;
+    }
+
+    public get updateStudentGameUseCase(): UpdateStudentGameUseCase {
+        if (!this._updateStudentGameUseCase) {
+            this._updateStudentGameUseCase = new UpdateStudentGameUseCase(
+                this.studentGameRepository
+            );
+        }
+        return this._updateStudentGameUseCase;
+    }
+
+    public get getStudentGameAssignmentsUseCase(): GetStudentGameAssignmentsUseCase {
+        if (!this._getStudentGameAssignmentsUseCase) {
+            this._getStudentGameAssignmentsUseCase = new GetStudentGameAssignmentsUseCase(
+                this.studentGameRepository,
+                this.studentRepository
+            );
+        }
+        return this._getStudentGameAssignmentsUseCase;
     }
 
     public get assignCourseToStudentUseCase(): AssignCourseToStudentUseCase {

@@ -32,23 +32,6 @@ const StudentList = ({ courseId, onSelectStudent, onRemoveStudent, removingId })
     }
   }, [courseId]);
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric'
-    });
-  };
-
-  const getDaysSinceLastActivity = (dateString) => {
-    const lastActivity = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - lastActivity);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
   const getScoreColor = (score) => {
     if (score >= 90) return 'excellent';
     if (score >= 80) return 'good';
@@ -129,11 +112,9 @@ const StudentList = ({ courseId, onSelectStudent, onRemoveStudent, removingId })
           </div>
         ) : (
           sortedStudents.map((student) => {
-            const scoreColor = getScoreColor(student.averageScore);
-
             return (
-              <div 
-                key={student.id} 
+              <div
+                key={student.id}
                 className="student-card"
                 onClick={() => onSelectStudent && onSelectStudent(student)}
               >
@@ -143,71 +124,13 @@ const StudentList = ({ courseId, onSelectStudent, onRemoveStudent, removingId })
                   </div>
                   <div className="student-info">
                     <h3 className="student-name">{student.name} {student.lastname}</h3>
-                    <p className="student-username">@{student.userName}</p>
-                    <p className="enrollment-date">
-                      Inscripto: {formatDate(student.enrollmentDate)}
+                    <p className="student-course">👥 {student.group || '—'}</p>
+                    <p className="student-progress-label">
+                      Progreso: <span className={`score-${getScoreColor(calculateTotalProgress(student))}`}>
+                        {calculateTotalProgress(student)}%
+                      </span>
                     </p>
                   </div>
-                </div>
-
-                <div className="student-stats">
-                  <div className="stat-group">
-                    <div className="stat">
-                      <span className="stat-label">Juegos</span>
-                      <span className="stat-value">{student.totalGamesPlayed}</span>
-                    </div>
-                    {(() => {
-                      const calculateTotalProgress = () => {
-                        if (!student.progressByGame || Object.keys(student.progressByGame).length === 0) {
-                          return 0;
-                        }
-                        const progressValues = Object.values(student.progressByGame).map(game => game.averageScore || 0);
-                        const sum = progressValues.reduce((acc, val) => acc + val, 0);
-                        return Math.round(sum / progressValues.length);
-                      };
-                      const totalProgress = calculateTotalProgress();
-                      const progressColor = getScoreColor(totalProgress);
-                      return (
-                        <div className="stat">
-                          <span className="stat-label">Progreso total</span>
-                          <span className={`stat-value score-${progressColor}`}>
-                            {totalProgress}%
-                          </span>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
-
-                <div className="games-progress">
-                  {Object.entries(student.progressByGame).map(([game, progress]) => {
-                    const gameNames = {
-                      ordenamiento: 'Ordenamiento',
-                      escritura: 'Escritura',
-                      descomposicion: 'Descomposición', 
-                      escala: 'Escala',
-                      calculos: 'Cálculos'
-                    };
-
-                    return (
-                      <div key={game} className="game-progress">
-                        <div className="game-progress-header">
-                          <span className="game-name">{gameNames[game] || game.charAt(0).toUpperCase() + game.slice(1)}</span>
-                          <span className="game-score">{progress.averageScore}%</span>
-                        </div>
-                        <div className="game-progress-bar">
-                          <div 
-                            className={`name-games ${game}`}
-                            style={{ width: `${Math.min(progress.averageScore, 100)}%` }}
-                          ></div>
-                        </div>
-                        <div className="game-details">
-                          <span>{progress.completed} completados</span>
-                          <span>{Math.round(progress.totalTime / 60)}min total</span>
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
 
                 <div className="student-actions">
