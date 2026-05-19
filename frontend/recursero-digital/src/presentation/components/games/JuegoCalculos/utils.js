@@ -1,72 +1,32 @@
 import { generateWithRetry } from "../../../../utils/generateWithRetry";
+import { dispatch as dispatchCalculation } from "./generators";
 
 export const formatNumber = (num) => {
     return num.toLocaleString('es-ES');
 };
 
-const pickMultiple = (lo, hi, step) => {
-    const firstK = Math.ceil(lo / step);
-    const lastK = Math.floor(hi / step);
-    return step * (firstK + Math.floor(Math.random() * (lastK - firstK + 1)));
-};
+// Suma and resta calculations now flow through generators/. Each level's `config.kind`
+// selects the matching generator (see specs/001-addition-subtraction-levels/data-model.md).
+// The legacy generateRoundOperandsSum / generateDoublesSum / generateSumToRoundResult /
+// generateSubtractQuestion functions were removed in this refactor; their replacements
+// live in generators/sumToTarget.js, identicalNumbers.js, etc.
 
-const generateRoundOperandsSum = (config) => {
-    const { min = 10, max = 50, minResult = 20, maxResult = 100, step = 1 } = config;
+const KNOWN_KINDS = new Set([
+    'sum_to_target',
+    'whole_multiples',
+    'identical_numbers',
+    'no_carry_sum',
+    'no_borrow_sub',
+    'free_form',
+]);
 
-    const num1 = pickMultiple(min, max, step);
-    const num2 = pickMultiple(Math.max(min, minResult - num1), Math.min(max, maxResult - num1), step);
-
-    return {
-        pregunta: `${formatNumber(num1)} + ${formatNumber(num2)} =`,
-        respuesta: num1 + num2
-    };
-};
-
-const generateDoublesSum = (config) => {
-    const { min = 10, max = 50, maxResult = 100, step = 1 } = config;
-    const upper = Math.min(max, Math.floor(maxResult / 2));
-    const a = pickMultiple(min, upper, step);
-    return {
-        pregunta: `${formatNumber(a)} + ${formatNumber(a)} =`,
-        respuesta: 2 * a
-    };
-};
-
-const DEFAULT_ROUND_TARGETS = [100, 1000, 10000];
-
-const generateSumToRoundResult = (config) => {
-    const { step = 1, minResult = 0, maxResult = Infinity, roundTargets = DEFAULT_ROUND_TARGETS } = config;
-    const candidates = roundTargets.filter((t) => t >= minResult && t <= maxResult);
-    const target = candidates[Math.floor(Math.random() * candidates.length)];
-    const a = pickMultiple(step, target - step, step);
-    return {
-        pregunta: `${formatNumber(a)} + ${formatNumber(target - a)} =`,
-        respuesta: target
-    };
-};
-
-const SUM_GENERATORS = {
-    round_operands: generateRoundOperandsSum,
-    doubles: generateDoublesSum,
-    sum_to_round: generateSumToRoundResult,
-};
-
-const generateSumQuestion = (config) => {
-    const gen = SUM_GENERATORS[config.kind] || generateRoundOperandsSum;
-    return gen(config);
-};
-
-const generateSubtractQuestion = (config) => {
-    const { min = 20, max = 100, minResult = 10, maxResult = 50, step = 1 } = config;
-
-    const result = pickMultiple(minResult, maxResult, step);
-    const sustraendo = pickMultiple(min, max - result, step);
-    const minuendo = sustraendo + result;
-
-    return {
-        pregunta: `${formatNumber(minuendo)} − ${formatNumber(sustraendo)} =`,
-        respuesta: result
-    };
+const generateSumOrSubtractQuestion = (config) => {
+    if (!config || !KNOWN_KINDS.has(config.kind)) {
+        throw new Error(
+            `Configuración de nivel inválida: kind='${config?.kind}'. Esperado uno de ${[...KNOWN_KINDS].join(', ')}.`
+        );
+    }
+    return dispatchCalculation(config);
 };
 
 const generateMultiplyQuestion = (config, withUnknown = false) => {
@@ -180,16 +140,30 @@ export const levelConfig = [
     },
     {
         name: 'Nivel 5',
-        description: 'Sumas complementarias: 100, 1.000, 10.000',
+        description: 'Sumas que dan 100',
         color: 'from-pink-400 to-rose-500',
         textColor: 'text-rose-600',
         number: 5
+    },
+    {
+        name: 'Nivel 6',
+        description: 'Sumas que dan 1.000',
+        color: 'from-pink-400 to-rose-500',
+        textColor: 'text-rose-600',
+        number: 6
+    },
+    {
+        name: 'Nivel 7',
+        description: 'Sumas que dan 10.000',
+        color: 'from-pink-400 to-rose-500',
+        textColor: 'text-rose-600',
+        number: 7
     }
 ];
 
-// Suma has extra levels (L4, L5) that live at backend levels 10 and 11 to avoid
+// Suma has extra levels (L4–L7) that live at backend levels 10–13 to avoid
 // disturbing the existing 1-9 mapping used by resta and multiplicación.
-const SUMA_EXTRA_BACKEND_LEVELS = { 4: 10, 5: 11 };
+const SUMA_EXTRA_BACKEND_LEVELS = { 4: 10, 5: 11, 6: 12, 7: 13 };
 const OPERATION_OFFSET = { suma: 0, resta: 3, multiplicacion: 6 };
 
 export const getBackendLevel = (operation, localLevel) => {
@@ -199,7 +173,7 @@ export const getBackendLevel = (operation, localLevel) => {
     return localLevel + OPERATION_OFFSET[operation];
 };
 
-export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 5 : 3);
+export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 7 : 3);
 
 
 export const getTotalActivities = (levelConfig) => {
@@ -217,23 +191,12 @@ export const getQuestionsForLevel = (operation, levelNumber, levelConfig) => {
     const questions = [];
     
         switch (operation) {
-            case 'suma': {
-                const seen = new Set();
-                for (let i = 0; i < activitiesCount; i++) {
-                    const q = generateWithRetry(
-                        () => generateSumQuestion(config),
-                        (c) => !seen.has(c.pregunta)
-                    );
-                    seen.add(q.pregunta);
-                    questions.push(q);
-                }
-                break;
-            }
+            case 'suma':
             case 'resta': {
                 const seen = new Set();
                 for (let i = 0; i < activitiesCount; i++) {
                     const q = generateWithRetry(
-                        () => generateSubtractQuestion(config),
+                        () => generateSumOrSubtractQuestion(config),
                         (c) => !seen.has(c.pregunta)
                     );
                     seen.add(q.pregunta);

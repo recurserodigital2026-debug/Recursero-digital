@@ -6,7 +6,7 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
   const operationInfo = operationConfig[operation];
   const { isLevelUnlocked } = useUserProgress();
 
-  const levelIcons = ['🎯', '⚡', '🚀', '🌟', '👑'];
+  const levelIcons = ['🎯', '⚡', '🚀', '🌟', '👑', '💎', '🏆'];
   const visibleLevels = levelConfig.slice(0, getLevelCountForOperation(operation));
 
   return (
@@ -93,7 +93,15 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
               </div>
               <div className="tip-item">
                 <div className="tip-title">Nivel 5</div>
-                <div className="tip-text">Sumas que dan resultados redondos: 100, 1.000 o 10.000</div>
+                <div className="tip-text">Sumas complementarias que dan 100 (40 + 60, 75 + 25)</div>
+              </div>
+              <div className="tip-item">
+                <div className="tip-title">Nivel 6</div>
+                <div className="tip-text">Sumas complementarias que dan 1.000 (400 + 600, 250 + 750)</div>
+              </div>
+              <div className="tip-item">
+                <div className="tip-title">Nivel 7</div>
+                <div className="tip-text">Sumas complementarias que dan 10.000 (7.000 + 3.000, 4.500 + 5.500)</div>
               </div>
             </>
           )}
