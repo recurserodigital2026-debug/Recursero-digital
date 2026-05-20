@@ -9,17 +9,25 @@ const pickMultiple = (min, max, step) => {
 
 export const generate = (config) => {
     const { step, min, max, operation } = config;
-    if (operation !== 'suma') {
-        // resta branch is added in US3 (T028); fail loudly if reached today.
-        throw new Error('wholeMultiples: operación "resta" se implementa en US3');
+    if (operation === 'suma') {
+        const a = pickMultiple(min, max, step);
+        const b = pickMultiple(min, max, step);
+        return {
+            pregunta: `${formatNumber(a)} + ${formatNumber(b)} =`,
+            respuesta: a + b,
+            meta: { operandA: a, operandB: b, operation: 'suma', kind: 'whole_multiples' },
+        };
     }
-    const a = pickMultiple(min, max, step);
-    const b = pickMultiple(min, max, step);
-    return {
-        pregunta: `${formatNumber(a)} + ${formatNumber(b)} =`,
-        respuesta: a + b,
-        meta: { operandA: a, operandB: b, operation: 'suma', kind: 'whole_multiples' },
-    };
+    if (operation === 'resta') {
+        const b = pickMultiple(min, max, step);
+        const a = pickMultiple(b, max, step);
+        return {
+            pregunta: `${formatNumber(a)} - ${formatNumber(b)} =`,
+            respuesta: a - b,
+            meta: { operandA: a, operandB: b, operation: 'resta', kind: 'whole_multiples' },
+        };
+    }
+    throw new Error(`wholeMultiples: operación inválida (${operation})`);
 };
 
 export const predicate = (calc, config) => {

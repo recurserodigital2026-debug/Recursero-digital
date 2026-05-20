@@ -2,15 +2,15 @@ import * as sumToTarget from './sumToTarget';
 import * as wholeMultiples from './wholeMultiples';
 import * as identicalNumbers from './identicalNumbers';
 import * as noCarryAddition from './noCarryAddition';
+import * as noBorrowSubtraction from './noBorrowSubtraction';
 import * as freeForm from './freeForm';
-// Subtraction generators (no_borrow_sub, resta branches of whole_multiples/freeForm)
-// are added in US3 (T027–T030).
 
 const GENERATORS = {
     sum_to_target: sumToTarget,
     whole_multiples: wholeMultiples,
     identical_numbers: identicalNumbers,
     no_carry_sum: noCarryAddition,
+    no_borrow_sub: noBorrowSubtraction,
     free_form: freeForm,
 };
 

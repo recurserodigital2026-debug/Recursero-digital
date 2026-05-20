@@ -149,6 +149,8 @@ export const levelConfig = [
 
 // Suma has extra levels (L4–L5) that live at backend levels 10–11 to avoid
 // disturbing the existing 1-9 mapping used by resta and multiplicación.
+// L5 rotates target per question across {100, 1.000, 10.000} (migration
+// 1779408000000), so there is no L6/L7 in the frontend.
 const SUMA_EXTRA_BACKEND_LEVELS = { 4: 10, 5: 11 };
 const OPERATION_OFFSET = { suma: 0, resta: 3, multiplicacion: 6 };
 
@@ -160,6 +162,33 @@ export const getBackendLevel = (operation, localLevel) => {
 };
 
 export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 5 : 3);
+
+// Per-operation, per-level pedagogical description. Single source of truth used
+// by LevelSelectScreen for both the level card and the tips block. Keep entries
+// aligned with getLevelCountForOperation and with the backend migrations under
+// specs/001-addition-subtraction-levels/.
+export const levelDescriptions = {
+    suma: {
+        1: 'Sumas de dos cifras sin acarreo (ninguna columna pasa de 9)',
+        2: 'Sumas con decenas exactas: 10, 20, 30… 90',
+        3: 'Sumas libres de dos cifras (se permite acarreo)',
+        4: 'Sumas dobles: el mismo número dos veces',
+        5: 'Sumas complementarias que dan 100, 1.000 o 10.000 (la respuesta varía pregunta a pregunta)',
+    },
+    resta: {
+        1: 'Restas de dos cifras sin pedir prestado (cada columna del minuendo es mayor o igual a la del sustraendo)',
+        2: 'Restas con decenas exactas: 20, 30, 40… 90, con resultado mayor o igual a cero',
+        3: 'Restas libres de dos cifras (se permite pedir prestado; el minuendo siempre es mayor o igual al sustraendo)',
+    },
+    multiplicacion: {
+        1: 'Tablas básicas. Recuerda las multiplicaciones fundamentales',
+        2: 'Por 10, 100, 1000. ¡Solo agrega ceros!',
+        3: 'Encuentra el factor. Divide el resultado por el número conocido',
+    },
+};
+
+export const getLevelDescription = (operation, levelNumber) =>
+    levelDescriptions[operation]?.[levelNumber] ?? '';
 
 
 export const getTotalActivities = (levelConfig) => {

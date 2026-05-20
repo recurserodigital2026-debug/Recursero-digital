@@ -12,19 +12,28 @@ export const generate = (config) => {
     if (![2, 3, 4].includes(digitCount)) {
         throw new Error(`freeForm: digitCount inválido (${digitCount})`);
     }
-    if (operation !== 'suma') {
-        // resta branch is added in US3 (T029); fail loudly if reached today.
-        throw new Error('freeForm: operación "resta" se implementa en US3');
-    }
     const lo = minForDigits(digitCount);
     const hi = maxForDigits(digitCount);
-    const a = pickInRange(lo, hi);
-    const b = pickInRange(lo, hi);
-    return {
-        pregunta: `${formatNumber(a)} + ${formatNumber(b)} =`,
-        respuesta: a + b,
-        meta: { operandA: a, operandB: b, operation: 'suma', kind: 'free_form' },
-    };
+    if (operation === 'suma') {
+        const a = pickInRange(lo, hi);
+        const b = pickInRange(lo, hi);
+        return {
+            pregunta: `${formatNumber(a)} + ${formatNumber(b)} =`,
+            respuesta: a + b,
+            meta: { operandA: a, operandB: b, operation: 'suma', kind: 'free_form' },
+        };
+    }
+    if (operation === 'resta') {
+        let a = pickInRange(lo, hi);
+        let b = pickInRange(lo, hi);
+        if (a < b) [a, b] = [b, a];
+        return {
+            pregunta: `${formatNumber(a)} - ${formatNumber(b)} =`,
+            respuesta: a - b,
+            meta: { operandA: a, operandB: b, operation: 'resta', kind: 'free_form' },
+        };
+    }
+    throw new Error(`freeForm: operación inválida (${operation})`);
 };
 
 export const predicate = (calc, config) => {
