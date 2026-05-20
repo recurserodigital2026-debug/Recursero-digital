@@ -22,3 +22,4 @@ package-lock.json
 /CLAUDE.md
 /LICENSE
 /.github/workflows/backend-tests.yml
+specs/001-addition-subtraction-levels/manual-verification-suma.md

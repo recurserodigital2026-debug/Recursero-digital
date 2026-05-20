@@ -1,5 +1,5 @@
 import React from 'react';
-import { levelConfig, operationConfig, getTotalActivities, getLevelCountForOperation } from './utils';
+import { levelConfig, operationConfig, getLevelCountForOperation } from './utils';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 
 const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
@@ -33,7 +33,6 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
             {visibleLevels.map((level, index) => {
               const levelNumber = index + 1;
               const levelKey = `nivel${levelNumber}`;
-              const totalQuestions = getTotalActivities(operation, levelKey);
               const gameId = `calculos-${operation}`;
               const isUnlocked = isLevelUnlocked(gameId, levelNumber);
               const isLocked = !isUnlocked;
@@ -77,15 +76,15 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
             <>
               <div className="tip-item">
                 <div className="tip-title">Nivel 1</div>
-                <div className="tip-text">Operaciones básicas con números pequeños</div>
+                <div className="tip-text">Sumas de dos cifras sin acarreo (ninguna columna pasa de 9)</div>
               </div>
               <div className="tip-item">
                 <div className="tip-title">Nivel 2</div>
-                <div className="tip-text">Números más grandes. Usa estrategias de suma mental</div>
+                <div className="tip-text">Sumas con decenas exactas: 10, 20, 30… 90</div>
               </div>
               <div className="tip-item">
                 <div className="tip-title">Nivel 3</div>
-                <div className="tip-text">Números de miles. ¡El desafío máximo!</div>
+                <div className="tip-text">Sumas libres de dos cifras (se permite acarreo)</div>
               </div>
               <div className="tip-item">
                 <div className="tip-title">Nivel 4</div>
@@ -93,15 +92,7 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
               </div>
               <div className="tip-item">
                 <div className="tip-title">Nivel 5</div>
-                <div className="tip-text">Sumas complementarias que dan 100 (40 + 60, 75 + 25)</div>
-              </div>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 6</div>
-                <div className="tip-text">Sumas complementarias que dan 1.000 (400 + 600, 250 + 750)</div>
-              </div>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 7</div>
-                <div className="tip-text">Sumas complementarias que dan 10.000 (7.000 + 3.000, 4.500 + 5.500)</div>
+                <div className="tip-text">Sumas complementarias que dan 100, 1.000 o 10.000 (la respuesta varía pregunta a pregunta)</div>
               </div>
             </>
           )}

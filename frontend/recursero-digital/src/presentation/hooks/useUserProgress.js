@@ -101,10 +101,6 @@ const mergeProgress = (baseProgress, backendProgress) => {
           return { operation: 'calculos-multiplicacion', localLevel: backendLevel - 6 };
         } else if (backendLevel === 10) {
           return { operation: 'calculos-suma', localLevel: 4 };
-        } else if (backendLevel === 12) {
-          return { operation: 'calculos-suma', localLevel: 6 };
-        } else if (backendLevel === 13) {
-          return { operation: 'calculos-suma', localLevel: 7 };
         } else if (backendLevel === 11) {
           return { operation: 'calculos-suma', localLevel: 5 };
         }

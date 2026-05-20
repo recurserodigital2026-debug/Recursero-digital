@@ -79,7 +79,7 @@ const CongratsModal = ({
             {isCompleted ? '¡Buen trabajo!' : '¿Quieres intentar de nuevo?'}
           </p>
           <p className="next-challenge">
-            {isCompleted && !isLastLevel(level) ? '¿Estás listo para el siguiente nivel?' : 'Selecciona acá'}
+            {isCompleted && !isLastLevel(level, operation) ? '¿Estás listo para el siguiente nivel?' : 'Selecciona acá'}
           </p>
         </div>
 

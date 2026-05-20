@@ -140,30 +140,16 @@ export const levelConfig = [
     },
     {
         name: 'Nivel 5',
-        description: 'Sumas que dan 100',
+        description: 'Sumas que dan 100, 1.000 o 10.000',
         color: 'from-pink-400 to-rose-500',
         textColor: 'text-rose-600',
         number: 5
-    },
-    {
-        name: 'Nivel 6',
-        description: 'Sumas que dan 1.000',
-        color: 'from-pink-400 to-rose-500',
-        textColor: 'text-rose-600',
-        number: 6
-    },
-    {
-        name: 'Nivel 7',
-        description: 'Sumas que dan 10.000',
-        color: 'from-pink-400 to-rose-500',
-        textColor: 'text-rose-600',
-        number: 7
     }
 ];
 
-// Suma has extra levels (L4–L7) that live at backend levels 10–13 to avoid
+// Suma has extra levels (L4–L5) that live at backend levels 10–11 to avoid
 // disturbing the existing 1-9 mapping used by resta and multiplicación.
-const SUMA_EXTRA_BACKEND_LEVELS = { 4: 10, 5: 11, 6: 12, 7: 13 };
+const SUMA_EXTRA_BACKEND_LEVELS = { 4: 10, 5: 11 };
 const OPERATION_OFFSET = { suma: 0, resta: 3, multiplicacion: 6 };
 
 export const getBackendLevel = (operation, localLevel) => {
@@ -173,7 +159,7 @@ export const getBackendLevel = (operation, localLevel) => {
     return localLevel + OPERATION_OFFSET[operation];
 };
 
-export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 7 : 3);
+export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 5 : 3);
 
 
 export const getTotalActivities = (levelConfig) => {
