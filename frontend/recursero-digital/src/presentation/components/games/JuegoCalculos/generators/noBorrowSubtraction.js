@@ -1,6 +1,7 @@
 import { formatNumber } from '../utils';
 import { digitsOf, noBorrowOnSub, hasExactDigits } from './predicates';
 
+// Position-loop is digitCount-generic: valid for digitCount ∈ {2, 3, 4}.
 const pickPair = (digitCount) => {
     let a = 0;
     let b = 0;
@@ -12,12 +13,7 @@ const pickPair = (digitCount) => {
         const daMin = isLeading ? 1 : 0;
         const da = daMin + Math.floor(Math.random() * (9 - daMin + 1));
         const dbMin = isLeading ? 1 : 0;
-        if (da < dbMin) {
-            // Impossible at leading position when da === 0 (already prevented) — guard
-            // kept for clarity; just retry this position.
-            i -= 1;
-            continue;
-        }
+        // da >= daMin >= dbMin by construction, so [dbMin, da] is never empty.
         const db = dbMin + Math.floor(Math.random() * (da - dbMin + 1));
         a += da * 10 ** i;
         b += db * 10 ** i;

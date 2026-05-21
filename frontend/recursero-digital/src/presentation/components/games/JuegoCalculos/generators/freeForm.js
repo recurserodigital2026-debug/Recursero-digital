@@ -1,6 +1,7 @@
 import { formatNumber } from '../utils';
 import { hasExactDigits } from './predicates';
 
+// Range helpers are digitCount-generic: valid for digitCount ∈ {2, 3, 4}.
 const minForDigits = (d) => 10 ** (d - 1);
 const maxForDigits = (d) => 10 ** d - 1;
 

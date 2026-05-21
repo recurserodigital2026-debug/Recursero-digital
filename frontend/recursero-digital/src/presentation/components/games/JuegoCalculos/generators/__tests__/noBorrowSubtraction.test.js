@@ -22,4 +22,23 @@ describe('noBorrowSubtraction — resta digitCount=2', () => {
     });
 });
 
-// digitCount ∈ {3, 4} cases are added by US4.
+describe.each([{ digitCount: 3 }, { digitCount: 4 }])(
+    'noBorrowSubtraction — digitCount=$digitCount',
+    ({ digitCount }) => {
+        const config = { kind: 'no_borrow_sub', digitCount, operation: 'resta' };
+
+        it(`generates ${SAMPLE_SIZE} ${digitCount}-digit no-borrow subtractions`, () => {
+            for (let i = 0; i < SAMPLE_SIZE; i += 1) {
+                const calc = generate(config);
+                const { operandA: a, operandB: b, operation } = calc.meta;
+                expect(operation).toBe('resta');
+                expect(hasExactDigits(a, digitCount)).toBe(true);
+                expect(hasExactDigits(b, digitCount)).toBe(true);
+                expect(noBorrowOnSub(a, b)).toBe(true);
+                expect(a - b).toBeGreaterThanOrEqual(0);
+                expect(calc.respuesta).toBe(a - b);
+                expect(predicate(calc, config)).toBe(true);
+            }
+        });
+    }
+);

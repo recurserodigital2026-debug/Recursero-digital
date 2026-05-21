@@ -1,6 +1,7 @@
 import { formatNumber } from '../utils';
 import { digitsOf, noCarryOnSum, hasExactDigits } from './predicates';
 
+// Position-loop is digitCount-generic: valid for digitCount ∈ {2, 3, 4}.
 const pickPair = (digitCount) => {
     let a = 0;
     let b = 0;

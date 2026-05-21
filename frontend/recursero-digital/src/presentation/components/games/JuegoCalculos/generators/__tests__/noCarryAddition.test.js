@@ -21,4 +21,22 @@ describe('noCarryAddition — digitCount=2', () => {
     });
 });
 
-// digitCount ∈ {3, 4} cases are added by US4 (T033).
+describe.each([{ digitCount: 3 }, { digitCount: 4 }])(
+    'noCarryAddition — digitCount=$digitCount',
+    ({ digitCount }) => {
+        const config = { kind: 'no_carry_sum', digitCount, operation: 'suma' };
+
+        it(`generates ${SAMPLE_SIZE} ${digitCount}-digit sums with no carry`, () => {
+            for (let i = 0; i < SAMPLE_SIZE; i += 1) {
+                const calc = generate(config);
+                const { operandA: a, operandB: b, operation } = calc.meta;
+                expect(operation).toBe('suma');
+                expect(hasExactDigits(a, digitCount)).toBe(true);
+                expect(hasExactDigits(b, digitCount)).toBe(true);
+                expect(noCarryOnSum(a, b)).toBe(true);
+                expect(calc.respuesta).toBe(a + b);
+                expect(predicate(calc, config)).toBe(true);
+            }
+        });
+    }
+);

@@ -38,4 +38,29 @@ describe('freeForm — resta digitCount=2', () => {
     });
 });
 
-// digitCount ∈ {3, 4} cases for both operations are added by US4.
+describe.each([
+    { digitCount: 3, operation: 'suma' },
+    { digitCount: 3, operation: 'resta' },
+    { digitCount: 4, operation: 'suma' },
+    { digitCount: 4, operation: 'resta' },
+])('freeForm — $operation digitCount=$digitCount', ({ digitCount, operation }) => {
+    const config = { kind: 'free_form', digitCount, operation };
+
+    it(`generates ${SAMPLE_SIZE} ${digitCount}-digit ${operation} samples`, () => {
+        for (let i = 0; i < SAMPLE_SIZE; i += 1) {
+            const calc = generate(config);
+            const { operandA: a, operandB: b, operation: op } = calc.meta;
+            expect(op).toBe(operation);
+            expect(hasExactDigits(a, digitCount)).toBe(true);
+            expect(hasExactDigits(b, digitCount)).toBe(true);
+            if (operation === 'suma') {
+                expect(calc.respuesta).toBe(a + b);
+            } else {
+                expect(a).toBeGreaterThanOrEqual(b);
+                expect(calc.respuesta).toBe(a - b);
+                expect(calc.respuesta).toBeGreaterThanOrEqual(0);
+            }
+            expect(predicate(calc, config)).toBe(true);
+        }
+    });
+});

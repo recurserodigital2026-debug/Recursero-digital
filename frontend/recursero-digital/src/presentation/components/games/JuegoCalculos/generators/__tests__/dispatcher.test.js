@@ -32,14 +32,30 @@ describe('dispatcher — unknown kind', () => {
 });
 
 describe('dispatcher — predicate gate (T020a)', () => {
-    it('throws when a broken generator never satisfies its predicate', async () => {
-        // Inject a deliberately broken generator by re-mocking module resolution.
-        // We can't easily inject from outside, so we exercise the gate indirectly:
-        // a deeply broken target value triggers the "throws on unsupported target" path
-        // inside sumToTarget.generate. That isolates the gate from the generator.
+    it('throws when generate produces a config that cannot satisfy its predicate', () => {
+        // sumToTarget.generate(target: 42) throws because 42 ∉ VALID_TARGETS.
+        // This exercises the dispatcher's generator-error propagation path.
         expect(() =>
             dispatch({ kind: 'sum_to_target', target: 42, operation: 'suma' })
         ).toThrow();
+    });
+
+    it('throws "No se pudo generar" after exhausting retries on a broken predicate', async () => {
+        vi.resetModules();
+        vi.doMock('../freeForm', () => ({
+            generate: () => ({
+                pregunta: 'broken',
+                respuesta: 0,
+                meta: { operandA: 0, operandB: 0, operation: 'suma', kind: 'free_form' },
+            }),
+            predicate: () => false,
+        }));
+        const { dispatch: dispatchMocked } = await import('../index');
+        expect(() =>
+            dispatchMocked({ kind: 'free_form', digitCount: 2, operation: 'suma' })
+        ).toThrow(/No se pudo generar/);
+        vi.doUnmock('../freeForm');
+        vi.resetModules();
     });
 });
 
