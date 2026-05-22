@@ -5,6 +5,7 @@
 /backend/.idea
 /backend/.vscode/
 /backend/coverage
+/frontend/recursero-digital/coverage
 /frontend/recursero-digital/dev-dist
 # Ignorar package-lock.json
 package-lock.json
@@ -14,3 +15,12 @@ package-lock.json
 .idea
 *.swp
 *.swo
+
+# Local backup folder (not for commit)
+/_backup/
+
+# Local-only files (not tracked in main)
+/CLAUDE.md
+/LICENSE
+/.github/workflows/backend-tests.yml
+specs/001-addition-subtraction-levels/manual-verification-suma.md

@@ -332,6 +332,92 @@ describe('UpdateGameLevelUseCase', () => {
             expect(result.level.config.min).toBe(10);
         });
 
+        it('should accept every valid config.kind', async () => {
+            const config: GameLevelConfig = { min: 1, max: 100 };
+            const level = new GameLevel('level-1', 'game-calculos', 1, 'Test', 'Desc', 'Fácil', 5, config);
+            repository.addLevel(level);
+
+            const validConfigs: GameLevelConfig[] = [
+                { kind: 'sum_to_target', target: 100, operation: 'suma' },
+                { kind: 'sum_to_target', target: 1000, operation: 'suma' },
+                { kind: 'sum_to_target', target: 10000, operation: 'suma' },
+                { kind: 'whole_multiples', step: 10, min: 10, max: 90, operation: 'suma' },
+                { kind: 'whole_multiples', step: 100, min: 100, max: 900, operation: 'resta' },
+                { kind: 'identical_numbers', min: 10, max: 99, operation: 'suma' },
+                { kind: 'no_carry_sum', digitCount: 2, operation: 'suma' },
+                { kind: 'no_carry_sum', digitCount: 4, operation: 'suma' },
+                { kind: 'no_borrow_sub', digitCount: 3, operation: 'resta' },
+                { kind: 'free_form', digitCount: 2, operation: 'suma' },
+                { kind: 'free_form', digitCount: 4, operation: 'resta' },
+            ];
+
+            for (const cfg of validConfigs) {
+                const result = await useCase.execute({ id: 'level-1', config: cfg });
+                expect(result.level.config.kind).toBe((cfg as any).kind);
+            }
+        });
+
+        it('should reject an unknown config.kind', async () => {
+            const config: GameLevelConfig = { min: 1, max: 100 };
+            const level = new GameLevel('level-1', 'game-calculos', 1, 'Test', 'Desc', 'Fácil', 5, config);
+            repository.addLevel(level);
+
+            await expect(
+                useCase.execute({ id: 'level-1', config: { kind: 'magic_kind' } as any })
+            ).rejects.toThrow('config.kind inválido');
+        });
+
+        it('should reject sum_to_target with invalid target', async () => {
+            const config: GameLevelConfig = { min: 1, max: 100 };
+            const level = new GameLevel('level-1', 'game-calculos', 1, 'Test', 'Desc', 'Fácil', 5, config);
+            repository.addLevel(level);
+
+            await expect(
+                useCase.execute({
+                    id: 'level-1',
+                    config: { kind: 'sum_to_target', target: 250, operation: 'suma' } as any,
+                })
+            ).rejects.toThrow('config.target debe ser 100, 1000 o 10000');
+        });
+
+        it('should reject no_carry_sum without digitCount', async () => {
+            const config: GameLevelConfig = { min: 1, max: 100 };
+            const level = new GameLevel('level-1', 'game-calculos', 1, 'Test', 'Desc', 'Fácil', 5, config);
+            repository.addLevel(level);
+
+            await expect(
+                useCase.execute({
+                    id: 'level-1',
+                    config: { kind: 'no_carry_sum', operation: 'suma' } as any,
+                })
+            ).rejects.toThrow('config.digitCount debe ser 2, 3 o 4');
+        });
+
+        it('should reject whole_multiples with wrong operation', async () => {
+            const config: GameLevelConfig = { min: 1, max: 100 };
+            const level = new GameLevel('level-1', 'game-calculos', 1, 'Test', 'Desc', 'Fácil', 5, config);
+            repository.addLevel(level);
+
+            await expect(
+                useCase.execute({
+                    id: 'level-1',
+                    config: { kind: 'whole_multiples', step: 10, min: 10, max: 90, operation: 'multiplicacion' } as any,
+                })
+            ).rejects.toThrow('config.operation debe ser "suma" o "resta" para whole_multiples');
+        });
+
+        it('should allow updating a legacy config (no kind) untouched', async () => {
+            const config: GameLevelConfig = { min: 1, max: 100 };
+            const level = new GameLevel('level-1', 'game-test', 1, 'Test', 'Desc', 'Fácil', 5, config);
+            repository.addLevel(level);
+
+            const result = await useCase.execute({
+                id: 'level-1',
+                config: { min: 5, max: 50 },
+            });
+            expect(result.level.config.min).toBe(5);
+        });
+
         it('should deactivate a level', async () => {
             const config: GameLevelConfig = { min: 1, max: 100 };
             const level = new GameLevel('level-1', 'game-test', 1, 'Test', 'Desc', 'Fácil', 5, config, true);

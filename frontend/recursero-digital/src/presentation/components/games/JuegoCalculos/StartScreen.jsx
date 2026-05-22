@@ -1,5 +1,5 @@
 import React from 'react';
-import { operationConfig } from './utils';
+import { operationConfig, getLevelCountForOperation } from './utils';
 
 const StartScreen = ({ onStartGame, onBackToGames }) => {
   return (
@@ -40,7 +40,7 @@ const StartScreen = ({ onStartGame, onBackToGames }) => {
                   {key === 'multiplicacion' && 'Completa resultados y factores'}
                 </div>
                 <div className="operation-levels">
-                  3 niveles de dificultad
+                  {getLevelCountForOperation(key)} niveles de dificultad
                 </div>
               </button>
             ))}

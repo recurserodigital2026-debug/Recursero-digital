@@ -99,6 +99,10 @@ const mergeProgress = (baseProgress, backendProgress) => {
           return { operation: 'calculos-resta', localLevel: backendLevel - 3 };
         } else if (backendLevel >= 7 && backendLevel <= 9) {
           return { operation: 'calculos-multiplicacion', localLevel: backendLevel - 6 };
+        } else if (backendLevel === 10) {
+          return { operation: 'calculos-suma', localLevel: 4 };
+        } else if (backendLevel === 11) {
+          return { operation: 'calculos-suma', localLevel: 5 };
         }
         return null;
       };
@@ -169,7 +173,12 @@ export const useUserProgress = () => {
       const response = await apiRequest(`/statistics/student/${studentId}`);
 
       if (response.ok && response.data && Array.isArray(response.data.gameProgress)) {
-        const merged = mergeProgress(DEFAULT_PROGRESS, response.data.gameProgress);
+        const backendMerged = mergeProgress(DEFAULT_PROGRESS, response.data.gameProgress);
+        const local = loadLocalProgress();
+        const merged = Object.keys({ ...backendMerged, ...local }).reduce((acc, key) => {
+          acc[key] = Math.max(backendMerged[key] || 1, local[key] || 1);
+          return acc;
+        }, {});
         setUnlockedLevels(merged);
         localStorage.setItem(PROGRESS_KEY, JSON.stringify(merged));
         

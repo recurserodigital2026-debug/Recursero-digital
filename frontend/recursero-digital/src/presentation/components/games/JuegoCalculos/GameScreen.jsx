@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  getQuestionsForLevel, 
-  validateAnswer, 
-  getOperationName, 
+import {
+  getQuestionsForLevel,
+  validateAnswer,
+  getOperationName,
   getLevelName,
   getRandomEncouragement,
   getRandomMotivation,
-  getLevelNumber
+  getLevelNumber,
+  getBackendLevel
 } from './utils';
 
 const GameScreen = ({ 
@@ -37,15 +38,8 @@ const GameScreen = ({
   
   const backendLevelConfig = useMemo(() => {
     if (!allLevels || allLevels.length === 0) return null;
-    
     const levelNumber = parseInt(level.replace('nivel', ''));
-    const operationOffset = {
-      suma: 0,
-      resta: 3,
-      multiplicacion: 6
-    };
-    
-    const backendLevelNumber = levelNumber + operationOffset[operation];
+    const backendLevelNumber = getBackendLevel(operation, levelNumber);
     return allLevels.find(l => l.level === backendLevelNumber);
   }, [allLevels, operation, level]);
   

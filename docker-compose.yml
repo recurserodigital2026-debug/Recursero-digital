@@ -13,6 +13,7 @@ services:
       - DB_NAME=recurseroDigitalDB
       - DB_USER=admindb
       - DB_PASSWORD=recursero2025
+      - DATABASE_URL=postgresql://admindb:recursero2025@postgres:5432/recurseroDigitalDB
       - JWT_SECRET=tu-jwt-secret-super-seguro-local
       - GEMINI_API_KEY=AIzaSyCMhaGNQTgWtSc1UT9UchadTwhnoDLILno
       - GEMINI_MODEL=gemini-2.5-flash

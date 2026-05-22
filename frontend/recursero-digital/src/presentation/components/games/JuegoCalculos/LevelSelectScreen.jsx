@@ -1,12 +1,13 @@
 import React from 'react';
-import { levelConfig, operationConfig, getTotalActivities } from './utils';
+import { levelConfig, operationConfig, getLevelCountForOperation, getLevelDescription, levelDescriptions } from './utils';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 
 const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
   const operationInfo = operationConfig[operation];
   const { isLevelUnlocked } = useUserProgress();
 
-  const levelIcons = ['🎯', '⚡', '🚀'];
+  const levelIcons = ['🎯', '⚡', '🚀', '🌟', '👑', '💎', '🏆'];
+  const visibleLevels = levelConfig.slice(0, getLevelCountForOperation(operation));
 
   return (
     <div className="game-container">
@@ -29,10 +30,9 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
           </h1>
 
           <div className="level-grid">
-            {levelConfig.map((level, index) => {
+            {visibleLevels.map((level, index) => {
               const levelNumber = index + 1;
               const levelKey = `nivel${levelNumber}`;
-              const totalQuestions = getTotalActivities(operation, levelKey);
               const gameId = `calculos-${operation}`;
               const isUnlocked = isLevelUnlocked(gameId, levelNumber);
               const isLocked = !isUnlocked;
@@ -51,7 +51,7 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
                   </div>
                   <div className="level-info">
                     <div className="level-range">
-                      {level.description}
+                      {getLevelDescription(operation, levelNumber) || level.description}
                     </div>
                     <div className="level-points">
                       {50 * (index + 1)} puntos base
@@ -72,56 +72,12 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
         <div className="level-tips">
           <h3>💡 Consejos para {operationInfo.name}</h3>
           <div className="tips-grid">
-          {operation === 'suma' && (
-            <>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 1</div>
-                <div className="tip-text">Operaciones básicas con números pequeños</div>
+            {Object.entries(levelDescriptions[operation] ?? {}).map(([n, text]) => (
+              <div key={n} className="tip-item">
+                <div className="tip-title">Nivel {n}</div>
+                <div className="tip-text">{text}</div>
               </div>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 2</div>
-                <div className="tip-text">Números más grandes. Usa estrategias de suma mental</div>
-              </div>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 3</div>
-                <div className="tip-text">Números de miles. ¡El desafío máximo!</div>
-              </div>
-            </>
-          )}
-          
-          {operation === 'resta' && (
-            <>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 1</div>
-                <div className="tip-text">Visualiza los números y restalos!</div>
-              </div>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 2</div>
-                <div className="tip-text">Centenas</div>
-              </div>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 3</div>
-                <div className="tip-text">Miles</div>
-              </div>
-            </>
-          )}
-          
-          {operation === 'multiplicacion' && (
-            <>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 1</div>
-                <div className="tip-text">Tablas básicas. Recuerda las multiplicaciones fundamentales</div>
-              </div>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 2</div>
-                <div className="tip-text">Por 10, 100, 1000. ¡Solo agrega ceros!</div>
-              </div>
-              <div className="tip-item">
-                <div className="tip-title">Nivel 3</div>
-                <div className="tip-text">Encuentra el factor. Divide el resultado por el número conocido</div>
-              </div>
-            </>
-          )}
+            ))}
           </div>
         </div>
       </div>

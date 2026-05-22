@@ -25,7 +25,7 @@ export default function HomeAlumno() {
         <h2>¡ Aprender matemáticas nunca fue tan divertido !</h2>
         <p>
           Disfruten de estos juegos, son para que aprendan habilidades matemáticas mientras se divierten. Cada juego
-          tiene 3 niveles y 5 actividades, numeros impresionantes y acumula puntos.
+          tiene niveles y actividades, numeros impresionantes y acumula puntos.
         </p>
         <h3>
           ¡ Comienza tu aventura en las matemáticas ¡ Hoy mismo !

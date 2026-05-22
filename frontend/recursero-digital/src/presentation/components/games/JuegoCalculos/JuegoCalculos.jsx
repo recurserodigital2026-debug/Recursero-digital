@@ -11,6 +11,7 @@ import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
+import { getBackendLevel, getLevelCountForOperation } from './utils';
 
 const JuegoCalculos = () => {
   const navigate = useNavigate();
@@ -55,20 +56,12 @@ const JuegoCalculos = () => {
 
   const handleActivityComplete = useCallback((activityIndex, attempts, correctAnswers, totalQuestions, isLastActivity = false) => {
     const levelNumber = parseInt(selectedLevel.replace('nivel', ''));
-
-    const operationOffset = {
-      suma: 0,
-      resta: 3,
-      multiplicacion: 6
-    };
-
-    const backendLevel = levelNumber + operationOffset[selectedOperation];
+    const backendLevel = getBackendLevel(selectedOperation, levelNumber);
     const backendLevelIndex = backendLevel - 1;
-    
+
     let maxUnlockedLevel = backendLevel;
-    if (isLastActivity && levelNumber < 3) {
-      const nextLevelNumber = levelNumber + 1;
-      maxUnlockedLevel = nextLevelNumber + operationOffset[selectedOperation];
+    if (isLastActivity && levelNumber < getLevelCountForOperation(selectedOperation)) {
+      maxUnlockedLevel = getBackendLevel(selectedOperation, levelNumber + 1);
     }
     
     completeActivity(
@@ -107,8 +100,8 @@ const JuegoCalculos = () => {
     });
 
     const levelNumber = parseInt(selectedLevel.replace('nivel', ''));
-    
-    if (levelNumber < 3) {
+
+    if (isWin && levelNumber < getLevelCountForOperation(selectedOperation)) {
       const gameId = `calculos-${selectedOperation}`;
       unlockLevel(gameId, levelNumber + 1);
     }

@@ -17,8 +17,8 @@ const CongratsModal = ({
   if (!isVisible) return null;
 
   const isCompleted = isWin;
-  const canPlayNextLevel = isCompleted && !isLastLevel(level);
-  const nextLevel = getNextLevel(level);
+  const canPlayNextLevel = isCompleted && !isLastLevel(level, operation);
+  const nextLevel = getNextLevel(level, operation);
   const performancePercentage = Math.round((correctAnswers / totalQuestions) * 100);
 
   const getPerformanceMessage = () => {
@@ -79,7 +79,7 @@ const CongratsModal = ({
             {isCompleted ? '¡Buen trabajo!' : '¿Quieres intentar de nuevo?'}
           </p>
           <p className="next-challenge">
-            {isCompleted && !isLastLevel(level) ? '¿Estás listo para el siguiente nivel?' : 'Selecciona acá'}
+            {isCompleted && !isLastLevel(level, operation) ? '¿Estás listo para el siguiente nivel?' : 'Selecciona acá'}
           </p>
         </div>
 

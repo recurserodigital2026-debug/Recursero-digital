@@ -1,108 +1,32 @@
 import { generateWithRetry } from "../../../../utils/generateWithRetry";
+import { dispatch as dispatchCalculation } from "./generators";
 
 export const formatNumber = (num) => {
     return num.toLocaleString('es-ES');
 };
 
-const generateSumQuestion = (config) => {
-    const { min = 10, max = 50, minResult = 20, maxResult = 100 } = config;
-    
-    const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
-    const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
-    
-    const respuesta = num1 + num2;
-    
-    if (respuesta < minResult || respuesta > maxResult) {
-        const targetResult = Math.floor(Math.random() * (maxResult - minResult + 1)) + minResult;
-        const adjustedNum1 = Math.floor(Math.random() * (targetResult - min + 1)) + min;
-        const adjustedNum2 = targetResult - adjustedNum1;
-        
-        if (adjustedNum2 >= min && adjustedNum2 <= max) {
-            return {
-                pregunta: `${formatNumber(adjustedNum1)} + ${formatNumber(adjustedNum2)} =`,
-                respuesta: targetResult
-            };
-        }
-    }
-    
-    return {
-        pregunta: `${formatNumber(num1)} + ${formatNumber(num2)} =`,
-        respuesta: respuesta
-    };
-};
+// Suma and resta calculations now flow through generators/. Each level's `config.kind`
+// selects the matching generator (see specs/001-addition-subtraction-levels/data-model.md).
+// The legacy generateRoundOperandsSum / generateDoublesSum / generateSumToRoundResult /
+// generateSubtractQuestion functions were removed in this refactor; their replacements
+// live in generators/sumToTarget.js, identicalNumbers.js, etc.
 
-const generateSubtractQuestion = (config) => {
-    const { min = 20, max = 100, minResult = 10, maxResult = 50 } = config;
-    
-    // Para resta, el minuendo debe ser mayor que el sustraendo
-    // Asegurar que el resultado esté en el rango esperado y que ambos números sean positivos
-    
-    // Primero, asegurar que el targetResult pueda caber en el rango
-    // El targetResult máximo posible es max - min (diferencia entre max y min)
-    const maxPossibleResult = max - min;
-    const adjustedMaxResult = Math.min(maxResult, maxPossibleResult);
-    const adjustedMinResult = Math.min(minResult, adjustedMaxResult);
-    
-    // Generar el resultado objetivo dentro del rango ajustado
-    const targetResult = Math.floor(Math.random() * (adjustedMaxResult - adjustedMinResult + 1)) + adjustedMinResult;
-    
-    // Calcular el rango válido para el sustraendo
-    // El minuendo = sustraendo + targetResult debe estar entre min y max
-    // Por lo tanto: min <= sustraendo + targetResult <= max
-    // Esto implica: sustraendo <= (max - targetResult) y sustraendo >= min
-    const maxSustraendo = max - targetResult;
-    const minSustraendo = min;
-    
-    // Validar que haya un rango válido
-    if (maxSustraendo < minSustraendo) {
-        // Si no hay espacio, usar el rango completo y ajustar el resultado
-        const sustraendo = Math.floor(Math.random() * (max - min + 1)) + min;
-        const minuendo = Math.min(max, sustraendo + Math.min(targetResult, max - sustraendo));
-        const finalResult = minuendo - sustraendo;
-        
-        return {
-            pregunta: `${formatNumber(minuendo)} − ${formatNumber(sustraendo)} =`,
-            respuesta: finalResult
-        };
+const KNOWN_KINDS = new Set([
+    'sum_to_target',
+    'whole_multiples',
+    'identical_numbers',
+    'no_carry_sum',
+    'no_borrow_sub',
+    'free_form',
+]);
+
+const generateSumOrSubtractQuestion = (config) => {
+    if (!config || !KNOWN_KINDS.has(config.kind)) {
+        throw new Error(
+            `Configuración de nivel inválida: kind='${config?.kind}'. Esperado uno de ${[...KNOWN_KINDS].join(', ')}.`
+        );
     }
-    
-    // Generar sustraendo dentro del rango válido
-    const sustraendo = Math.floor(Math.random() * (maxSustraendo - minSustraendo + 1)) + minSustraendo;
-    const minuendo = sustraendo + targetResult;
-    
-    // Validación final: asegurar que ambos números estén en el rango y sean positivos
-    if (minuendo > max || minuendo < min || sustraendo < min || sustraendo > max || sustraendo <= 0 || minuendo <= 0) {
-        // Ajustar usando límites seguros
-        const safeMinuendo = Math.min(max, Math.max(min, minuendo));
-        const safeSustraendo = Math.max(min, Math.min(max, safeMinuendo - targetResult));
-        
-        // Asegurar que el sustraendo sea positivo y menor que el minuendo
-        if (safeSustraendo > 0 && safeSustraendo < safeMinuendo) {
-            const finalResult = safeMinuendo - safeSustraendo;
-            return {
-                pregunta: `${formatNumber(safeMinuendo)} − ${formatNumber(safeSustraendo)} =`,
-                respuesta: finalResult
-            };
-        }
-    }
-    
-    // Asegurar que ambos números sean positivos
-    if (sustraendo <= 0 || minuendo <= 0 || sustraendo >= minuendo) {
-        // Regenerar con valores seguros
-        const safeSustraendo = Math.max(1, Math.floor(Math.random() * (max - min + 1)) + min);
-        const safeMinuendo = Math.min(max, safeSustraendo + Math.min(targetResult, max - safeSustraendo));
-        const safeResult = safeMinuendo - safeSustraendo;
-        
-        return {
-            pregunta: `${formatNumber(safeMinuendo)} − ${formatNumber(safeSustraendo)} =`,
-            respuesta: safeResult
-        };
-    }
-    
-    return {
-        pregunta: `${formatNumber(minuendo)} − ${formatNumber(sustraendo)} =`,
-        respuesta: targetResult
-    };
+    return dispatchCalculation(config);
 };
 
 const generateMultiplyQuestion = (config, withUnknown = false) => {
@@ -194,7 +118,7 @@ export const levelConfig = [
         number: 1
     },
     {
-        name: 'Nivel 2', 
+        name: 'Nivel 2',
         description: '¡Intermedio! Un poco más difícil',
         color: 'from-blue-400 to-indigo-500',
         textColor: 'text-blue-600',
@@ -202,12 +126,69 @@ export const levelConfig = [
     },
     {
         name: 'Nivel 3',
-        description: '¡Experto! El desafío máximo', 
+        description: '¡Experto! El desafío máximo',
         color: 'from-purple-400 to-pink-500',
         textColor: 'text-purple-600',
         number: 3
+    },
+    {
+        name: 'Nivel 4',
+        description: 'Sumas dobles: números iguales',
+        color: 'from-yellow-400 to-orange-500',
+        textColor: 'text-orange-600',
+        number: 4
+    },
+    {
+        name: 'Nivel 5',
+        description: 'Sumas que dan 100, 1.000 o 10.000',
+        color: 'from-pink-400 to-rose-500',
+        textColor: 'text-rose-600',
+        number: 5
     }
 ];
+
+// Suma has extra levels (L4–L5) that live at backend levels 10–11 to avoid
+// disturbing the existing 1-9 mapping used by resta and multiplicación.
+// L5 rotates target per question across {100, 1.000, 10.000} (migration
+// 1779408000000), so there is no L6/L7 in the frontend.
+const SUMA_EXTRA_BACKEND_LEVELS = { 4: 10, 5: 11 };
+const OPERATION_OFFSET = { suma: 0, resta: 3, multiplicacion: 6 };
+
+export const getBackendLevel = (operation, localLevel) => {
+    if (operation === 'suma' && SUMA_EXTRA_BACKEND_LEVELS[localLevel]) {
+        return SUMA_EXTRA_BACKEND_LEVELS[localLevel];
+    }
+    return localLevel + OPERATION_OFFSET[operation];
+};
+
+export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 5 : 3);
+
+// Per-operation, per-level pedagogical description. Single source of truth used
+// by LevelSelectScreen for both the level card and the tips block. Keep entries
+// aligned with getLevelCountForOperation and with the backend migrations under
+// specs/001-addition-subtraction-levels/.
+export const levelDescriptions = {
+    suma: {
+        1: 'Sumas fáciles de dos cifras',
+        2: 'Sumas con decenas exactas: 10, 20, 30… 90',
+        3: 'Sumas libres de dos cifras',
+        4: 'Sumas dobles: el mismo número dos veces',
+        5: 'Sumas complementarias que dan 100, 1.000 o 10.000',
+    },
+    resta: {
+        1: 'Restas fáciles de dos cifras',
+        2: 'Restas con números redondos: 20, 30, 40… hasta 90',
+        3: 'Restas de dos cifras con un poco más de desafío',
+    },
+    multiplicacion: {
+        1: 'Tablas básicas. Recuerda las multiplicaciones fundamentales',
+        2: 'Por 10, 100, 1000. ¡Solo agrega ceros!',
+        3: 'Encuentra el factor. Divide el resultado por el número conocido',
+    },
+};
+
+export const getLevelDescription = (operation, levelNumber) =>
+    levelDescriptions[operation]?.[levelNumber] ?? '';
 
 
 export const getTotalActivities = (levelConfig) => {
@@ -225,15 +206,16 @@ export const getQuestionsForLevel = (operation, levelNumber, levelConfig) => {
     const questions = [];
     
         switch (operation) {
-            case 'suma': {
-                for(let i = 0; i < activitiesCount; i++) {
-                    questions.push(generateSumQuestion(config));
-                }
-                break;
-            }
+            case 'suma':
             case 'resta': {
-                for(let i = 0; i < activitiesCount; i++) {
-                    questions.push(generateSubtractQuestion(config));
+                const seen = new Set();
+                for (let i = 0; i < activitiesCount; i++) {
+                    const q = generateWithRetry(
+                        () => generateSumOrSubtractQuestion(config),
+                        (c) => !seen.has(c.pregunta)
+                    );
+                    seen.add(q.pregunta);
+                    questions.push(q);
                 }
                 break;
             }
@@ -284,7 +266,7 @@ export const getLevelNumber = (level) => {
 
 export const calculateScore = (level, attempts = 1) => {
     const levelNumber = parseInt(level.replace('nivel', ''));
-    const baseScore = 50 * levelNumber;
+    const baseScore = Math.min(50 * levelNumber, 150);
     const penalty = (attempts - 1) * 10;
     return Math.max(10, baseScore - penalty);
 };
@@ -316,15 +298,15 @@ export const getRandomMotivation = () => {
     return messages[Math.floor(Math.random() * messages.length)];
 };
 
-export const getNextLevel = (currentLevel) => {
-    switch(currentLevel) {
-        case 'nivel1': return 'nivel2';
-        case 'nivel2': return 'nivel3';
-        case 'nivel3': return null;
-        default: return null;
-    }
+export const getNextLevel = (currentLevel, operation) => {
+    const n = parseInt(String(currentLevel).replace('nivel', ''), 10);
+    if (!n) return null;
+    const max = operation ? getLevelCountForOperation(operation) : 3;
+    return n < max ? `nivel${n + 1}` : null;
 };
 
-export const isLastLevel = (level) => {
-    return level === 'nivel3';
+export const isLastLevel = (level, operation) => {
+    const n = parseInt(String(level).replace('nivel', ''), 10);
+    const max = operation ? getLevelCountForOperation(operation) : 3;
+    return n >= max;
 };
