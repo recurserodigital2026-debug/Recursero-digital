@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import GameHeader from './GameHeader';
 import { getOrderInstruction } from './utils';
 
@@ -19,11 +19,31 @@ const GameScreen = ({
   generateHint,
   showPermanentHint,
   order,
-  totalLevels
 }) => {
+
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [pendingTarget, setPendingTarget] = useState(null);
 
   const [shouldAnimateHint, setShouldAnimateHint] = useState(false);
   const previousShowHint = useRef(showPermanentHint);
+
+  const handleExitClick = (target) => {
+    const tieneRespuesta = targetNumbers.length > 0;
+
+    if (tieneRespuesta || currentActivity > 1 || points > 0) {
+        setPendingTarget(target);
+        setShowExitModal(true);
+    } else {
+        if (target === 'juegos') onBackToGames();
+        if (target === 'niveles') onBackToLevels();
+    }
+  };
+
+  const handleConfirmExit = () => {
+      setShowExitModal(false);
+      if (pendingTarget === 'juegos') onBackToGames();
+      if (pendingTarget === 'niveles') onBackToLevels();
+  };
 
   useEffect(() => {
     if (showPermanentHint && !previousShowHint.current) {
@@ -139,58 +159,106 @@ const GameScreen = ({
     ? Math.round((completedActivities / totalActivities) * 100)
     : 0;
 
-  return (
-    <div className="game-content">
-      <header className="ordenamiento-game-header">
-        <GameHeader
-          currentLevel={currentLevel}
-          currentActivity={currentActivity}
-          totalActivities={totalActivities}
-          attempts={attempts}
-          points={points}
-          onBackToGames={onBackToGames}
-          onBackToLevels={onBackToLevels}
-        />
-        <h1 className="game-title">🎯 Ordenamiento Numérico</h1>
-        <p className="game-instruction">
-          {(() => {
-            const instruction = getOrderInstruction(order);
-            return (
-              <span>
-                {instruction.icon} {instruction.text} <span className="highlight-text">{instruction.highlight1}</span> {instruction.middle} <span className="highlight-text">{instruction.highlight2}</span> {instruction.endIcon}
-              </span>
-            );
-          })()}
-        </p>
-      </header>
+return (
+    <div className="game-container"> 
+      <div 
+        className="game-content"
+        style={{
+          filter: showExitModal ? 'blur(4px)' : 'none',
+          pointerEvents: showExitModal ? 'none' : 'auto',
+          transition: 'filter 0.3s ease'
+        }}
+      >
+        <header className="ordenamiento-game-header">
+          <GameHeader
+            currentLevel={currentLevel}
+            currentActivity={currentActivity}
+            totalActivities={totalActivities}
+            attempts={attempts}
+            points={points}
+            onBackToGames={() => handleExitClick('juegos')}
+            onBackToLevels={() => handleExitClick('niveles')}
+          />
+          <h1 className="game-title">🎯 Ordenamiento Numérico</h1>
+          <p className="game-instruction">
+            {(() => {
+              const instruction = getOrderInstruction(order);
+              return (
+                <span>
+                  {instruction.icon} {instruction.text} <span className="highlight-text">{instruction.highlight1}</span> {instruction.middle} <span className="highlight-text">{instruction.highlight2}</span> {instruction.endIcon}
+                </span>
+              );
+            })()}
+          </p>
+        </header>
 
-      <div className="ordenamiento-progress-container">
-        <div 
-          className="ordenamiento-progress-bar"
-          data-progress={progressPercentage}
-          style={{'--progress-width': `${progressPercentage}%`}}
-        />
-      </div>
+        <div className="ordenamiento-progress-container">
+          <div 
+            className="ordenamiento-progress-bar"
+            data-progress={progressPercentage}
+            style={{'--progress-width': `${progressPercentage}%`}}
+          />
+        </div>
 
-      <div className="game-play-area">
-        <DropTarget />
-        
-        <div className="numbers-section">
-          <h3 className="numbers-title">Números a ordenar:</h3>
-          <div className="ordenamiento-numbers-container">
-            {availableNumbers.map(number => (
-              <NumberBox 
-                key={number} 
-                number={number} 
-                onDrop={onDrop}
-              />
-            ))}
+        <div className="game-play-area">
+          <DropTarget />
+          
+          <div className="numbers-section">
+            <h3 className="numbers-title">Números a ordenar:</h3>
+            <div className="ordenamiento-numbers-container">
+              {availableNumbers.map(number => (
+                <NumberBox 
+                  key={number} 
+                  number={number} 
+                  onDrop={onDrop}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {showPermanentHint && <PermanentHint />}
-    </div>
+        {showPermanentHint && <PermanentHint />}
+      </div> 
+
+      {showExitModal && (
+          <div className="modal-overlay" style={{ zIndex: 9999 }}>
+            <div className="modal-content congrats-model" style={{ maxWidth: '420px' }}>
+                <h2 className="modal-title" style={{ color: '#fff', fontSize: '1.6rem', marginBottom: '15px' }}>
+                    ¿Seguro quieres volver a los {pendingTarget === 'juegos' ? 'juegos' : 'niveles'}?
+                </h2>
+                <div className="modal-stats" style={{ marginBottom: '25px' }}>
+                    <p className="performance-message" style={{ color: '#ffb703', fontSize: '1.3rem', fontWeight: 'bold' }}>
+                        Perderás todos tus puntos
+                    </p>
+                </div>
+                <div className="modal-buttons" style={{ display: 'flex', gap: '15px', flexDirection: 'row' }}>
+                    <button 
+                        onClick={handleConfirmExit}
+                        className="modal-btn"
+                        style={{
+                            backgroundColor: '#ebeaf1', color: 'black', border: '2px solid #333',
+                            borderRadius: '12px', padding: '10px 24px', fontSize: '1rem',
+                            fontWeight: 'bold', cursor: 'pointer', flex: 1, boxShadow: '0 3px 0 #222'
+                        }}
+                    >
+                        Sí
+                    </button>
+                    <button
+                        onClick={() => setShowExitModal(false)}
+                        className="modal-btn"
+                        style={{
+                            backgroundColor: '#ebeaf1', color: 'black', border: '2px solid #333',
+                            borderRadius: '12px', padding: '10px 24px', fontSize: '1rem',
+                            fontWeight: 'bold', cursor: 'pointer', flex: 1, boxShadow: '0 3px 0 #222'
+                        }}
+                    >
+                        No
+                    </button>
+                </div>
+            </div>
+          </div>
+      )}
+    </div> 
   );
 };
 

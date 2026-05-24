@@ -11,6 +11,72 @@ import {
   getBackendLevel
 } from './utils';
 
+const MultiplicationVisual = ({ multiplicationVisual }) => {
+  if (!multiplicationVisual) return null;
+  const { factor1, factor2 } = multiplicationVisual;
+
+  const renderDots = (count) => {
+    const puntos = Array.from({ length: count });
+    const columnas = (count === 2 || count === 4) ? 2 : 3;
+
+    return (
+      <div style={{
+        width: '60px',
+        height: '60px',
+        backgroundColor: '#FFFFFF',
+        border: '2.5px solid #333333',
+        borderRadius: '14px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.05), inset 0 -3px 0 rgba(0,0,0,0.08)',
+        display: 'grid',
+        gridTemplateColumns: `repeat(${columnas}, auto)`,
+        justifyContent: 'center',
+        alignContent: 'center',
+        padding: '6px',
+        gap: '8px', 
+        boxSizing: 'border-box'
+      }}>
+        {puntos.map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: '9px',
+              height: '9px',
+              backgroundColor: '#333333',
+              borderRadius: '50%',
+            }}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '16px',
+      margin: '10px auto 15px auto',
+      userSelect: 'none'
+    }}>
+
+      {renderDots(factor1)}
+      
+      <span style={{
+        fontSize: '1.8rem',
+        fontWeight: 'bold',
+        color: '#0d0d0f',
+        fontFamily: 'sans-serif',
+        lineHeight: 1
+      }}>
+        ×
+      </span>
+
+      {renderDots(factor2)}
+    </div>
+  );
+};
+
 const GameScreen = ({ 
   operation, 
   level, 
@@ -34,6 +100,10 @@ const GameScreen = ({
   const [totalAttempts, setTotalAttempts] = useState(0); // Total attempts for the entire game
   const [correctAnswers, setCorrectAnswers] = useState(0);
   
+  const[showExitModal, setShowExitModal] = useState(false);
+  const [showWinModal, setShowWinModal] = useState(false);  
+  const [pendingTarget, setPendingTarget] = useState(null);
+
   const inputRef = useRef(null);
   
   const backendLevelConfig = useMemo(() => {
@@ -89,10 +159,13 @@ const GameScreen = ({
       const newCorrectAnswers = correctAnswers + 1;
       setCorrectAnswers(newCorrectAnswers);
       onUpdateScore(pointsEarned);
-      
-      if (onActivityComplete) {
-        const isLastActivity = isLastQuestion;
-        onActivityComplete(currentQuestionIndex, attempts, 1, 1, isLastActivity);
+
+      const currentLevelNumber = parseInt(level.replace('nivel', ''));
+      const maxLevelAllowed = (operation === 'suma') ? 5 : 3;
+      const isUltimateVictory = currentLevelNumber === maxLevelAllowed;;
+
+      if (onActivityComplete && !(isLastQuestion && isUltimateVictory)) {
+        onActivityComplete(currentQuestionIndex, attempts, 1, 1, isLastQuestion);
       }
       
       setFeedbackMessage(`${getRandomEncouragement()} +${pointsEarned} puntos`);
@@ -101,9 +174,25 @@ const GameScreen = ({
 
       setTimeout(() => {
         if (isLastQuestion) {
-          const finalScore = score + pointsEarned;
+          const pointsInCurrentLevel = score + pointsEarned;
           const isWin = newCorrectAnswers >= Math.ceil(questions.length * 0.6);
-          onGameComplete(isWin, finalScore, newCorrectAnswers, questions.length, totalAttempts);
+          
+          if (isWin && isUltimateVictory) {
+            const currentBackendLevel = backendLevelConfig?.level || 0;
+
+            const totalScoreAcumulado = allLevels.reduce((sum, lvl) => {
+              return lvl.level < currentBackendLevel ? sum + (lvl.puntos || 0) : sum;
+            }, 0);
+
+            const granTotalCompleto = totalScoreAcumulado + pointsInCurrentLevel;
+
+            setScore(granTotalCompleto);
+            setIsAnswerSubmitted(true);
+            setShowWinModal(true);
+          } else {
+            const finalScore = score + pointsEarned;
+            onGameComplete(isWin, finalScore, newCorrectAnswers, questions.length, totalAttempts);
+          } 
         } else {
           nextQuestion();
         }
@@ -146,6 +235,22 @@ const GameScreen = ({
     }
   };
 
+  const handleExit = (target) => {
+    if(userAnswer.trim() !== '' || currentQuestionIndex > 0 || score > 0) {
+      setPendingTarget(target);
+      setShowExitModal(true);
+    } else {
+      if(target == 'juegos') navigation ('/alumno/juegos');
+      if (target == 'niveles') onBackToLevelSelect();
+    }
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitModal(false);
+    if(pendingTarget === 'juegos') navigate('/alumno/juegos');
+    if(pendingTarget === 'niveles') onBackToLevelSelect();
+  };
+
   if (!backendLevelConfig) {
     return (
       <div className="text-center text-white">
@@ -167,18 +272,23 @@ const GameScreen = ({
 
   return (
     <div className="game-content">
+      <div style= {{
+        filter: showExitModal ? 'blur(4px)' : 'none',
+        pointerEvents: showExitModal ? 'none' : 'auto',
+        transition: 'filter 0.3s ease'
+      }}>
       <header className="desco-game-header">
         <div className="header-controls">
           <div className="buttons-group">
             <button 
-              onClick={() => navigate('/alumno/juegos')}
+              onClick={() => handleExit('juegos')}
               className="btn-back-to-dashboard"
               title="Volver a juegos"
             >
               ← Juegos
             </button>
             <button 
-              onClick={onBackToLevelSelect}
+              onClick={() => handleExit('niveles')}
               className="btn-back-to-levels"
               title="Volver a niveles"
             >
@@ -219,7 +329,6 @@ const GameScreen = ({
       </header>
 
       <div className="calculos-game-play-area">
-        
 
         {/* Sección de respuesta */}
         <div className="answer-card">
@@ -227,6 +336,7 @@ const GameScreen = ({
             <div className="calculation-display">
               <span className="question-text">{currentQuestion.pregunta.replace(' =', '')}</span>
             </div>
+              <MultiplicationVisual multiplicationVisual={currentQuestion?.soporteVisual} />
           <div className="equals-display">
             <span className="equals-sign">=</span>
           </div>
@@ -289,7 +399,122 @@ const GameScreen = ({
         </div>
       </div>
     </div>
+      {showExitModal && (
+        <div className="modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="modal-content congrats-model" style={{ maxWidth: '420px'}}>
+            <h2 className="modal-title" style={{ color: '#fff', fontSize: '1.6rem', marginBottom: '15px' }}>
+              ¿Seguro quieres volver a los {pendingTarget === 'juegos' ? 'juegos' : 'niveles'}?
+            </h2>
+            <div className="modal-stats" style={{ marginBottom: '25px'}}>
+              <p className="performance-message" style={{ color: '#fb703', fontSize: '1.3rem', fontWeight: 'bold' }}>
+                Perderás todos tus puntos
+              </p>
+            </div>
+            <div className="modal-buttons" style={{ display: 'flex', gap: '15px', flexDirection: 'row' }}>
+              <button 
+                onClick={handleConfirmExit}
+                className="modal-btn"
+                style={{
+                  backgroundColor: '#ebeaf1',
+                  color: 'black', 
+                  border: '2px solid #333',
+                  borderRadius: '12px',
+                  padding: '10px 24px',
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  flex: 1,
+                  boxShadow: '0 3px 0 #222'
+                }}
+                >
+                Sí
+              </button>
+              <button
+                onClick={() => setShowExitModal(false)}
+                className="modal-btn"
+                style={{
+                  backgroundColor: '#ebeaf1',
+                  color: 'black',
+                  border: '2px solid #333',
+                  borderRadius: '12px',
+                  padding: '10px 24px',
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  flex: 1,
+                  boxShadow: '0 3px 0 #222'
+                }}
+                >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showWinModal && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }}>
+          <div className="modal-content congrats-modal">
+
+            <div className="modal-icon success-icon">
+              <span className="icon-emoji">🎉</span>
+            </div>
+
+            <h2 className="modal-title success-title">
+              ¡FELICITACIONES!
+            </h2>
+
+            <div className="modal-stats">
+              <p className="completion-message" style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#fff' }}>
+                Has completado todos los niveles
+              </p>
+
+              <div style={{ marginTop: '24px 0', padding: '15px', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
+                <span className="stats-label" style={{ display: '1.block', fontSize: '1.1rem', color: '#aaa' }}>
+                  Puntos
+                </span>
+                <span className="stats-value" style={{ fontSize: '2.5 rem', fontWeight: '900', color: '#ffb703' }}>
+                  {score} puntos
+                </span>
+              </div>
+            </div>
+
+            <div className="modal-buttons">
+              <button
+                onClick={() => {
+                  const finalScore = score;
+                  const isWin = correctAnswers >= Math.ceil(questions.length * 0.6);
+
+                  if(onActivityComplete) {
+                    onActivityComplete(currentQuestionIndex, attempts, 1, 1, true);
+                  }
+                  onGameComplete(isWin, finalScore, correctAnswers, questions.length, totalAttempts);
+
+                  navigate('/alumno/juegos');
+                }}
+                className="modal-btn"
+                style={{
+                  backgroundColor: '#4A7856',
+                  color: 'white',
+                  border: '2px solid #333',
+                  borderRadius: '15px',
+                  padding: '14px 24px',
+                  fontSize: '1.2rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 0 #222',
+                  width: '100%',
+                }}
+              >
+                Salir
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </div>
   );
-};
+}
 
 export default GameScreen;
