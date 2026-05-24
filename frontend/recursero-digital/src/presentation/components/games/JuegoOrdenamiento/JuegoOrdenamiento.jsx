@@ -102,7 +102,8 @@ const JuegoOrdenamiento = () => {
   const handleStartGame = useCallback((level) => {
     const selectedLevelIndex = level - 1;
     setCurrentLevel(selectedLevelIndex);
-    
+    setShowGameComplete(false);
+
     const lastActivity = getLastActivity(PROGRESS_KEYS.ORDENAMIENTO);
     
     let startingActivity = 0;
@@ -165,7 +166,12 @@ const JuegoOrdenamiento = () => {
       startActivityTimer();
     } else {  
       unlockLevel(PROGRESS_KEYS.ORDENAMIENTO, currentLevel + 2);
-      setShowLevelUp(true);
+      const isLastLevel = currentLevel >= backendLevels.length - 1;
+      if(isLastLevel) {
+        setShowGameComplete(true);
+      }else{
+        setShowLevelUp(true)
+      }
     }
   }, [currentActivity, currentLevel, setupLevel, unlockLevel, backendLevels, startActivityTimer]);
 
@@ -244,7 +250,7 @@ const JuegoOrdenamiento = () => {
         />
       )}
       
-      {gameState === 'game' && !showGameComplete && (
+      {gameState === 'game' && 
         <GameScreen
           currentLevel={currentLevel}
           currentActivity={currentActivity}
@@ -266,18 +272,13 @@ const JuegoOrdenamiento = () => {
           order={order}
           totalLevels={backendLevels.length}
         />
-      )}
+      }
 
-      {gameState === 'game' && showGameComplete && (
+      {showGameComplete && 
         <GameCompleteScreen
           points={points}
-          currentLevel={currentLevel}
-          totalActivities={totalActivities}
-          onBackToGames={handleBackToGames}
-          onBackToLevels={handleBackToLevels}
-          onPlayAgain={handleBackToStart}
         />
-      )}
+      }
 
       {showFeedback && !showLevelUp && (
         <FeedbackModal

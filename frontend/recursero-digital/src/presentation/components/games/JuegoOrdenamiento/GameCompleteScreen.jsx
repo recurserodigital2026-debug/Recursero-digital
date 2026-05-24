@@ -1,47 +1,53 @@
 import React from 'react';
-import GameHeader from './GameHeader';
+import { useNavigate } from 'react-router-dom';
 
-const GameCompleteScreen = ({
-  points,
-  currentLevel,
-  totalActivities,
-  onBackToGames,
-  onBackToLevels,
-  onPlayAgain
-}) => {
+const GameCompleteScreen = ({ points }) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="game-content">
-      <header className="game-header">
-        <GameHeader
-          currentLevel={currentLevel + 1}
-          currentActivity={totalActivities}
-          totalActivities={totalActivities}
-          attempts={0}
-          points={points}
-          onBackToGames={onBackToGames}
-          onBackToLevels={onBackToLevels}
-        />
-        <h1 className="game-title">🎯 Ordenamiento Numérico</h1>
-      </header>
+    <div className="modal-overlay" style={{ zIndex: 10000 }}>
+      <div className="modal-content congrats-modal">
+        <div className="modal-icon success-icon">
+          <span className="icon-emoji">🎉</span>
+        </div>
 
-      <div className="progress-container">
-        <div 
-          className="ordenamiento-progress-bar"
-          data-progress="100"
-          style={{'--progress-width': '100%'}}
-        />
-      </div>
+        <h2 className="modal-title success-title">
+          ¡FELICITACIONES!
+        </h2>
 
-      <div className="game-complete">
-        <h2 className="complete-title">🎉 ¡Felicitaciones!</h2>
-        <p className="complete-message">¡Has completado todos los niveles del juego de ordenamiento!</p>
-        <p className="final-score">Puntuación final: {points}</p>
-        <div className="complete-buttons">
-          <button className="restart-button" onClick={onBackToLevels}>
-            📊 Ver Niveles
-          </button>
-          <button className="restart-button" onClick={onPlayAgain}>
-            🔄 Jugar de nuevo
+        <div className="modal-stats">
+          <p className="completion-message" style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#fff' }}>
+            Has completado todos los niveles
+          </p>
+
+          <div style={{ margin: '24px 0', padding: '15px', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
+            <span className="stats-label" style={{ display: 'block', fontSize: '1.1rem', color: '#aaa' }}>
+              Puntos
+            </span>
+            <span className="stats-value" style={{ fontSize: '2.5rem', fontWeight: '900', color: '#ffb703' }}>
+              {points} puntos
+            </span>
+          </div>
+        </div>
+
+        <div className="modal-buttons">
+          <button
+            onClick={() => navigate('/alumno/juegos')}
+            className="modal-btn"
+            style={{
+              backgroundColor: '#4A7856',
+              color: 'white',
+              border: '2px solid #333',
+              borderRadius: '15px',
+              padding: '14px 24px',
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 4px 0 #222',
+              width: '100%',
+            }}
+          >
+            Salir
           </button>
         </div>
       </div>

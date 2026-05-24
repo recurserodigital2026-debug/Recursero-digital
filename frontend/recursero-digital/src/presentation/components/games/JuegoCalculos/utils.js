@@ -46,7 +46,11 @@ const generateMultiplyQuestion = (config, withUnknown = false) => {
         }
         return {
             pregunta: `${formatNumber(factor1)} x ${formatNumber(factor2)} =`,
-            respuesta
+            respuesta,
+            soporteVisual: {
+                factor1: factor1,
+                factor2: factor2
+            }
         };
     }
 
