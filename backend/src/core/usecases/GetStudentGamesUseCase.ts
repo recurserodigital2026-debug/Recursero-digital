@@ -45,8 +45,29 @@ export class GetStudentGamesUseCase {
             throw new StudentNotFoundError();
         }
 
-        const hasPersonalAssignments = await this.studentGameRepository.hasAssignments(request.studentId);
+        const groupId = student.getGroupId();
+        if (groupId) {
+            const groupGames = await this.grupoRepository.getGames(groupId);
+            const enabledGroupGames = groupGames.filter(g => g.isEnabled);
+            if (enabledGroupGames.length > 0) {
+                const games = enabledGroupGames.map(g => {
+                    const cg = new CourseGame(
+                        g.id,
+                        student.getCourseId() || '',
+                        g.gameId,
+                        true,
+                        g.level,
+                        g.game
+                    ) as CourseGame & { level?: number };
+                    cg.level = g.level;
+                    return cg;
+                });
+                return { studentId: student.id, courseId: student.getCourseId(), games, source: 'group' };
+            }
+        }
 
+        // Priority 2: individual student assignments
+        const hasPersonalAssignments = await this.studentGameRepository.hasAssignments(request.studentId);
         if (hasPersonalAssignments) {
             const assignments = await this.studentGameRepository.findByStudentId(request.studentId);
             const enabledAssignments = assignments.filter(a => a.isEnabled);
@@ -70,28 +91,6 @@ export class GetStudentGamesUseCase {
                 games,
                 source: 'student'
             };
-        }
-
-        // Priority 2: group games
-        const groupId = student.getGroupId();
-        if (groupId) {
-            const groupGames = await this.grupoRepository.getGames(groupId);
-            const enabledGroupGames = groupGames.filter(g => g.isEnabled);
-            if (enabledGroupGames.length > 0) {
-                const games = enabledGroupGames.map(g => {
-                    const cg = new CourseGame(
-                        g.id,
-                        student.getCourseId() || '',
-                        g.gameId,
-                        true,
-                        g.level,
-                        g.game
-                    ) as CourseGame & { level?: number };
-                    cg.level = g.level;
-                    return cg;
-                });
-                return { studentId: student.id, courseId: student.getCourseId(), games, source: 'group' };
-            }
         }
 
         // Priority 3: course games

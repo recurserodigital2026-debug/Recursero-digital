@@ -5,11 +5,6 @@ export const formatNumber = (num) => {
     return num.toLocaleString('es-ES');
 };
 
-// Suma and resta calculations now flow through generators/. Each level's `config.kind`
-// selects the matching generator (see specs/001-addition-subtraction-levels/data-model.md).
-// The legacy generateRoundOperandsSum / generateDoublesSum / generateSumToRoundResult /
-// generateSubtractQuestion functions were removed in this refactor; their replacements
-// live in generators/sumToTarget.js, identicalNumbers.js, etc.
 
 const KNOWN_KINDS = new Set([
     'sum_to_target',
@@ -163,6 +158,21 @@ export const getBackendLevel = (operation, localLevel) => {
         return SUMA_EXTRA_BACKEND_LEVELS[localLevel];
     }
     return localLevel + OPERATION_OFFSET[operation];
+};
+
+export const getLocalLevelForOperation = (assignedDbLevel, operation) => {
+    if (operation === 'suma') {
+        if (assignedDbLevel >= 1 && assignedDbLevel <= 3) return assignedDbLevel;
+        if (assignedDbLevel === 10) return 4;
+        if (assignedDbLevel === 11) return 5;
+    }
+    if (operation === 'resta') {
+        if (assignedDbLevel >= 4 && assignedDbLevel <= 6) return assignedDbLevel - 3;
+    }
+    if (operation === 'multiplicacion') {
+        if (assignedDbLevel >= 7 && assignedDbLevel <= 9) return assignedDbLevel - 6;
+    }
+    return null;
 };
 
 export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 5 : 3);

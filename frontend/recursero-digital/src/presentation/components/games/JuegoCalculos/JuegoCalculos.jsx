@@ -15,6 +15,8 @@ import { getBackendLevel, getLevelCountForOperation } from './utils';
 
 const JuegoCalculos = () => {
   const navigate = useNavigate();
+  const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/calculos');
+  const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
   const { unlockLevel } = useUserProgress();
   const { 
     incrementAttempts, 
@@ -150,10 +152,11 @@ const JuegoCalculos = () => {
 
       case 'levelSelect':
         return (
-          <LevelSelectScreen 
+          <LevelSelectScreen
             operation={selectedOperation}
             onSelectLevel={handleSelectLevel}
             onBackToStart={handleBackToStart}
+            assignedLevel={assignedLevel}
           />
         );
 

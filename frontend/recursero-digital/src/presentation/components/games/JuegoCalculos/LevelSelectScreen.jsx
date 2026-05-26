@@ -1,13 +1,23 @@
 import React from 'react';
-import { levelConfig, operationConfig, getLevelCountForOperation, getLevelDescription, levelDescriptions } from './utils';
+import { levelConfig, operationConfig, getLevelCountForOperation, getLevelDescription, levelDescriptions, getLocalLevelForOperation } from './utils';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 
-const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
+const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart, assignedLevel }) => {
   const operationInfo = operationConfig[operation];
   const { isLevelUnlocked } = useUserProgress();
 
+  const assignedLocalLevel = assignedLevel != null ? getLocalLevelForOperation(assignedLevel, operation) : null;
+
+  const isLevelAvailable = (levelNumber) => {
+    if (assignedLocalLevel != null) return levelNumber === assignedLocalLevel;
+    return isLevelUnlocked(`calculos-${operation}`, levelNumber);
+  };
+
   const levelIcons = ['🎯', '⚡', '🚀', '🌟', '👑', '💎', '🏆'];
-  const visibleLevels = levelConfig.slice(0, getLevelCountForOperation(operation));
+  const allLevels = levelConfig.slice(0, getLevelCountForOperation(operation));
+  const visibleLevels = assignedLocalLevel != null
+    ? allLevels.filter((_, i) => i + 1 === assignedLocalLevel)
+    : allLevels;
 
   return (
     <div className="game-container">
@@ -31,14 +41,13 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
 
           <div className="level-grid">
             {visibleLevels.map((level, index) => {
-              const levelNumber = index + 1;
+              const levelNumber = assignedLocalLevel != null ? assignedLocalLevel : index + 1;
               const levelKey = `nivel${levelNumber}`;
-              const gameId = `calculos-${operation}`;
-              const isUnlocked = isLevelUnlocked(gameId, levelNumber);
+              const isUnlocked = isLevelAvailable(levelNumber);
               const isLocked = !isUnlocked;
-              
+
               return (
-                <button 
+                <button
                   key={levelKey}
                   className={`level-btn level-${levelNumber} ${isLocked ? 'locked' : ''}`}
                   onClick={() => isUnlocked && onSelectLevel(levelKey)}
@@ -46,7 +55,7 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
                 >
                   <div className="level-header">
                     <div className="level-number">
-                      {isLocked ? '🔒' : levelIcons[index]} Nivel {level.number}
+                      {isLocked ? '🔒' : levelIcons[levelNumber - 1]} Nivel {level.number}
                     </div>
                   </div>
                   <div className="level-info">
@@ -54,7 +63,7 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart }) => {
                       {getLevelDescription(operation, levelNumber) || level.description}
                     </div>
                     <div className="level-points">
-                      {50 * (index + 1)} puntos base
+                      {50 * levelNumber} puntos base
                     </div>
                     {isLocked && index > 0 && (
                       <div className="locked-message">

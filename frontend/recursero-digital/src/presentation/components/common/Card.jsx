@@ -80,7 +80,12 @@ export function Card() {
     fetchGames();
   }, []);
 
-  const handleJugar = (route) => {
+  const handleJugar = (route, assignedLevel) => {
+    if (assignedLevel != null) {
+      sessionStorage.setItem(`assignedLevel:${route}`, String(assignedLevel));
+    } else {
+      sessionStorage.removeItem(`assignedLevel:${route}`);
+    }
     navigate(route);
   };
 
@@ -109,7 +114,7 @@ export function Card() {
                                 ) : (
                                   <p className="descriptiongame">{game.description}</p>
                                 )}
-                                <button className="buttongame" onClick={() => handleJugar(game.route)}>Jugar</button>
+                                <button className="buttongame" onClick={() => handleJugar(game.route, game.assignedLevel)}>Jugar</button>
                             </div>
                         </box>
                     ))
