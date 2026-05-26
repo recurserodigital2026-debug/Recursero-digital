@@ -36,7 +36,9 @@ class MockCourseRepository implements CourseRepository {
     async addCourse(courseData: any) {}
     async getAllCourses() { return []; }
     async findById(id: string) { return null; }
-    async getEnabledGamesByCourseId(courseId: string) { return []; }
+    async getEnabledGamesByCourseId(courseId: string): Promise<CourseGame[]> {
+        return (this.courseGames.get(courseId) || []).filter(cg => cg.isEnabled);
+    }
     async addGameToCourse(courseGameId: string, courseId: string, gameId: string) {}
     async updateCourseGameStatus(courseGameId: string, isEnabled: boolean) {}
     async createCourse(name: string, teacherId?: string): Promise<any> { throw new Error('Not implemented'); }
