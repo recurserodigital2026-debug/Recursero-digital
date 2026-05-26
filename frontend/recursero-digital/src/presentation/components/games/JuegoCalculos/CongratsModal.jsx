@@ -1,24 +1,20 @@
 import React from 'react';
-import { getOperationName, getLevelName, formatNumber, isLastLevel, getNextLevel } from './utils';
+import { getOperationName, getLevelName, formatNumber } from './utils';
 
-const CongratsModal = ({ 
-  isVisible, 
-  isWin, 
-  operation, 
-  level, 
-  finalScore, 
+const CongratsModal = ({
+  isVisible,
+  isWin,
+  operation,
+  level,
+  finalScore,
   totalQuestions,
   correctAnswers,
   totalAttempts,
-  onNextLevel, 
-  onBackToLevelSelect,
-  onBackToStart 
+  onBackToGames
 }) => {
   if (!isVisible) return null;
 
   const isCompleted = isWin;
-  const canPlayNextLevel = isCompleted && !isLastLevel(level, operation);
-  const nextLevel = getNextLevel(level, operation);
   const performancePercentage = Math.round((correctAnswers / totalQuestions) * 100);
 
   const getPerformanceMessage = () => {
@@ -76,39 +72,20 @@ const CongratsModal = ({
           </p>
           
           <p className="completion-message">
-            {isCompleted ? '¡Buen trabajo!' : '¿Quieres intentar de nuevo?'}
+            {isCompleted ? '¡Buen trabajo!' : '¡Sigue practicando!'}
           </p>
           <p className="next-challenge">
-            {isCompleted && !isLastLevel(level, operation) ? '¿Estás listo para el siguiente nivel?' : 'Selecciona acá'}
+            Tu docente te asignará el próximo nivel.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="modal-buttons">
-          {/* Next Level Button (only if available) */}
-          {canPlayNextLevel && (
-            <button
-              onClick={() => onNextLevel(nextLevel)}
-              className="btn-primary modal-btn"
-            >
-              Continuar ({getLevelName(nextLevel)})
-            </button>
-          )}
-
-          {/* Back to Level Select */}
           <button
-            onClick={onBackToLevelSelect}
-            className="btn-secondary modal-btn"
+            onClick={onBackToGames}
+            className="btn-primary modal-btn"
           >
-            📋 Elegir Otro Nivel
-          </button>
-
-          {/* Back to Operations */}
-          <button
-            onClick={onBackToStart}
-            className="btn-secondary modal-btn"
-          >
-            🏠 Elegir Otra Operación
+            🏠 Volver al inicio
           </button>
         </div>
       </div>

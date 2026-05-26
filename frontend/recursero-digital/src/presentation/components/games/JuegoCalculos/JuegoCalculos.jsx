@@ -188,7 +188,7 @@ const JuegoCalculos = () => {
               onUpdateScore={handleUpdateScore}
               onUpdateAttempts={handleUpdateAttempts}
             />
-            <CongratsModal 
+            <CongratsModal
               isVisible={true}
               isWin={gameResults.isWin}
               operation={selectedOperation}
@@ -197,10 +197,7 @@ const JuegoCalculos = () => {
               totalQuestions={gameResults.totalQuestions}
               correctAnswers={gameResults.correctAnswers}
               totalAttempts={gameResults.totalAttempts}
-              onPlayAgain={handlePlayAgain}
-              onNextLevel={handlePlayNextLevel}
-              onBackToLevelSelect={handleBackToLevelSelect}
-              onBackToStart={handleBackToStart}
+              onBackToGames={handleBackToGames}
             />
           </>
         );
