@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useParams } from "react";
 import { useNavigate } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoOrdenamiento.css";
@@ -21,6 +21,7 @@ import CongratsModal from './CongratsModal';
 import FeedbackModal from './FeedbackModal';
 
 const JuegoOrdenamiento = () => {
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const { unlockLevel, getLastActivity } = useUserProgress();
   const { 
@@ -47,7 +48,7 @@ const JuegoOrdenamiento = () => {
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
   const [showPermanentHint, setShowPermanentHint] = useState(false);
 
-  const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ORDENAMIENTO, true);
+  const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ORDENAMIENTO, true, courseId);
   const levelRanges = useMemo(() => transformToOrdenamientoFormat(backendLevels), [backendLevels]);
 
   const totalActivities = useMemo(() => {

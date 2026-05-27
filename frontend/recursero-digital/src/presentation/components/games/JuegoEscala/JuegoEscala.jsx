@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useParams } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import './JuegoEscala.css';
@@ -26,6 +26,7 @@ import {
 } from './util';
 
 const JuegoEscala = () => {
+    const { courseId } = useParams();
     const { unlockLevel, getLastActivity } = useUserProgress();
     const { 
         points, 
@@ -52,7 +53,7 @@ const JuegoEscala = () => {
     const [errorNotification, setErrorNotification] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCALA, true);
+    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCALA, true, courseId);
     
     const levels = useMemo(() => transformToEscalaFormat(backendLevels), [backendLevels]);
     

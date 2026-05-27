@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useParams } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoCalculos.css";
@@ -14,6 +14,7 @@ import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getBackendLevel, getLevelCountForOperation } from './utils';
 
 const JuegoCalculos = () => {
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const { unlockLevel } = useUserProgress();
   const { 
@@ -36,7 +37,7 @@ const JuegoCalculos = () => {
     totalQuestions: 0
   });
 
-  const { levels: allLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.CALCULOS, true);
+  const { levels: allLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.CALCULOS, true, courseId);
 
   const handleBackToGames = useCallback(() => {
     navigate('/alumno/juegos', { replace: true });

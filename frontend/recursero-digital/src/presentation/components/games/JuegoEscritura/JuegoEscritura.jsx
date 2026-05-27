@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, useParams } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import '../../../styles/globals/games.css';
@@ -18,6 +18,7 @@ import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
 
 const JuegoEscritura = () => {
+    const { courseId } = useParams();
     const { unlockLevel, getMaxUnlockedLevel, getLastActivity } = useUserProgress();
     const { 
         points, 
@@ -42,7 +43,7 @@ const JuegoEscritura = () => {
     const [showErrorPopup, setShowErrorPopup] = useState(false);
     const lastGeneratedActivity = useRef({ level: -1, activity: -1 });
     
-    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCRITURA, true);
+    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCRITURA, true, courseId);
     const levels = useMemo(() => transformToEscrituraFormat(backendLevels), [backendLevels]);
     
     
