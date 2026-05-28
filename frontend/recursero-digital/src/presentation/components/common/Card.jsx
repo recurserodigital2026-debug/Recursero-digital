@@ -33,6 +33,7 @@ const resolveGameImage = (imageUrl) => {
 export function Card() {
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
+  const [courseId, setCourseId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -46,6 +47,7 @@ export function Card() {
 
         if (response.ok && response.data && Array.isArray(response.data.games)) {
           const source = response.data.source || 'course';
+          setCourseId(response.data.courseId || null);
           const transformedGames = response.data.games
             .filter((courseGame) => courseGame?.game)
             .map((courseGame) => {
@@ -81,7 +83,13 @@ export function Card() {
   }, []);
 
   const handleJugar = (route) => {
-    navigate(route);
+    if (!courseId) {
+      console.warn('No courseId disponible; navegando a la ruta base');
+      navigate(route);
+      return;
+    }
+    const target = route.endsWith('/') ? `${route}${courseId}` : `${route}/${courseId}`;
+    navigate(target);
   };
 
   if (loading) {

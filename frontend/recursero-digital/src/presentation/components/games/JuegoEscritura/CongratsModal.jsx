@@ -1,8 +1,8 @@
 import React from 'react';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
 
-const CongratsModal = ({ level, points, onNextLevel, onBackToLevels }) => {
-    const { levels: backendLevels } = useGameLevels('escritura', true);
+const CongratsModal = ({ level, points, courseId, onNextLevel, onBackToLevels }) => {
+    const { levels: backendLevels } = useGameLevels('escritura', true, courseId);
     const totalLevels = backendLevels.length;
     const isLastLevel = level >= totalLevels;
 

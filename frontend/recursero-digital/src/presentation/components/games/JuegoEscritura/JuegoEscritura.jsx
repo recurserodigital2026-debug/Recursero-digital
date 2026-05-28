@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import '../../../styles/globals/games.css';
@@ -18,6 +19,11 @@ import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
 
 const JuegoEscritura = () => {
+    const { courseId } = useParams();
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (!courseId) navigate('/alumno/juegos', { replace: true });
+    }, [courseId, navigate]);
     const { unlockLevel, getMaxUnlockedLevel, getLastActivity } = useUserProgress();
     const { 
         points, 
@@ -42,7 +48,7 @@ const JuegoEscritura = () => {
     const [showErrorPopup, setShowErrorPopup] = useState(false);
     const lastGeneratedActivity = useRef({ level: -1, activity: -1 });
     
-    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCRITURA, true);
+    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCRITURA, true, courseId);
     const levels = useMemo(() => transformToEscrituraFormat(backendLevels), [backendLevels]);
     
     
@@ -282,9 +288,10 @@ const JuegoEscritura = () => {
             
             {gameState === 'feedback' && <FeedbackModal feedback={feedback} onContinue={handleContinue} />}
             
-            {gameState === 'congrats' && <CongratsModal 
-                level={currentLevel + 1} 
-                points={points} 
+            {gameState === 'congrats' && <CongratsModal
+                level={currentLevel + 1}
+                points={points}
+                courseId={courseId}
                 onNextLevel={handleNextLevel}
                 onBackToLevels={() => setGameState('level-select')}
             />}
