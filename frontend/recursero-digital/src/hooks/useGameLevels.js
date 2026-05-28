@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../infrastructure/config/api';
+import { API_BASE_URL, apiRequest } from '../infrastructure/config/api';
 
-export const useGameLevels = (gameId, onlyActive = true) => {
+export const useGameLevels = (gameId, onlyActive = true, courseId = null) => {
     const [levels, setLevels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,15 +18,18 @@ export const useGameLevels = (gameId, onlyActive = true) => {
                 setError(null);
 
                 const fullGameId = gameId.startsWith('game-') ? gameId : `game-${gameId}`;
-                const url = `${API_BASE_URL}/games/${fullGameId}/levels${onlyActive ? '?onlyActive=true' : ''}`;
-                const response = await fetch(url);
+                const query = onlyActive ? '?onlyActive=true' : '';
+                const endpoint = courseId
+                    ? `/courses/${courseId}/games/${fullGameId}/levels${query}`
+                    : `/games/${fullGameId}/levels${query}`;
+
+                const response = await apiRequest(endpoint);
 
                 if (!response.ok) {
-                    throw new Error(`Error al obtener niveles: ${response.statusText}`);
+                    throw new Error(response.data?.error || `Error al obtener niveles`);
                 }
 
-                const data = await response.json();
-                setLevels(data.levels || []);
+                setLevels(response.data?.levels || []);
             } catch (err) {
                 console.error('Error al cargar niveles del juego:', err);
                 setError(err.message);
@@ -37,7 +40,7 @@ export const useGameLevels = (gameId, onlyActive = true) => {
         };
 
         fetchLevels();
-    }, [gameId, onlyActive]);
+    }, [gameId, onlyActive, courseId]);
 
     return { levels, loading, error };
 };

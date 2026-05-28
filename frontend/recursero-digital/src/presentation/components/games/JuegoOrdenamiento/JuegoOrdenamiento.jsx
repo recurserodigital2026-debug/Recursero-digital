@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo, useParams } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate, useParams } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoOrdenamiento.css";
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
@@ -23,6 +23,9 @@ import FeedbackModal from './FeedbackModal';
 const JuegoOrdenamiento = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  useEffect(() => {
+    if (!courseId) navigate('/alumno/juegos', { replace: true });
+  }, [courseId, navigate]);
   const { unlockLevel, getLastActivity } = useUserProgress();
   const { 
     points, 

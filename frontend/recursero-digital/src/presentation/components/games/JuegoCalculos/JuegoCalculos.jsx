@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useParams } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoCalculos.css";
 
@@ -38,6 +38,12 @@ const JuegoCalculos = () => {
   });
 
   const { levels: allLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.CALCULOS, true, courseId);
+
+  useEffect(() => {
+    if (!courseId) {
+      navigate('/alumno/juegos', { replace: true });
+    }
+  }, [courseId, navigate]);
 
   const handleBackToGames = useCallback(() => {
     navigate('/alumno/juegos', { replace: true });

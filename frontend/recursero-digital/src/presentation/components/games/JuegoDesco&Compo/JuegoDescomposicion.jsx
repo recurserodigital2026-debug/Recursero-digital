@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo, useParams } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import '../../../styles/globals/games.css';
@@ -18,6 +19,10 @@ import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
 
 const JuegoDescomposicion = () => {
     const { courseId } = useParams();
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (!courseId) navigate('/alumno/juegos', { replace: true });
+    }, [courseId, navigate]);
     const { unlockLevel, getLastActivity } = useUserProgress();
     const { 
         points, 

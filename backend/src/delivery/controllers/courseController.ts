@@ -6,6 +6,8 @@ import { UpdateCourseUseCase } from '../../core/usecases/UpdateCourseUseCase';
 import { DeleteCourseUseCase } from '../../core/usecases/DeleteCourseUseCase';
 import { GetAllCourseGamesUseCase } from '../../core/usecases/GetAllCourseGamesUseCase';
 import { UpdateCourseGameStatusUseCase } from '../../core/usecases/UpdateCourseGameStatusUseCase';
+import { CourseAccessDeniedError, CourseNotFoundError } from '../../core/usecases/GetCourseGameLevelsUseCase';
+import { AuthenticatedRequest } from '../middleware/authMiddleWare';
 
 const container = DependencyContainer.getInstance();
 const dependencyContainer = DependencyContainer.getInstance();
@@ -233,6 +235,42 @@ export const courseController = {
                 return;
             }
             console.error('Error en updateCourseGameStatus:', error);
+            res.status(500).json({ error: error?.message ?? 'Error interno del servidor' });
+        }
+    },
+
+    getCourseGameLevels: async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+        try {
+            const { courseId, gameId } = req.params as { courseId: string; gameId: string };
+            const onlyActive = req.query.onlyActive === 'true';
+
+            if (!req.user) {
+                res.status(401).json({ error: 'No autenticado' });
+                return;
+            }
+
+            const result = await container.getCourseGameLevelsUseCase.execute({
+                courseId,
+                gameId,
+                onlyActive,
+                requester: { id: req.user.id, role: req.user.role }
+            });
+
+            res.status(200).json(result);
+        } catch (error: any) {
+            if (error instanceof CourseNotFoundError) {
+                res.status(404).json({ error: error.message });
+                return;
+            }
+            if (error instanceof CourseAccessDeniedError) {
+                res.status(403).json({ error: error.message });
+                return;
+            }
+            if (error?.message === 'courseId es requerido' || error?.message === 'gameId es requerido') {
+                res.status(400).json({ error: error.message });
+                return;
+            }
+            console.error('Error en getCourseGameLevels:', error);
             res.status(500).json({ error: error?.message ?? 'Error interno del servidor' });
         }
     },
