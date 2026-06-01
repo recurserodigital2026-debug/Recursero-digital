@@ -14,13 +14,12 @@ const CongratsModal = ({ level, points, courseId, onNextLevel, onBackToLevels })
                 <div className="points-display">
                     <p><strong>Puntos totales: {points} 🎯</strong></p>
                 </div>
-                {!isLastLevel && <p>¡Desbloqueaste el siguiente nivel!</p>}
-                {isLastLevel && <p>¡Completaste todos los niveles!</p>}
+                {(!isLastLevel && onNextLevel) ? <p>¡Desbloqueaste el siguiente nivel!</p> : <p>¡Completaste todos los niveles!</p>}
                 <div className="escritura-modal-buttons">
                     <button onClick={onBackToLevels} className="btn escritura-btn-secondary">
                         🏠 Volver a Niveles
                     </button>
-                    {!isLastLevel && (
+                    {!isLastLevel && onNextLevel && (
                         <button onClick={onNextLevel} className="btn escritura-btn-next-level">
                             ➡️ Siguiente Nivel
                         </button>

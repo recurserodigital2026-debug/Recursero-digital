@@ -168,6 +168,22 @@
   opacity: 0.65;
 }
 
+.tg-student-row--other-group {
+  opacity: 0.6;
+}
+
+.tg-name-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tg-other-group-label {
+  font-size: 0.72rem;
+  color: #fbbf24;
+}
+
 .tg-avatar {
   width: 2rem;
   height: 2rem;
@@ -184,7 +200,6 @@
 }
 
 .tg-name {
-  flex: 1;
   color: #ffffff;
   font-size: 0.9rem;
 }

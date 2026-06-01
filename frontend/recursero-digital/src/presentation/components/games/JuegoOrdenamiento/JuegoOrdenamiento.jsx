@@ -305,7 +305,7 @@ const JuegoOrdenamiento = () => {
         <CongratsModal
           level={currentLevel + 1}
           points={points}
-          onNextLevel={handleNextLevel}
+          onNextLevel={assignedLevel == null ? handleNextLevel : undefined}
           onBackToLevels={() => {
             setShowLevelUp(false);
             setGameState('level-select');

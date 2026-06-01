@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiRequest } from '../../infrastructure/config/api';
 import { GAME_IDS, PROGRESS_KEYS } from '../../constants/games';
 
-const PROGRESS_KEY = 'userGameProgress';
+const getProgressKey = (studentId) => studentId ? `userGameProgress_${studentId}` : 'userGameProgress';
 
 const DEFAULT_PROGRESS = {
   [PROGRESS_KEYS.ORDENAMIENTO]: 1,
@@ -14,11 +14,12 @@ const DEFAULT_PROGRESS = {
   [PROGRESS_KEYS.CALCULOS_MULTIPLICACION]: 1
 };
 
-const loadLocalProgress = () => {
+const loadLocalProgress = (studentId) => {
+  const key = getProgressKey(studentId);
   try {
-    const saved = localStorage.getItem(PROGRESS_KEY);
+    const saved = localStorage.getItem(key);
     if (!saved) {
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(DEFAULT_PROGRESS));
+      localStorage.setItem(key, JSON.stringify(DEFAULT_PROGRESS));
       return DEFAULT_PROGRESS;
     }
 
@@ -27,11 +28,11 @@ const loadLocalProgress = () => {
       ...DEFAULT_PROGRESS,
       ...parsed
     };
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(merged));
+    localStorage.setItem(key, JSON.stringify(merged));
     return merged;
   } catch (error) {
     console.warn('No se pudo cargar progreso local, se usa default:', error);
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(DEFAULT_PROGRESS));
+    localStorage.setItem(key, JSON.stringify(DEFAULT_PROGRESS));
     return DEFAULT_PROGRESS;
   }
 };
@@ -156,7 +157,7 @@ const mergeProgress = (baseProgress, backendProgress) => {
 
 export const useUserProgress = () => {
   const studentId = getStudentIdFromToken();
-  const [unlockedLevels, setUnlockedLevels] = useState(() => loadLocalProgress());
+  const [unlockedLevels, setUnlockedLevels] = useState(() => loadLocalProgress(studentId));
   const [loadingProgress, setLoadingProgress] = useState(false);
   const [progressError, setProgressError] = useState(null);
   const [lastActivities, setLastActivities] = useState({});
@@ -174,13 +175,13 @@ export const useUserProgress = () => {
 
       if (response.ok && response.data && Array.isArray(response.data.gameProgress)) {
         const backendMerged = mergeProgress(DEFAULT_PROGRESS, response.data.gameProgress);
-        const local = loadLocalProgress();
+        const local = loadLocalProgress(studentId);
         const merged = Object.keys({ ...backendMerged, ...local }).reduce((acc, key) => {
           acc[key] = Math.max(backendMerged[key] || 1, local[key] || 1);
           return acc;
         }, {});
         setUnlockedLevels(merged);
-        localStorage.setItem(PROGRESS_KEY, JSON.stringify(merged));
+        localStorage.setItem(getProgressKey(studentId), JSON.stringify(merged));
         
         const activities = {};
         response.data.gameProgress.forEach((progressItem) => {
@@ -211,7 +212,7 @@ export const useUserProgress = () => {
       setProgressError('No se pudo obtener el progreso más reciente. Se utiliza el progreso guardado en el dispositivo.');
       // Si hay error, usar valores por defecto
       setUnlockedLevels({ ...DEFAULT_PROGRESS });
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(DEFAULT_PROGRESS));
+      localStorage.setItem(getProgressKey(studentId), JSON.stringify(DEFAULT_PROGRESS));
     } finally {
       setLoadingProgress(false);
     }
@@ -227,10 +228,10 @@ export const useUserProgress = () => {
         ...prev,
         [game]: Math.max(prev[game] || 1, level)
       };
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(newProgress));
+      localStorage.setItem(getProgressKey(studentId), JSON.stringify(newProgress));
       return newProgress;
     });
-  }, []);
+  }, [studentId]);
 
   const isLevelUnlocked = useCallback((game, level) => {
     return level <= (unlockedLevels[game] || 1);
@@ -246,9 +247,9 @@ export const useUserProgress = () => {
 
   const resetProgress = useCallback(() => {
     setUnlockedLevels(DEFAULT_PROGRESS);
-    localStorage.setItem(PROGRESS_KEY, JSON.stringify(DEFAULT_PROGRESS));
+    localStorage.setItem(getProgressKey(studentId), JSON.stringify(DEFAULT_PROGRESS));
     setLastActivities({});
-  }, []);
+  }, [studentId]);
 
   return {
     unlockedLevels,

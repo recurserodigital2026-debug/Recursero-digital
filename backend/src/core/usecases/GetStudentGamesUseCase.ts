@@ -45,6 +45,16 @@ export class GetStudentGamesUseCase {
             throw new StudentNotFoundError();
         }
 
+        const courseId = student.getCourseId();
+        if (!courseId) {
+            return {
+                studentId: student.id,
+                courseId: null,
+                games: [],
+                source: 'course'
+            };
+        }
+
         const groupId = student.getGroupId();
         if (groupId) {
             const groupGames = await this.grupoRepository.getGames(groupId);
@@ -93,23 +103,10 @@ export class GetStudentGamesUseCase {
             };
         }
 
-        // Priority 3: course games
-        const courseId = student.getCourseId();
-        if (!courseId) {
-            return {
-                studentId: student.id,
-                courseId: null,
-                games: [],
-                source: 'course'
-            };
-        }
-
-        const enabledGames = await this.courseRepository.getEnabledGamesByCourseId(courseId);
-
         return {
             studentId: student.id,
             courseId: courseId,
-            games: enabledGames,
+            games: [],
             source: 'course'
         };
     }

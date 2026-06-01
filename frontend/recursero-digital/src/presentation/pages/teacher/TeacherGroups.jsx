@@ -214,6 +214,7 @@ export default function TeacherGroups() {
 
   const enrolledInGroup = new Set(groupStudents.map(s => s.id));
   const filteredCourseStudents = courseStudents.filter(s => {
+    if (s.group && !enrolledInGroup.has(s.id)) return false;
     const name = `${s.name} ${s.lastName || s.lastname || ''}`.toLowerCase();
     return name.includes(addStudentSearch.toLowerCase());
   });

@@ -306,7 +306,7 @@ const JuegoEscala = () => {
                     score={points}
                     totalQuestions={totalQuestions * GAME_CONFIG.BASE_SCORE * (currentLevel + 1)}
                     levelName={levels[currentLevel].name}
-                    nextLevelUnlocked={currentLevel < levels.length - 1}
+                    nextLevelUnlocked={assignedLevel == null && currentLevel < levels.length - 1}
                     onPlayAgain={handlePlayAgain}
                     onBackToLevels={handleBackToLevels}
                 />

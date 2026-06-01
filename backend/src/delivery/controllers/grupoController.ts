@@ -73,6 +73,10 @@ export const assignStudentToGrupo = async (req: Request, res: Response): Promise
             res.status(404).json({ error: error.message });
             return;
         }
+        if (error.message === 'El alumno ya pertenece a otro grupo. Retíralo primero antes de asignarlo a este grupo.') {
+            res.status(409).json({ error: error.message });
+            return;
+        }
         console.error('Error en assignStudentToGrupo:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }

@@ -296,7 +296,7 @@ const JuegoEscritura = () => {
                 level={currentLevel + 1}
                 points={points}
                 courseId={courseId}
-                onNextLevel={handleNextLevel}
+                onNextLevel={assignedLevel == null ? handleNextLevel : undefined}
                 onBackToLevels={() => setGameState('level-select')}
             />}
             

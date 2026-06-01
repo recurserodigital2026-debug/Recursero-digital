@@ -290,7 +290,7 @@ const JuegoDescomposicion = () => {
                 <CongratsModal
                     level={currentLevel + 1}
                     points={points}
-                    hasNextLevel={currentLevel < levels.length - 1}
+                    hasNextLevel={assignedLevel == null && currentLevel < levels.length - 1}
                     onNextLevel={handleNextLevel}
                     onBackToLevels={handleBackToLevels}
                 />

@@ -37,7 +37,7 @@ describe('GetStudentGamesUseCase', () => {
     });
 
     describe('When execute', () => {
-        it('should return enabled games for student with course', async () => {
+        it('should return empty games for student with course but no group or personal assignment', async () => {
             const entity = new StudentEntity(
                 'student-1',
                 'user-1',
@@ -64,8 +64,7 @@ describe('GetStudentGamesUseCase', () => {
 
             expect(result.studentId).toBe('student-1');
             expect(result.courseId).toBe('course-1');
-            expect(result.games.length).toBe(1);
-            expect(result.games[0].gameId).toBe('game-1');
+            expect(result.games.length).toBe(0);
         });
 
         it('should return empty games array when student has no course', async () => {
@@ -122,7 +121,7 @@ describe('GetStudentGamesUseCase', () => {
                 .toThrow(StudentNotFoundError);
         });
 
-        it('should return only enabled games', async () => {
+        it('should return empty games when student has course but no group or personal assignment', async () => {
             const entity = new StudentEntity(
                 'student-1',
                 'user-1',
@@ -151,8 +150,7 @@ describe('GetStudentGamesUseCase', () => {
 
             const result = await getStudentGamesUseCase.execute(request);
 
-            expect(result.games.length).toBe(1);
-            expect(result.games[0].gameId).toBe('game-1');
+            expect(result.games.length).toBe(0);
         });
     });
 });

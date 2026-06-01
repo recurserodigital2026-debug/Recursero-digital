@@ -14,6 +14,10 @@ export class AssignStudentToGrupoUseCase {
     const student = await this.studentRepository.findById(studentId);
     if (!student) throw new Error('Estudiante no encontrado');
 
+    if (student.groupId !== null && student.groupId !== groupId) {
+      throw new Error('El alumno ya pertenece a otro grupo. Retíralo primero antes de asignarlo a este grupo.');
+    }
+
     await this.grupoRepository.addStudent(groupId, studentId);
   }
 }
