@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import './JuegoEscala.css';
@@ -54,7 +55,7 @@ const JuegoEscala = () => {
     const [errorNotification, setErrorNotification] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCALA, true);
+    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCALA, true, courseId);
     
     const levels = useMemo(() => transformToEscalaFormat(backendLevels), [backendLevels]);
     

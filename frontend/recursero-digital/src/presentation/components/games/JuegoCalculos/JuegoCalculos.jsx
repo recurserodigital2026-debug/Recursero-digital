@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoCalculos.css";
 
@@ -14,6 +14,7 @@ import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getBackendLevel, getLevelCountForOperation, getLocalLevelForOperation } from './utils';
 
 const JuegoCalculos = () => {
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/calculos');
   const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
@@ -39,7 +40,13 @@ const JuegoCalculos = () => {
     totalQuestions: 0
   });
 
-  const { levels: allLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.CALCULOS, true);
+  const { levels: allLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.CALCULOS, true, courseId);
+
+  useEffect(() => {
+    if (!courseId) {
+      navigate('/alumno/juegos', { replace: true });
+    }
+  }, [courseId, navigate]);
 
   const handleBackToGames = useCallback(() => {
     navigate('/alumno/juegos', { replace: true });

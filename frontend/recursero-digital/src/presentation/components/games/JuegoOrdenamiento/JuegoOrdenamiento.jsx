@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoOrdenamiento.css";
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
@@ -21,6 +21,7 @@ import CongratsModal from './CongratsModal';
 import FeedbackModal from './FeedbackModal';
 
 const JuegoOrdenamiento = () => {
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/ordenamiento');
   const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
@@ -49,7 +50,7 @@ const JuegoOrdenamiento = () => {
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
   const [showPermanentHint, setShowPermanentHint] = useState(false);
 
-  const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ORDENAMIENTO, true);
+  const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ORDENAMIENTO, true, courseId);
   const levelRanges = useMemo(() => transformToOrdenamientoFormat(backendLevels), [backendLevels]);
 
   const totalActivities = useMemo(() => {

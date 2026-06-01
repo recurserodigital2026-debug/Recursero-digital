@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import '../../../styles/globals/games.css';
@@ -17,6 +18,11 @@ import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
 
 const JuegoDescomposicion = () => {
+    const { courseId } = useParams();
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (!courseId) navigate('/alumno/juegos', { replace: true });
+    }, [courseId, navigate]);
     const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/descomposicion');
     const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getLastActivity } = useUserProgress();
@@ -44,7 +50,7 @@ const JuegoDescomposicion = () => {
     const [questions, setQuestions] = useState([]);
     const [isAnswered, setIsAnswered] = useState(false);
 
-    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.DESCOMPOSICION, true);
+    const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.DESCOMPOSICION, true, courseId);
 
     const levels = useMemo(() => transformToDescomposicionFormat(backendLevels), [backendLevels]);
 

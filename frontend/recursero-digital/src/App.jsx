@@ -103,31 +103,31 @@ function App() {
             }
           />
           <Route
-            path="/alumno/juegos/ordenamiento"
+            path="/alumno/juegos/ordenamiento/:courseId"
             element={
               <JuegoOrdenamiento />
             }
           />
           <Route
-            path="/alumno/juegos/escritura"
+            path="/alumno/juegos/escritura/:courseId"
             element={
               <JuegoEscritura />
             }
           />
           <Route
-            path="/alumno/juegos/descomposicion"
+            path="/alumno/juegos/descomposicion/:courseId"
             element={
               <JuegoDescomposicion />
             }
           />
           <Route
-            path="/alumno/juegos/escala"
+            path="/alumno/juegos/escala/:courseId"
             element={
               <JuegoEscala />
             }
           />
           <Route 
-            path="/alumno/juegos/calculos" 
+            path="/alumno/juegos/calculos/:courseId" 
             element={
               <JuegoCalculos />
             } 

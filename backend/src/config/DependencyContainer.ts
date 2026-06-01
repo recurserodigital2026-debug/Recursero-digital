@@ -35,6 +35,7 @@ import { AiTextGenerator } from '../core/services/AiTextGenerator';
 import { GeminiAiTextGenerator } from '../infrastructure/GeminiAiTextGenerator';
 import { PostgreSQLGameLevelRepository } from '../infrastructure/PostgreSQLGameLevelRepository';
 import { GetGameLevelsUseCase } from '../core/usecases/GetGameLevelsUseCase';
+import { GetCourseGameLevelsUseCase } from '../core/usecases/GetCourseGameLevelsUseCase';
 import { UpdateGameLevelUseCase } from '../core/usecases/UpdateGameLevelUseCase';
 import { UpdateStudentUseCase } from '../core/usecases/UpdateStudentUseCase';
 import { DeleteStudentUseCase } from '../core/usecases/DeleteStudentUseCase';
@@ -89,6 +90,7 @@ export class DependencyContainer {
     private _aiTextGenerator: AiTextGenerator | null = null;
     private _gameLevelRepository: PostgreSQLGameLevelRepository | null = null;
     private _getGameLevelsUseCase: GetGameLevelsUseCase | null = null;
+    private _getCourseGameLevelsUseCase: GetCourseGameLevelsUseCase | null = null;
     private _updateGameLevelUseCase: UpdateGameLevelUseCase | null = null;
     private _updateStudentUseCase: UpdateStudentUseCase | null = null;
     private _deleteStudentUseCase: DeleteStudentUseCase | null = null;
@@ -529,6 +531,17 @@ export class DependencyContainer {
             );
         }
         return this._getGameLevelsUseCase;
+    }
+
+    public get getCourseGameLevelsUseCase(): GetCourseGameLevelsUseCase {
+        if (!this._getCourseGameLevelsUseCase) {
+            this._getCourseGameLevelsUseCase = new GetCourseGameLevelsUseCase(
+                this.courseRepository,
+                this.studentRepository,
+                this.getGameLevelsUseCase
+            );
+        }
+        return this._getCourseGameLevelsUseCase;
     }
 
     public get updateGameLevelUseCase(): UpdateGameLevelUseCase {
