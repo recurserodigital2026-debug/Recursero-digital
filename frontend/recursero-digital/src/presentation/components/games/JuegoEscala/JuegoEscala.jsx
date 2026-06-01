@@ -26,6 +26,8 @@ import {
 } from './util';
 
 const JuegoEscala = () => {
+    const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/escala');
+    const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getLastActivity } = useUserProgress();
     const { 
         points, 
@@ -196,7 +198,12 @@ const JuegoEscala = () => {
         if (currentActivity + 1 >= totalQuestions) {
             if (currentLevel < levels.length - 1) {
                 unlockLevel(PROGRESS_KEYS.ESCALA, currentLevel + 2);
-
+            }
+            if (assignedLevel != null && currentLevel + 1 === assignedLevel) {
+                try {
+                    const t = localStorage.getItem('token');
+                    if (t) { const p = JSON.parse(atob(t.split('.')[1])); const sid = p?.id || p?.userId; if (sid) localStorage.setItem(`recursero_escala_done_${sid}_${assignedLevel}`, '1'); }
+                } catch(e) {}
             }
             setShowCongrats(true);
         } else {
@@ -256,9 +263,10 @@ const JuegoEscala = () => {
             )}
             
             {gameState === UI_STATES.GAME_STATES.LEVEL_SELECT && (
-                <LevelSelectScreen 
+                <LevelSelectScreen
                     levels={levels}
                     onSelectLevel={(level) => handleSelectLevel(level, false)}
+                    assignedLevel={assignedLevel}
                 />
             )}
             

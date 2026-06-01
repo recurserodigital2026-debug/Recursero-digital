@@ -22,6 +22,8 @@ import FeedbackModal from './FeedbackModal';
 
 const JuegoOrdenamiento = () => {
   const navigate = useNavigate();
+  const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/ordenamiento');
+  const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
   const { unlockLevel, getLastActivity } = useUserProgress();
   const { 
     points, 
@@ -164,8 +166,14 @@ const JuegoOrdenamiento = () => {
       setTargetNumbers([]);
       setShowPermanentHint(true);
       startActivityTimer();
-    } else {  
+    } else {
       unlockLevel(PROGRESS_KEYS.ORDENAMIENTO, currentLevel + 2);
+      if (assignedLevel != null && currentLevel + 1 === assignedLevel) {
+        try {
+          const t = localStorage.getItem('token');
+          if (t) { const p = JSON.parse(atob(t.split('.')[1])); const sid = p?.id || p?.userId; if (sid) localStorage.setItem(`recursero_ordenamiento_done_${sid}_${assignedLevel}`, '1'); }
+        } catch(e) {}
+      }
       const isLastLevel = currentLevel >= backendLevels.length - 1;
       if(isLastLevel) {
         setShowGameComplete(true);
@@ -242,11 +250,12 @@ const JuegoOrdenamiento = () => {
       )}
       
       {gameState === 'level-select' && (
-        <LevelSelectScreen 
+        <LevelSelectScreen
           order={order}
-          onSelectLevel={handleStartGame} 
+          onSelectLevel={handleStartGame}
           onBackToStart={handleBackToStart}
           backendLevels={backendLevels}
+          assignedLevel={assignedLevel}
         />
       )}
       

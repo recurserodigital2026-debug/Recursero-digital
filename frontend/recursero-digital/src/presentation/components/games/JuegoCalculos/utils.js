@@ -168,9 +168,11 @@ export const getLocalLevelForOperation = (assignedDbLevel, operation) => {
     }
     if (operation === 'resta') {
         if (assignedDbLevel >= 4 && assignedDbLevel <= 6) return assignedDbLevel - 3;
+        if (assignedDbLevel >= 1 && assignedDbLevel <= 3) return assignedDbLevel;
     }
     if (operation === 'multiplicacion') {
         if (assignedDbLevel >= 7 && assignedDbLevel <= 9) return assignedDbLevel - 6;
+        if (assignedDbLevel >= 1 && assignedDbLevel <= 3) return assignedDbLevel;
     }
     return null;
 };
@@ -222,10 +224,11 @@ export const getQuestionsForLevel = (operation, levelNumber, levelConfig) => {
         switch (operation) {
             case 'suma':
             case 'resta': {
+                const configWithOp = { ...config, operation };
                 const seen = new Set();
                 for (let i = 0; i < activitiesCount; i++) {
                     const q = generateWithRetry(
-                        () => generateSumOrSubtractQuestion(config),
+                        () => generateSumOrSubtractQuestion(configWithOp),
                         (c) => !seen.has(c.pregunta)
                     );
                     seen.add(q.pregunta);

@@ -17,6 +17,8 @@ import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
 
 const JuegoDescomposicion = () => {
+    const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/descomposicion');
+    const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getLastActivity } = useUserProgress();
     const { 
         points, 
@@ -190,6 +192,12 @@ const JuegoDescomposicion = () => {
                 if (currentLevel < levels.length - 1) {
                     unlockLevel(PROGRESS_KEYS.DESCOMPOSICION, currentLevel + 2);
                 }
+                if (assignedLevel != null && currentLevel + 1 === assignedLevel) {
+                    try {
+                        const t = localStorage.getItem('token');
+                        if (t) { const p = JSON.parse(atob(t.split('.')[1])); const sid = p?.id || p?.userId; if (sid) localStorage.setItem(`recursero_descomposicion_done_${sid}_${gameMode}_${assignedLevel}`, '1'); }
+                    } catch(e) {}
+                }
                 setShowCongrats(true);
             } else {
                 setCurrentActivity(prev => prev + 1);
@@ -199,7 +207,7 @@ const JuegoDescomposicion = () => {
         }
 
 
-    }, [feedback.isCorrect, currentActivity, totalQuestions, currentLevel, unlockLevel, resetAttempts, startActivityTimer, levels.length]);
+    }, [feedback.isCorrect, currentActivity, totalQuestions, currentLevel, unlockLevel, resetAttempts, startActivityTimer, levels.length, gameMode, assignedLevel]);
 
     const handleNextLevel = useCallback(() => {
         setShowCongrats(false);
@@ -239,10 +247,12 @@ const JuegoDescomposicion = () => {
             )}
             
             {gameState === 'levelSelect' && (
-                <LevelSelectScreen 
+                <LevelSelectScreen
                     levels={levels}
                     onSelectLevel={handleSelectLevel}
                     onBackToStart={handleBackToStart}
+                    assignedLevel={assignedLevel}
+                    gameMode={gameMode}
                 />
             )}
             
