@@ -20,10 +20,8 @@ import { useGameLevels } from '../../../../hooks/useGameLevels';
 
 const JuegoEscritura = () => {
     const { courseId } = useParams();
-    const navigate = useNavigate();
-    useEffect(() => {
-        if (!courseId) navigate('/alumno/juegos', { replace: true });
-    }, [courseId, navigate]);
+    const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/escritura');
+    const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getMaxUnlockedLevel, getLastActivity } = useUserProgress();
     const { 
         points, 
@@ -210,6 +208,12 @@ const JuegoEscritura = () => {
                 setGameState('feedback');
             } else {
                 unlockLevel(PROGRESS_KEYS.ESCRITURA, currentLevel + 2);
+                if (assignedLevel != null && currentLevel + 1 === assignedLevel) {
+                    try {
+                        const t = localStorage.getItem('token');
+                        if (t) { const p = JSON.parse(atob(t.split('.')[1])); const sid = p?.id || p?.userId; if (sid) localStorage.setItem(`recursero_escritura_done_${sid}_${assignedLevel}`, '1'); }
+                    } catch(e) {}
+                }
                 setGameState('congrats');
             }
         } else {
@@ -266,7 +270,7 @@ const JuegoEscritura = () => {
         <div className="game-wrapper bg-space-gradient">
             {gameState === 'start' && <StartScreen onStart={() => setGameState('level-select')} />}
             
-            {gameState === 'level-select' && <LevelSelectScreen levels={levels} onSelectLevel={handleStartGame} />}
+            {gameState === 'level-select' && <LevelSelectScreen levels={levels} onSelectLevel={handleStartGame} assignedLevel={assignedLevel} />}
             
             {gameState === 'game' && <GameScreen
                 level={currentLevel + 1}

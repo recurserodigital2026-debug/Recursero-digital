@@ -497,7 +497,8 @@ export class DependencyContainer {
                 this.studentRepository,
                 this.statisticsRepository,
                 this.courseRepository,
-                this.gameLevelRepository
+                this.gameLevelRepository,
+                this.grupoRepository
             );
         }
 

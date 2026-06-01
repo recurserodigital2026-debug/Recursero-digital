@@ -3,6 +3,7 @@ import { StudentStatisticsRepository } from '../infrastructure/StudentStatistics
 import { StudentStatisticsAggregator } from '../services/StudentStatisticsAggregator';
 import { CourseRepository } from '../infrastructure/CourseRepository';
 import { GameLevelRepository } from '../infrastructure/GameLevelRepository';
+import { GrupoRepository } from '../infrastructure/GrupoRepository';
 import { StudentProgressCalculator } from '../services/StudentProgressCalculator';
 
 interface StudentDetails {
@@ -40,7 +41,8 @@ export class GetCourseStudentsUseCase {
         private studentRepository: StudentRepository,
         private statisticsRepository: StudentStatisticsRepository,
         private courseRepository: CourseRepository,
-        private gameLevelRepository: GameLevelRepository
+        private gameLevelRepository: GameLevelRepository,
+        private grupoRepository: GrupoRepository
     ) {
         this.statisticsAggregator = new StudentStatisticsAggregator();
         this.progressCalculator = new StudentProgressCalculator(
@@ -53,11 +55,11 @@ export class GetCourseStudentsUseCase {
         const { courseId } = request;
 
         const courseStudents = await this.studentRepository.getStudentsByCourseId(courseId);
-        const allCourseGames = await this.courseRepository.getAllGamesByCourseId(courseId);
-        const courseGameIds = allCourseGames.map(courseGame => courseGame.getGameId());
+        const enabledCourseGames = await this.courseRepository.getEnabledGamesByCourseId(courseId);
+        const fallbackGameIds = enabledCourseGames.map(cg => cg.getGameId());
 
         const studentsWithDetails = await Promise.all(
-            courseStudents.map(student => this.buildStudentDetails(student, courseGameIds))
+            courseStudents.map(student => this.buildStudentDetails(student, fallbackGameIds))
         );
 
         return {
@@ -66,14 +68,23 @@ export class GetCourseStudentsUseCase {
         };
     }
 
-    private async buildStudentDetails(student: any, courseGameIds: string[]): Promise<StudentDetails> {
+    private async buildStudentDetails(student: any, fallbackGameIds: string[]): Promise<StudentDetails> {
         const enrollmentDate = await this.getFormattedEnrollmentDate(student.id);
         const statistics = await this.statisticsRepository.findByStudent(student.id);
         const aggregatedStats = this.statisticsAggregator.aggregate(statistics);
 
+        let assignedGameIds: string[] = fallbackGameIds;
+        if (student.groupId) {
+            const groupGames = await this.grupoRepository.getGames(student.groupId);
+            const enabledGroupGames = groupGames.filter(gj => gj.isEnabled);
+            if (enabledGroupGames.length > 0) {
+                assignedGameIds = enabledGroupGames.map(gj => gj.gameId);
+            }
+        }
+
         const completeProgressByGame = await this.buildCompleteProgressByGame(
             student.id,
-            courseGameIds,
+            assignedGameIds,
             aggregatedStats.progressByGame
         );
 

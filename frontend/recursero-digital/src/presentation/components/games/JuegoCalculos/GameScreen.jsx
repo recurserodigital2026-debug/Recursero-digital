@@ -240,7 +240,7 @@ const GameScreen = ({
       setPendingTarget(target);
       setShowExitModal(true);
     } else {
-      if(target == 'juegos') navigation ('/alumno/juegos');
+      if(target == 'juegos') navigate('/alumno/juegos');
       if (target == 'niveles') onBackToLevelSelect();
     }
   };

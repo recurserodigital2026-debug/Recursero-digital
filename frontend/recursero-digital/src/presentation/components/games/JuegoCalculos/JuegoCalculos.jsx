@@ -11,11 +11,13 @@ import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
-import { getBackendLevel, getLevelCountForOperation } from './utils';
+import { getBackendLevel, getLevelCountForOperation, getLocalLevelForOperation } from './utils';
 
 const JuegoCalculos = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/calculos');
+  const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
   const { unlockLevel } = useUserProgress();
   const { 
     incrementAttempts, 
@@ -29,6 +31,7 @@ const JuegoCalculos = () => {
   const [gameState, setGameState] = useState('start'); // 'start', 'levelSelect', 'playing', 'gameComplete'
   const [selectedOperation, setSelectedOperation] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(null);
+  const [assignedLevelCompleted, setAssignedLevelCompleted] = useState(false);
   const [gameResults, setGameResults] = useState({
     isWin: false,
     finalScore: 0,
@@ -51,6 +54,7 @@ const JuegoCalculos = () => {
 
   const handleStartGame = useCallback((operation) => {
     setSelectedOperation(operation);
+    setAssignedLevelCompleted(false);
     setGameState('levelSelect');
   }, []);
 
@@ -88,6 +92,7 @@ const JuegoCalculos = () => {
   const handleBackToStart = useCallback(() => {
     setSelectedOperation(null);
     setSelectedLevel(null);
+    setAssignedLevelCompleted(false);
     setGameState('start');
   }, []);
 
@@ -113,8 +118,25 @@ const JuegoCalculos = () => {
       unlockLevel(gameId, levelNumber + 1);
     }
 
+    if (isWin && assignedLevel !== null) {
+      const assignedLocalLevel = getLocalLevelForOperation(assignedLevel, selectedOperation);
+      if (assignedLocalLevel !== null && levelNumber === assignedLocalLevel) {
+        setAssignedLevelCompleted(true);
+        try {
+          const payload = JSON.parse(atob(localStorage.getItem('token').split('.')[1]));
+          const studentId = payload?.id || payload?.userId;
+          if (studentId) {
+            localStorage.setItem(
+              `recursero_calculos_done_${studentId}_${selectedOperation}_${assignedLocalLevel}`,
+              '1'
+            );
+          }
+        } catch {}
+      }
+    }
+
     setGameState('gameComplete');
-  }, [selectedLevel, selectedOperation, unlockLevel]);
+  }, [selectedLevel, selectedOperation, unlockLevel, assignedLevel]);
 
   const handlePlayAgain = useCallback(() => {
     setGameState('playing');
@@ -157,10 +179,12 @@ const JuegoCalculos = () => {
 
       case 'levelSelect':
         return (
-          <LevelSelectScreen 
+          <LevelSelectScreen
             operation={selectedOperation}
             onSelectLevel={handleSelectLevel}
             onBackToStart={handleBackToStart}
+            assignedLevel={assignedLevel}
+            assignedLevelCompleted={assignedLevelCompleted}
           />
         );
 
@@ -192,7 +216,7 @@ const JuegoCalculos = () => {
               onUpdateScore={handleUpdateScore}
               onUpdateAttempts={handleUpdateAttempts}
             />
-            <CongratsModal 
+            <CongratsModal
               isVisible={true}
               isWin={gameResults.isWin}
               operation={selectedOperation}
@@ -201,10 +225,7 @@ const JuegoCalculos = () => {
               totalQuestions={gameResults.totalQuestions}
               correctAnswers={gameResults.correctAnswers}
               totalAttempts={gameResults.totalAttempts}
-              onPlayAgain={handlePlayAgain}
-              onNextLevel={handlePlayNextLevel}
-              onBackToLevelSelect={handleBackToLevelSelect}
-              onBackToStart={handleBackToStart}
+              onBackToGames={handleBackToGames}
             />
           </>
         );

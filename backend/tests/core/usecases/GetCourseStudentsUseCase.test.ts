@@ -3,6 +3,7 @@ import { MockStudentRepository } from '../../mocks/StudentRepository.mock';
 import { MockStudentStatisticsRepository } from '../../mocks/StudentStatisticsRepository.mock';
 import { CourseRepository } from '../../../src/core/infrastructure/CourseRepository';
 import { GameLevelRepository } from '../../../src/core/infrastructure/GameLevelRepository';
+import { GrupoRepository } from '../../../src/core/infrastructure/GrupoRepository';
 import { CourseGame } from '../../../src/core/models/CourseGame';
 import { Game } from '../../../src/core/models/Game';
 import { User, UserRole } from '../../../src/core/models/User';
@@ -35,7 +36,9 @@ class MockCourseRepository implements CourseRepository {
     async addCourse(courseData: any) {}
     async getAllCourses() { return []; }
     async findById(id: string) { return null; }
-    async getEnabledGamesByCourseId(courseId: string) { return []; }
+    async getEnabledGamesByCourseId(courseId: string): Promise<CourseGame[]> {
+        return (this.courseGames.get(courseId) || []).filter(cg => cg.isEnabled);
+    }
     async addGameToCourse(courseGameId: string, courseId: string, gameId: string) {}
     async updateCourseGameStatus(courseGameId: string, isEnabled: boolean) {}
     async createCourse(name: string, teacherId?: string): Promise<any> { throw new Error('Not implemented'); }
@@ -44,6 +47,20 @@ class MockCourseRepository implements CourseRepository {
     async updateCourse(course: any) {}
     async deleteCourse(id: string) {}
     async getAllGames() { return []; }
+}
+
+class MockGrupoRepository implements GrupoRepository {
+    async create(id: string, name: string, courseId: string): Promise<void> {}
+    async findById(id: string) { return null; }
+    async findByCourseId(courseId: string) { return []; }
+    async delete(id: string): Promise<void> {}
+    async addStudent(groupId: string, studentId: string): Promise<void> {}
+    async removeStudent(groupId: string, studentId: string): Promise<void> {}
+    async getStudents(groupId: string) { return []; }
+    async assignGame(id: string, groupId: string, gameId: string, level: number): Promise<void> {}
+    async removeGame(groupId: string, gameId: string): Promise<void> {}
+    async updateGame(groupId: string, gameId: string, level: number, isEnabled: boolean): Promise<void> {}
+    async getGames(groupId: string) { return []; }
 }
 
 class MockGameLevelRepository implements GameLevelRepository {
@@ -80,18 +97,21 @@ describe('GetCourseStudentsUseCase', () => {
     let mockStatisticsRepository: MockStudentStatisticsRepository;
     let mockCourseRepository: MockCourseRepository;
     let mockGameLevelRepository: MockGameLevelRepository;
+    let mockGrupoRepository: MockGrupoRepository;
 
     beforeEach(() => {
         mockStudentRepository = new MockStudentRepository();
         mockStatisticsRepository = new MockStudentStatisticsRepository();
         mockCourseRepository = new MockCourseRepository();
         mockGameLevelRepository = new MockGameLevelRepository();
+        mockGrupoRepository = new MockGrupoRepository();
 
         useCase = new GetCourseStudentsUseCase(
             mockStudentRepository,
             mockStatisticsRepository,
             mockCourseRepository,
-            mockGameLevelRepository
+            mockGameLevelRepository,
+            mockGrupoRepository
         );
     });
 
