@@ -27,6 +27,7 @@ import {
 } from './util';
 
 const JuegoEscala = () => {
+    const { courseId } = useParams();
     const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/escala');
     const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getLastActivity } = useUserProgress();
