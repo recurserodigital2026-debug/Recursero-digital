@@ -506,7 +506,7 @@ const GameScreen = ({
                   width: '100%',
                 }}
               >
-                Salir
+                🎮 Volver a Juegos
               </button>
             </div>
 

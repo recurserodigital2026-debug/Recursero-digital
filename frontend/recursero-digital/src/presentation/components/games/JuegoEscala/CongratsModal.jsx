@@ -60,25 +60,11 @@ const CongratsModal = ({
                 </div>
 
                 <div className="congrats-actions">
-                    <button 
-                        className="btn-play-again btn-main-gradient bg-space-gradient"
-                        onClick={onPlayAgain}
-                    >
-                        🔄 Jugar otra vez
-                    </button>
-                    
-                    <button 
-                        className="btn-play-again btn-main-gradient bg-space-gradient"
-                        onClick={onBackToLevels}
-                    >
-                        📋 Elegir nivel
-                    </button>
-                    
-                    <button 
+                    <button
                         className="btn-back-to-games btn-main-gradient bg-space-gradient"
                         onClick={() => navigate('/alumno/juegos')}
                     >
-                        🎮 Otros juegos
+                        🎮 Volver a Juegos
                     </button>
                 </div>
             </div>

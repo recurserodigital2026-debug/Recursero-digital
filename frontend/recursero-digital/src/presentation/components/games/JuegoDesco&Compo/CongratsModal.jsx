@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const CongratsModal = ({ level, points, hasNextLevel, onNextLevel, onBackToLevels }) => (
+const CongratsModal = ({ level, points, hasNextLevel, onNextLevel }) => {
+    const navigate = useNavigate();
+    return (
     <div className="modal-overlay">
         <div className="modal-content congrats slide-in" data-aos="zoom-in">
             <div style={{
@@ -68,31 +71,19 @@ const CongratsModal = ({ level, points, hasNextLevel, onNextLevel, onBackToLevel
                 justifyContent: 'center',
                 flexWrap: 'wrap'
             }}>
-                {hasNextLevel && (
-                    <button 
-                        onClick={onNextLevel} 
-                        className="btn btn-start"
-                        style={{
-                            background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 20%, #6366f1 40%, #8b5cf6 60%, #7c3aed 80%, #5b21b6 100%)',
-                            padding: '0.75rem 1.5rem'
-                        }}
-                    >
-                        🚀 Siguiente Nivel
-                    </button>
-                )}
-                
-                <button 
-                    onClick={onBackToLevels} 
+                <button
+                    onClick={() => navigate('/alumno/juegos')}
                     className="btn btn-check"
                     style={{
                         padding: '0.75rem 1.5rem'
                     }}
                 >
-                    📋 Ver Niveles
+                    🎮 Volver a Juegos
                 </button>
             </div>
         </div>
     </div>
-);
+    );
+};
 
 export default CongratsModal;

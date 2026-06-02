@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getOperationName, getLevelName, formatNumber } from './utils';
 
 const CongratsModal = ({
@@ -10,8 +11,8 @@ const CongratsModal = ({
   totalQuestions,
   correctAnswers,
   totalAttempts,
-  onBackToGames
 }) => {
+  const navigate = useNavigate();
   if (!isVisible) return null;
 
   const isCompleted = isWin;
@@ -82,10 +83,10 @@ const CongratsModal = ({
         {/* Action Buttons */}
         <div className="modal-buttons">
           <button
-            onClick={onBackToGames}
+            onClick={() => navigate('/alumno/juegos')}
             className="btn-primary modal-btn"
           >
-            🏠 Volver al inicio
+            🎮 Volver a Juegos
           </button>
         </div>
       </div>
