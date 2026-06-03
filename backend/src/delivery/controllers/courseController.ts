@@ -303,5 +303,36 @@ export const courseController = {
                 details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
             });
         }
+    },
+
+    resetCourseGameConfig: async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { courseId, gameId } = req.params as { courseId: string; gameId: string };
+
+            if (!courseId || !gameId) {
+                res.status(400).json({ error: 'courseId y gameId son requeridos' });
+                return;
+            }
+            const db = (container.courseRepository as any).db;
+
+            if (!db) {
+                throw new Error('No se pudo mapear la conexión a la base de datos');
+            }
+
+            console.log(`[BACKEND] Reseteando juego: ${gameId} del curso: ${courseId}`);
+            await db.query(
+                `DELETE FROM courses_games 
+                 WHERE course_id = $1 AND game_id = $2`,
+                [courseId, gameId]
+            );
+
+            res.status(200).json({ 
+                message: 'Configuración personalizada eliminada con éxito.' 
+            });
+
+        } catch (error: any) {
+            console.error('Error en resetCourseGameConfig:', error);
+            res.status(500).json({ error: error?.message ?? 'Error interno del servidor' });
+        }
     }
 };

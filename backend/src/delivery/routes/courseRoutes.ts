@@ -8,6 +8,7 @@ router.get('/', protectAdminRoute(), courseController.getAllCourses);
 router.post('/', protectAdminRoute(), courseController.createCourse);
 router.patch('/games/:courseGameId/status', protectTeacherOrAdminRoute(), courseController.updateCourseGameStatus);
 router.post('/:courseId/game', protectAdminRoute(), courseController.addGameToCourse);
+router.delete('/:courseId/games/:gameId/reset', protectTeacherOrAdminRoute(), courseController.resetCourseGameConfig);
 router.get('/:courseId/statistics', protectTeacherOrAdminRoute(), courseController.getCourseStatistics);
 router.get('/:courseId/games', protectTeacherOrAdminRoute(), courseController.getAllCourseGames);
 router.get('/:courseId/games/:gameId/levels', protectAuthenticatedRoute(), courseController.getCourseGameLevels);

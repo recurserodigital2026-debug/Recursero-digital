@@ -380,6 +380,18 @@ export const getAllGamesWithLevels = async () => {
   return await res.json();
 };
 
+export const resetCourseGameConfig = async (courseId, gameId) => {
+  const res = await fetch(`${API_BASE_URL}/courses/${courseId}/games/${gameId}/reset`, {
+    method: 'DELETE', 
+    headers: authHeaders()
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || 'Error al restaurar los valores de fábrica');
+  }
+  return await res.json();
+};
+
 export const MOCK_DATA = {
   teacherProfile: {
     id: "teacher_1",
