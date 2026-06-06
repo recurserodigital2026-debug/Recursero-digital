@@ -25,26 +25,6 @@ const LevelSelectScreen = ({ levels, onSelectLevel, assignedLevel }) => {
         } catch(e) { return false; }
     })();
 
-    if (isCompleted) {
-        return (
-            <div className="level-select-screen">
-                <div className="header-controls">
-                    <div className="buttons-group">
-                        <button className="btn-back-to-levels" onClick={() => navigate('/alumno/juegos')}>← Juegos</button>
-                    </div>
-                </div>
-                <div className="level-select-content">
-                    <h1 className="level-select-title">✏️ Números en Letras ✏️</h1>
-                    <div style={COMPLETED_CARD_STYLE}>
-                        <span style={{fontSize:'64px'}}>🏆</span>
-                        <h2 style={{fontSize:'1.5rem',fontWeight:700,color:'#065f46',margin:0}}>¡Ya completaste este nivel!</h2>
-                        <p style={{fontSize:'1rem',color:'#047857',margin:0}}>Aguarda a que tu docente te asigne un nuevo nivel para continuar.</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     if (!levels || levels.length === 0) {
         return (
             <div className="level-select-screen">
@@ -56,7 +36,7 @@ const LevelSelectScreen = ({ levels, onSelectLevel, assignedLevel }) => {
     }
 
     const visibleLevels = assignedLevel != null
-        ? levels.filter((_, i) => i + 1 === assignedLevel)
+        ? levels.filter(l => l.dbLevel === assignedLevel)
         : levels;
 
     return (

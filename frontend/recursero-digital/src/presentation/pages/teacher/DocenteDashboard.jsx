@@ -112,12 +112,6 @@ export default function DocenteDashboard() {
             <p>Gestiona el progreso de tus estudiantes</p>
           </div>
 
-          <div className="accion-card" onClick={() => navigate('/docente/reportes')}>
-            <div className="accion-icon">📊</div>
-            <h3>Ver Reportes</h3>
-            <p>Analiza el rendimiento del curso</p>
-          </div>
-
           <div className="accion-card" onClick={() => navigate('/docente/estadisticas')}>
             <div className="accion-icon">📈</div>
             <h3>Estadísticas del Curso</h3>

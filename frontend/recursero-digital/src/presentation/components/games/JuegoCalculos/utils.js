@@ -8,6 +8,8 @@ export const formatNumber = (num) => {
 
 const KNOWN_KINDS = new Set([
     'sum_to_target',
+    'sum_to_round',
+    'doubles',
     'whole_multiples',
     'identical_numbers',
     'no_carry_sum',
@@ -160,6 +162,13 @@ export const getBackendLevel = (operation, localLevel) => {
     return localLevel + OPERATION_OFFSET[operation];
 };
 
+export const getOperationForDbLevel = (dbLevel) => {
+    for (const op of Object.keys(operationConfig)) {
+        if (getLocalLevelForOperation(dbLevel, op) !== null) return op;
+    }
+    return null;
+};
+
 export const getLocalLevelForOperation = (assignedDbLevel, operation) => {
     if (operation === 'suma') {
         if (assignedDbLevel >= 1 && assignedDbLevel <= 3) return assignedDbLevel;
@@ -211,14 +220,37 @@ export const getTotalActivities = (levelConfig) => {
     return levelConfig?.activitiesCount || 5;
 };
 
+// Config de respaldo por si el backend no devuelve la configuración del nivel.
+const FALLBACK_CONFIGS = {
+    suma: {
+        1: { kind: 'no_carry_sum', digitCount: 2 },
+        2: { kind: 'whole_multiples', step: 10, min: 10, max: 90 },
+        3: { kind: 'free_form', digitCount: 2 },
+        4: { kind: 'identical_numbers', min: 10, max: 99 },
+        5: { kind: 'sum_to_target', targets: [100, 1000, 10000] },
+    },
+    resta: {
+        1: { kind: 'no_borrow_sub', digitCount: 2 },
+        2: { kind: 'whole_multiples', step: 10, min: 10, max: 90 },
+        3: { kind: 'free_form', digitCount: 2 },
+    },
+};
+
 export const getQuestionsForLevel = (operation, levelNumber, levelConfig) => {
-    if (!levelConfig || !levelConfig.config) {
-        console.warn('No se encontró configuración del nivel, usando valores por defecto');
-        return [];
+    let config;
+    let activitiesCount;
+
+    if (levelConfig?.config) {
+        config = levelConfig.config;
+        activitiesCount = levelConfig.activitiesCount || 5;
+    } else {
+        config = FALLBACK_CONFIGS[operation]?.[levelNumber];
+        activitiesCount = 5;
+        if (!config) {
+            console.warn('[getQuestionsForLevel] sin config ni fallback para', operation, levelNumber);
+            return [];
+        }
     }
-    
-    const config = levelConfig.config;
-    const activitiesCount = levelConfig.activitiesCount || 5;
     const questions = [];
     
         switch (operation) {

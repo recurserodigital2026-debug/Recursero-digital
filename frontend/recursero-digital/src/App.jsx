@@ -14,10 +14,8 @@ import AdminGameConfig from "./presentation/pages/admin/AdminGameConfig";
 import DocenteDashboard from "./presentation/pages/teacher/DocenteDashboard";
 import TeacherStudents from "./presentation/pages/teacher/TeacherStudents";
 import TeacherGames from "./presentation/pages/teacher/TeacherGames";
-import TeacherReports from "./presentation/pages/teacher/TeacherReports";
 import TeacherStatistics from "./presentation/pages/teacher/TeacherStatistics";
 import TeacherGroups from "./presentation/pages/teacher/TeacherGroups";
-import ReporteDetalle from "./presentation/pages/teacher/ReporteDetalle";
 import MainLayout from "./presentation/layouts/MainLayout";
 //import DocenteConCurso from "./pages/docenteConCurso";
 import JuegoOrdenamiento from "./presentation/components/games/JuegoOrdenamiento/JuegoOrdenamiento.jsx";
@@ -66,22 +64,6 @@ function App() {
           element={
            <MainLayout userRole="docente">
               <PerfilDocente />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/docente/reportes"
-          element={
-            <MainLayout userRole="docente">
-              <TeacherReports />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/reportes/:studentId"
-          element={
-            <MainLayout userRole="docente">
-              <ReporteDetalle />
             </MainLayout>
           }
         />
@@ -196,22 +178,6 @@ function App() {
             element={
               <MainLayout userRole="docente">
                 <PerfilDocente/>
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/docente/reportes"
-            element={
-              <MainLayout userRole="docente">
-                <TeacherReports />
-              </MainLayout>
-            }
-          />
-          <Route
-            path="/reportes/:studentId"
-            element={
-              <MainLayout userRole="docente">
-                <ReporteDetalle />
               </MainLayout>
             }
           />

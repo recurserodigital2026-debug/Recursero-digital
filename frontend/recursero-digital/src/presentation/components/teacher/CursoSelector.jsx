@@ -36,38 +36,9 @@ export default function CursoSelector() {
     const cargarCursos = async () => {
       try {
         setLoading(true);
-        
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-          console.warn('No hay token de autenticación, usando datos mock temporales');
-          const cursosMock = [
-            {
-              id: 1,
-              name: "Matemáticas 3° A",
-              color: coloresDisponibles[0]
-            },
-            {
-              id: 2, 
-              name: "Matemáticas 3° B",
-              color: coloresDisponibles[1]
-            }
-          ];
-          
-          const cursosConEstilo = cursosMock.map((curso) => ({
-            id: curso.id.toString(),
-            nombre: curso.name,
-            icono: obtenerIcono(),
-            color: curso.color
-          }));
-          
-          setCursos(cursosConEstilo);
-          setLoading(false);
-          return;
-        }
 
         const response = await getTeacherCourses();
-        
+
         if (response.courses && response.courses.length > 0) {
           const cursosConEstilo = response.courses.map((curso, index) => ({
             id: curso.id.toString(),
@@ -75,50 +46,15 @@ export default function CursoSelector() {
             icono: obtenerIcono(),
             color: coloresDisponibles[index % coloresDisponibles.length]
           }));
-          
           setCursos(cursosConEstilo);
         } else {
-          console.warn('La API no devolvió cursos, usando datos mock temporales');
-          const cursosMock = [
-            {
-              id: 1,
-              name: "Matemáticas 3° A",
-              color: coloresDisponibles[0]
-            }
-          ];
-          
-          const cursosConEstilo = cursosMock.map((curso) => ({
-            id: curso.id.toString(),
-            nombre: curso.name,
-            icono: obtenerIcono(),
-            color: curso.color
-          }));
-          
-          setCursos(cursosConEstilo);
+          setCursos([]);
         }
-        
+
         setLoading(false);
       } catch (error) {
         console.error('Error al cargar cursos:', error);
-        
-        console.warn('Error en API, usando datos mock temporales');
-        const cursosMock = [
-          {
-            id: 1,
-            name: "Matemáticas 3° A",
-            color: coloresDisponibles[0]
-          }
-        ];
-        
-        const cursosConEstilo = cursosMock.map((curso) => ({
-          id: parseInt(curso.id),
-          nombre: curso.name,
-          icono: obtenerIcono(),
-          color: curso.color
-        }));
-        
-        setCursos(cursosConEstilo);
-        setError(null);
+        setCursos([]);
         setLoading(false);
       }
     };
@@ -126,13 +62,9 @@ export default function CursoSelector() {
     cargarCursos();
   }, []);
 
-  console.log('CursoSelector renderizado con cursos:', cursos);
-
   const handleCursoSelect = (curso) => {
-    console.log('Curso seleccionado:', curso);
     setCursoSeleccionado(curso);
     localStorage.setItem('cursoSeleccionado', JSON.stringify(curso));
-    console.log('Curso guardado en localStorage:', localStorage.getItem('cursoSeleccionado'));
     navigate('/docente/dashboard');
   };
 
@@ -165,39 +97,50 @@ export default function CursoSelector() {
     );
   }
 
+  if (cursos.length === 0 && !loading) {
+    return (
+      <div className="curso-selector-container">
+        <div className="curso-selector-header">
+          <h1>{username ? username : 'Docente'}</h1>
+        </div>
+        <div className="sin-curso-container">
+          <div className="sin-curso-card">
+            <div className="sin-curso-emoji">📚</div>
+            <h2 className="sin-curso-titulo">Todavía no tenés un curso asignado</h2>
+            <p className="sin-curso-texto">Aguardá a que el administrador te asigne uno y acá van a aparecer tus cursos 🏫</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="curso-selector-container">
       <div className="curso-selector-header">
         <h1>{username ? username : 'Docente'}</h1>
-        <p>Selecciona el curso que deseas gestionar</p>
+        <p>Seleccioná el curso que querés gestionar</p>
       </div>
-      
+
       <div className="cursos-grid">
-        {cursos.length === 0 ? (
-          <div className="no-courses">
-            <p>No tienes cursos asignados</p>
-          </div>
-        ) : (
-          cursos.map((curso) => (
-            <div 
-              key={curso.id}
-              className={`curso-card ${cursoSeleccionado?.id === curso.id ? 'selected' : ''}`}
-              onClick={() => handleCursoSelect(curso)}
-              onMouseDown={() => handleCursoSelect(curso)}
-              onTouchStart={() => handleCursoSelect(curso)}
-              style={{ '--curso-color': curso.color }}
-            >
-              <div className="curso-icono">
-                {curso.icono}
-              </div>
-              <h3 className="curso-nombre">{curso.nombre}</h3>
+        {cursos.map((curso) => (
+          <div
+            key={curso.id}
+            className={`curso-card ${cursoSeleccionado?.id === curso.id ? 'selected' : ''}`}
+            onClick={() => handleCursoSelect(curso)}
+            onMouseDown={() => handleCursoSelect(curso)}
+            onTouchStart={() => handleCursoSelect(curso)}
+            style={{ '--curso-color': curso.color }}
+          >
+            <div className="curso-icono">
+              {curso.icono}
             </div>
-          ))
-        )}
+            <h3 className="curso-nombre">{curso.nombre}</h3>
+          </div>
+        ))}
       </div>
-      
+
       <div className="curso-selector-footer">
-        <p>💡 Podrás cambiar de curso en cualquier momento desde tu perfil</p>
+        <p>💡 Podés cambiar de curso en cualquier momento desde tu perfil</p>
       </div>
     </div>
   );

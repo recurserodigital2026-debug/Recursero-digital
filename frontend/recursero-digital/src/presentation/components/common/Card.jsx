@@ -37,56 +37,65 @@ export function Card() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchGames = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const response = await apiRequest('/student/me/games');
+      const response = await apiRequest('/student/me/games');
 
-        if (response.ok && response.data && Array.isArray(response.data.games)) {
-          const source = response.data.source || 'course';
-          setCourseId(response.data.courseId || null);
-          const transformedGames = response.data.games
-            .filter((courseGame) => courseGame?.game)
-            .map((courseGame) => {
-              const gameData = courseGame.game;
-              const assignedLevel = (source === 'student' || source === 'group') ? (courseGame.level ?? courseGame.orderIndex ?? null) : null;
-              return {
-                id: gameData.id,
-                name: gameData.name,
-                description: gameData.description,
-                imageUrl: resolveGameImage(gameData.imageUrl),
-                route: gameData.route || '/alumno/juegos',
-                difficultyLevel: gameData.difficultyLevel ?? 1,
-                orderIndex: courseGame.orderIndex ?? 0,
-                assignedLevel,
-              };
-            });
+      if (response.ok && response.data && Array.isArray(response.data.games)) {
+        const source = response.data.source || 'course';
+        setCourseId(response.data.courseId || null);
+        const transformedGames = response.data.games
+          .filter((courseGame) => courseGame?.game)
+          .map((courseGame) => {
+            const gameData = courseGame.game;
+            const assignedLevel = (source === 'student' || source === 'group') ? (courseGame.level ?? courseGame.orderIndex ?? null) : null;
+            const assignedLevels = (source === 'group' && Array.isArray(courseGame.levels) && courseGame.levels.length > 0)
+              ? courseGame.levels
+              : (assignedLevel != null ? [assignedLevel] : null);
+            return {
+              id: gameData.id,
+              name: gameData.name,
+              description: gameData.description,
+              imageUrl: resolveGameImage(gameData.imageUrl),
+              route: gameData.route || '/alumno/juegos',
+              difficultyLevel: gameData.difficultyLevel ?? 1,
+              orderIndex: courseGame.orderIndex ?? 0,
+              assignedLevel,
+              assignedLevels,
+            };
+          });
 
-          setGames(transformedGames);
-        } else {
-          setGames([]);
-          setError('No fue posible obtener los juegos del curso.');
-        }
-      } catch (fetchError) {
-        console.error('Error al cargar juegos:', fetchError);
-        setError('Error al cargar los juegos. Inténtalo nuevamente.');
+        setGames(transformedGames);
+      } else {
         setGames([]);
-      } finally {
-        setLoading(false);
+        setError('No fue posible obtener los juegos del curso.');
       }
-    };
+    } catch (fetchError) {
+      console.error('Error al cargar juegos:', fetchError);
+      setError('Error al cargar los juegos. Inténtalo nuevamente.');
+      setGames([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchGames();
   }, []);
 
-  const handleJugar = (route, assignedLevel) => {
+  const handleJugar = (route, assignedLevel, assignedLevels) => {
     if (assignedLevel != null) {
       sessionStorage.setItem(`assignedLevel:${route}`, assignedLevel);
     } else {
       sessionStorage.removeItem(`assignedLevel:${route}`);
+    }
+    if (assignedLevels?.length) {
+      sessionStorage.setItem(`assignedLevels:${route}`, JSON.stringify(assignedLevels));
+    } else {
+      sessionStorage.removeItem(`assignedLevels:${route}`);
     }
     if (!courseId) {
       console.warn('No courseId disponible; navegando a la ruta base');
@@ -102,7 +111,25 @@ export function Card() {
   }
 
   if (error || games.length === 0) {
-    return <div className="sin-juegos-container"><div className="sin-juegos-card"><div className="sin-juegos-emoji">📚</div><h2 className="sin-juegos-titulo">Todavía no tenés un curso asignado</h2><p className="sin-juegos-texto">Aguardá a que tu docente te asigne uno y acá van a aparecer tus juegos 🎮</p></div></div>;
+    const hasCourse = courseId !== null;
+    return (
+      <div className="sin-juegos-container">
+        <div className="sin-juegos-card">
+          <div className="sin-juegos-emoji">📚</div>
+          {hasCourse ? (
+            <>
+              <h2 className="sin-juegos-titulo">Todavía no tenés un grupo asignado</h2>
+              <p className="sin-juegos-texto">Aguardá a que tu docente te asigne un grupo y acá van a aparecer tus juegos 🎮</p>
+            </>
+          ) : (
+            <>
+              <h2 className="sin-juegos-titulo">Todavía no tenés un curso asignado</h2>
+              <p className="sin-juegos-texto">Aguardá a que tu docente te asigne uno y acá van a aparecer tus juegos 🎮</p>
+            </>
+          )}
+        </div>
+      </div>
+    );
   }
 
     return (
@@ -122,7 +149,7 @@ export function Card() {
                                 ) : (
                                   <p className="descriptiongame">{game.description}</p>
                                 )}
-                                <button className="buttongame" onClick={() => handleJugar(game.route, game.assignedLevel)}>Jugar</button>
+                                <button className="buttongame" onClick={() => handleJugar(game.route, game.assignedLevel, game.assignedLevels)}>Jugar</button>
                             </div>
                         </box>
                     ))

@@ -178,6 +178,53 @@
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Sin curso asignado */
+.sin-curso-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  z-index: 1;
+  position: relative;
+}
+
+.sin-curso-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  max-width: 480px;
+  font-family: 'Fredoka', cursive;
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.sin-curso-emoji {
+  font-size: 64px;
+  margin-bottom: 1rem;
+}
+
+.sin-curso-titulo {
+  font-size: 28px;
+  color: white;
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+  text-shadow:
+    -1.5px -1.5px 0 #7c3aed,
+     1.5px -1.5px 0 #7c3aed,
+    -1.5px  1.5px 0 #7c3aed,
+     1.5px  1.5px 0 #7c3aed;
+}
+
+.sin-curso-texto {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.8;
+  margin: 0;
+}
+
 /* Animaciones */
 @keyframes fadeInDown {
   from {

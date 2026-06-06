@@ -4,7 +4,8 @@ export interface GrupoJuego {
   id: string;
   groupId: string;
   gameId: string;
-  level: number;
+  level: number;    // kept for student backwards compat (= levels[0])
+  levels: number[]; // authoritative list
   isEnabled: boolean;
   game?: Game;
 }

@@ -153,14 +153,18 @@ export default function TeacherGroups() {
   };
 
   const handleOpenGamesModal = async () => {
+    6
     setLoadingModal(true);
     setShowGamesModal(true);
     try {
       const res = await getAllGamesWithLevels();
-      setCourseGames(res.games || []);
+      setCourseGames((res.games || []).map(g => ({
+        ...g,
+        levels: (g.levels || []).filter(l => l.isActive)
+      })));
       const map = {};
       for (const gj of groupGames) {
-        map[gj.gameId] = { level: gj.level, isEnabled: gj.isEnabled };
+        map[gj.gameId] = { levels: gj.levels?.length ? gj.levels : [gj.level], isEnabled: gj.isEnabled };
       }
       setOriginalGames(map);
       setPendingGames(map);
@@ -178,12 +182,22 @@ export default function TeacherGroups() {
         delete next[gameId];
         return next;
       }
-      return { ...prev, [gameId]: { level: 1, isEnabled: true } };
+      const firstLevel = courseGames.find(g => g.gameId === gameId)?.levels?.[0]?.level ?? 1;
+      return { ...prev, [gameId]: { levels: [firstLevel], isEnabled: true } };
     });
   };
 
-  const handleGameLevelChange = (gameId, level) => {
-    setPendingGames(prev => ({ ...prev, [gameId]: { ...prev[gameId], level: Number(level) } }));
+  const handleGameLevelToggle = (gameId, level) => {
+    setPendingGames(prev => {
+      const current = prev[gameId];
+      if (!current) return prev;
+      const already = current.levels.includes(level);
+      const newLevels = already
+        ? current.levels.filter(l => l !== level)
+        : [...current.levels, level].sort((a, b) => a - b);
+      if (newLevels.length === 0) return prev;
+      return { ...prev, [gameId]: { ...current, levels: newLevels } };
+    });
   };
 
   const handleSaveGames = async () => {
@@ -194,11 +208,13 @@ export default function TeacherGroups() {
         const orig = originalGames[gameId];
         const pend = pendingGames[gameId];
         if (!orig && pend) {
-          await assignGameToGrupo(selectedGroup.id, gameId, pend.level);
+          await assignGameToGrupo(selectedGroup.id, gameId, pend.levels);
         } else if (orig && !pend) {
           await removeGameFromGrupo(selectedGroup.id, gameId);
-        } else if (orig && pend && (orig.level !== pend.level || orig.isEnabled !== pend.isEnabled)) {
-          await updateGrupoGame(selectedGroup.id, gameId, pend.level, pend.isEnabled);
+        } else if (orig && pend && (
+          JSON.stringify(orig.levels) !== JSON.stringify(pend.levels) || orig.isEnabled !== pend.isEnabled
+        )) {
+          await updateGrupoGame(selectedGroup.id, gameId, pend.levels, pend.isEnabled);
         }
       }
       setOriginalGames({ ...pendingGames });
@@ -319,7 +335,9 @@ export default function TeacherGroups() {
                   {groupGames.map(gj => (
                     <div key={gj.id} className="tg-game-row">
                       <span className="tg-game-name">{gj.game?.name || gj.gameId}</span>
-                      <span className="tg-level-badge">Nivel {gj.level}</span>
+                      <span className="tg-level-badge">
+                        {(gj.levels?.length ? gj.levels : [gj.level]).map(l => `Niv. ${l}`).join(', ')}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -422,7 +440,7 @@ export default function TeacherGroups() {
               <h3>Juegos del grupo</h3>
               <button className="ts-modal-close" onClick={() => setShowGamesModal(false)}>✕</button>
             </div>
-            <p className="tg-modal-subtitle">Activá los juegos y elegí el nivel. Los cambios se aplican al guardar.</p>
+            <p className="tg-modal-subtitle">Activá los juegos y elegí uno o más niveles. Los cambios se aplican al guardar.</p>
             {loadingModal ? (
               <p className="ts-loading">Cargando juegos...</p>
             ) : (
@@ -430,32 +448,47 @@ export default function TeacherGroups() {
                 {courseGames.map(game => {
                   const assigned = pendingGames[game.gameId];
                   return (
-                    <div key={game.gameId} className={`sgam-row ${assigned ? 'sgam-row--active' : ''}`}>
-                      <div className="sgam-info">
-                        <span className="sgam-name">{game.gameName}</span>
-                        {assigned && <span className="sgam-level-badge">Nivel {assigned.level}</span>}
-                      </div>
-                      <div className="sgam-controls">
-                        {assigned && (
-                          <select
-                            className="sgam-select"
-                            value={assigned.level}
+                    <div key={game.gameId} className={`sgam-row ${assigned ? 'sgam-row--active' : ''} sgam-row--group`}>
+                      <div className="sgam-row-top">
+                        <div className="sgam-info">
+                          <span className="sgam-name">{game.gameName}</span>
+                          {assigned && (
+                            <span className="sgam-level-badge">
+                              {assigned.levels.map(l => {
+                                const info = game.levels.find(x => x.level === l);
+                                return info?.name || `Niv. ${l}`;
+                              }).join(', ')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="sgam-controls">
+                          <button
+                            className={`sgam-toggle ${assigned ? 'sgam-toggle--on' : 'sgam-toggle--off'}`}
                             disabled={savingGames}
-                            onChange={e => handleGameLevelChange(game.gameId, e.target.value)}
+                            onClick={() => handleToggleGame(game.gameId)}
                           >
-                            {game.levels.map(l => (
-                              <option key={l.level} value={l.level}>{l.name}</option>
-                            ))}
-                          </select>
-                        )}
-                        <button
-                          className={`sgam-toggle ${assigned ? 'sgam-toggle--on' : 'sgam-toggle--off'}`}
-                          disabled={savingGames}
-                          onClick={() => handleToggleGame(game.gameId)}
-                        >
-                          {assigned ? 'Desasignar' : 'Asignar'}
-                        </button>
+                            {assigned ? 'Desasignar' : 'Asignar'}
+                          </button>
+                        </div>
                       </div>
+                      {assigned && (
+                        <div className="sgam-levels-multi">
+                          {game.levels.map(l => (
+                            <label
+                              key={l.level}
+                              className={`sgam-level-check ${assigned.levels.includes(l.level) ? 'sgam-level-check--on' : ''}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={assigned.levels.includes(l.level)}
+                                disabled={savingGames}
+                                onChange={() => handleGameLevelToggle(game.gameId, l.level)}
+                              />
+                              {l.name}
+                            </label>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

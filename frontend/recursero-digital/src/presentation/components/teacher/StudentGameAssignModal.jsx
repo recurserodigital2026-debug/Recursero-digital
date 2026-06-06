@@ -5,10 +5,12 @@ import {
   removeGameFromStudent,
   updateStudentGame,
   getCourseGames,
+  getAllGamesWithLevels,
 } from '../../../infrastructure/adapters/api/teacherApi';
 
 const StudentGameAssignModal = ({ student, courseId, onClose }) => {
   const [courseGames, setCourseGames] = useState([]);
+  const [gameLevelsMap, setGameLevelsMap] = useState({});
   const [originalAssignments, setOriginalAssignments] = useState({});
   const [pendingAssignments, setPendingAssignments] = useState({});
   const [loading, setLoading] = useState(true);
@@ -18,15 +20,22 @@ const StudentGameAssignModal = ({ student, courseId, onClose }) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [gamesRes, assignRes] = await Promise.all([
+        const [gamesRes, assignRes, levelsRes] = await Promise.all([
           getCourseGames(courseId),
           getStudentGameAssignments(student.id),
+          getAllGamesWithLevels(),
         ]);
 
         const games = (gamesRes.courseGames || gamesRes.games || [])
           .filter(cg => cg.game)
           .map(cg => cg.game);
         setCourseGames(games);
+
+        const levelsMap = {};
+        for (const g of levelsRes.games || []) {
+          levelsMap[g.gameId] = (g.levels || []).filter(l => l.isActive);
+        }
+        setGameLevelsMap(levelsMap);
 
         const map = {};
         for (const a of assignRes.assignments || []) {
@@ -55,7 +64,8 @@ const StudentGameAssignModal = ({ student, courseId, onClose }) => {
         delete next[gameId];
         return next;
       }
-      return { ...prev, [gameId]: { level: 1, isEnabled: true } };
+      const firstLevel = (gameLevelsMap[gameId]?.[0]?.level) ?? 1;
+      return { ...prev, [gameId]: { level: firstLevel, isEnabled: true } };
     });
   };
 
@@ -122,13 +132,21 @@ const StudentGameAssignModal = ({ student, courseId, onClose }) => {
           <div className="sgam-list">
             {courseGames.map(game => {
               const assigned = pendingAssignments[game.id];
+              const gameLevels = gameLevelsMap[game.id] || [];
+              const assignedLevelInfo = gameLevels.find(l => l.level === assigned?.level);
+              const levelInList = !!assignedLevelInfo;
+              const selectOptions = (assigned && !levelInList)
+                ? [{ level: assigned.level, name: `Nivel ${assigned.level}` }, ...gameLevels]
+                : gameLevels;
 
               return (
                 <div key={game.id} className={`sgam-row ${assigned ? 'sgam-row--active' : ''}`}>
                   <div className="sgam-info">
                     <span className="sgam-name">{game.name}</span>
                     {assigned && (
-                      <span className="sgam-level-badge">Nivel {assigned.level}</span>
+                      <span className="sgam-level-badge">
+                        {assignedLevelInfo ? assignedLevelInfo.name : `Nivel ${assigned.level}`}
+                      </span>
                     )}
                   </div>
 
@@ -140,9 +158,9 @@ const StudentGameAssignModal = ({ student, courseId, onClose }) => {
                         disabled={saving}
                         onChange={e => handleLevelChange(game.id, e.target.value)}
                       >
-                        <option value={1}>Nivel 1</option>
-                        <option value={2}>Nivel 2</option>
-                        <option value={3}>Nivel 3</option>
+                        {selectOptions.map(l => (
+                          <option key={l.level} value={l.level}>{l.name}</option>
+                        ))}
                       </select>
                     )}
 

@@ -13,10 +13,10 @@ export default function AdminAssignments() {
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [showTeacherModal, setShowTeacherModal] = useState(false);
   const [showCourseStudentsModal, setShowCourseStudentsModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState('');
+  const [selectedStudents, setSelectedStudents] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedCourses, setSelectedCourses] = useState([]); // Para asignar múltiples cursos a un docente
+  const [selectedCourses, setSelectedCourses] = useState([]);
   const [courseStudents, setCourseStudents] = useState([]);
   const [selectedCourseForStudents, setSelectedCourseForStudents] = useState(null);
 
@@ -87,7 +87,7 @@ export default function AdminAssignments() {
 
   const handleCloseStudentModal = () => {
     setShowStudentModal(false);
-    setSelectedStudent('');
+    setSelectedStudents([]);
     setSelectedCourse('');
     setError(null);
   };
@@ -99,20 +99,27 @@ export default function AdminAssignments() {
     setError(null);
   };
 
+  const handleStudentToggle = (studentId) => {
+    setSelectedStudents(prev =>
+      prev.includes(studentId) ? prev.filter(id => id !== studentId) : [...prev, studentId]
+    );
+  };
+
   const handleSubmitStudentAssignment = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      if (!selectedStudent || !selectedCourse) {
-        setError('Debes seleccionar un estudiante y un curso');
+
+      if (selectedStudents.length === 0 || !selectedCourse) {
+        setError('Debes seleccionar al menos un estudiante y un curso');
         return;
       }
-      
-      await assignCourseToStudent({
-        studentId: selectedStudent,
-        courseId: selectedCourse
-      });
+
+      await Promise.all(
+        selectedStudents.map(studentId =>
+          assignCourseToStudent({ studentId, courseId: selectedCourse })
+        )
+      );
       
       const [coursesData, teachersData] = await Promise.all([
         getAllCourses(),
@@ -333,47 +340,27 @@ export default function AdminAssignments() {
         
       </div>
 
-      {/* Modal para asignar estudiante a curso */}
+      {/* Modal para asignar estudiantes a curso */}
       {showStudentModal && (
         <div className="add-user-overlay" onClick={handleCloseStudentModal}>
           <div className="add-user-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Asignar Estudiante a Curso</h2>
+              <h2>Asignar Estudiantes a Curso</h2>
               <button className="close-btn" onClick={handleCloseStudentModal}>×</button>
             </div>
-            
+
             <form className="user-form" onSubmit={(e) => { e.preventDefault(); handleSubmitStudentAssignment(); }}>
               {error && <div className="error-message-admin">{error}</div>}
-              
-              <div className="form-group">
-                <label htmlFor="student-select">Estudiante *</label>
-                <select 
-                  id="student-select"
-                  value={selectedStudent} 
-                  onChange={(e) => setSelectedStudent(e.target.value)}
-                  className={!selectedStudent && error ? "error" : ""}
-                >
-                  <option value="">Selecciona un estudiante</option>
-                  {students.map(student => (
-                    <option key={student.id} value={student.id}>
-                      {student.name} ({student.username})
-                    </option>
-                  ))}
-                </select>
-                {!selectedStudent && error && (
-                  <span className="error-message">Debes seleccionar un estudiante</span>
-                )}
-              </div>
-              
+
               <div className="form-group">
                 <label htmlFor="course-select">Curso *</label>
-                <select 
+                <select
                   id="course-select"
-                  value={selectedCourse} 
+                  value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
                   className={!selectedCourse && error ? "error" : ""}
                 >
-                  <option value="">Selecciona un curso</option>
+                  <option value="">Seleccioná un curso</option>
                   {courses.map(course => (
                     <option key={course.id} value={course.id}>
                       {course.name}
@@ -385,20 +372,44 @@ export default function AdminAssignments() {
                 )}
               </div>
 
+              <div className="form-group">
+                <label>Estudiantes (seleccioná uno o más) *</label>
+                <div className="courses-checkbox-list">
+                  {students.map(student => (
+                    <label key={student.id} className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={selectedStudents.includes(student.id)}
+                        onChange={() => handleStudentToggle(student.id)}
+                      />
+                      {student.name} ({student.username})
+                    </label>
+                  ))}
+                </div>
+                {selectedStudents.length === 0 && error && (
+                  <span className="error-message">Debes seleccionar al menos un estudiante</span>
+                )}
+                {selectedStudents.length > 0 && (
+                  <p className="selected-count">
+                    {selectedStudents.length} estudiante(s) seleccionado(s)
+                  </p>
+                )}
+              </div>
+
               <div className="form-buttons">
-                <button 
+                <button
                   type="button"
-                  className="cancel-btn" 
+                  className="cancel-btn"
                   onClick={handleCloseStudentModal}
                 >
                   Cancelar
                 </button>
-                <button 
+                <button
                   type="submit"
-                  className="submit-btn" 
+                  className="submit-btn"
                   disabled={loading}
                 >
-                  {loading ? 'Guardando...' : 'Asignar Estudiante'}
+                  {loading ? 'Guardando...' : 'Asignar Estudiantes'}
                 </button>
               </div>
             </form>
