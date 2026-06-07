@@ -305,32 +305,41 @@ export const courseController = {
         }
     },
 
-    resetCourseGameConfig: async (req: Request, res: Response): Promise<void> => {
+    resetCourseGameConfig: async (req: AuthenticatedRequest, res: Response): Promise<void> => {
         try {
             const { courseId, gameId } = req.params as { courseId: string; gameId: string };
+
+            if (!req.user) {
+                res.status(401).json({ error: 'No autenticado' });
+                return;
+            }
 
             if (!courseId || !gameId) {
                 res.status(400).json({ error: 'courseId y gameId son requeridos' });
                 return;
             }
-            const db = (container.courseRepository as any).db;
 
-            if (!db) {
-                throw new Error('No se pudo mapear la conexión a la base de datos');
-            }
-
-            console.log(`[BACKEND] Reseteando juego: ${gameId} del curso: ${courseId}`);
-            await db.query(
-                `DELETE FROM courses_games 
-                 WHERE course_id = $1 AND game_id = $2`,
-                [courseId, gameId]
-            );
-
-            res.status(200).json({ 
-                message: 'Configuración personalizada eliminada con éxito.' 
+            const result = await container.resetCourseGameConfigUseCase.execute({
+                courseId,
+                gameId,
+                requester: { id: req.user.id, role: req.user.role }
             });
 
+            res.status(200).json(result);
+
         } catch (error: any) {
+            if (error instanceof CourseNotFoundError) {
+                res.status(404).json({ error: error.message });
+                return;
+            }
+            if (error instanceof CourseAccessDeniedError) {
+                res.status(403).json({ error: error.message });
+                return;
+            }
+            if (error?.message === 'courseId es requerido' || error?.message === 'gameId es requerido') {
+                res.status(400).json({ error: error.message });
+                return;
+            }
             console.error('Error en resetCourseGameConfig:', error);
             res.status(500).json({ error: error?.message ?? 'Error interno del servidor' });
         }

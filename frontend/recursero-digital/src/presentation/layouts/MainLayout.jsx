@@ -46,7 +46,7 @@ export default function MainLayout({ children, userRole = "alumno" }) {
     ? [
         { id: "home", label: "🏠 Inicio", path: "/docente/dashboard" },
         { id: "statistics", label: "📊 Estadísticas", path: "/docente/estadisticas" },
-        { id: "games", label: "⚙️ Configuración Juegos", path: "/docente/config-juegos" } 
+        { id: "games", label: "⚙️ Configuración Juegos", path: "/docente/config-juegos" }
       ]
     : [
         { id: "home", label: "🏠 Inicio", path: "/admin" },

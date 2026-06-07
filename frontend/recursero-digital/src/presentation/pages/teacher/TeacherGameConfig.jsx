@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTeacherCourses, resetCourseGameConfig } from '../../../infrastructure/adapters/api/teacherApi'; 
+import { getTeacherCourses } from '../../../infrastructure/adapters/api/teacherApi';
 import '../../styles/pages/teacherGames.css'; 
 
 const TeacherGameConfig = () => {
@@ -7,14 +7,13 @@ const TeacherGameConfig = () => {
   const [selectedCurso, setSelectedCurso] = useState('');
   const [selectedJuego, setSelectedJuego] = useState('');
   const [loadingCursos, setLoadingCursos] = useState(true);
-  const [isResetting, setIsResetting] = useState(false); 
 
   const listaJuegos = [
-    { id: 'ordenamiento', nombre: '🎮 Juego de Ordenamiento' },
-    { id: 'escritura', nombre: '📝 Juego de Escritura' },
-    { id: 'descomposicion', nombre: '🧩 Juego de Descomposición' },
-    { id: 'escala', nombre: '📈 Juego de Escala' },
-    { id: 'calculos', nombre: '🧮 Juego de Cálculos' }
+    { id: 'game-ordenamiento', nombre: '🎮 Juego de Ordenamiento' },
+    { id: 'game-escritura', nombre: '📝 Juego de Escritura' },
+    { id: 'game-descomposicion', nombre: '🧩 Juego de Descomposición' },
+    { id: 'game-escala', nombre: '📈 Juego de Escala' },
+    { id: 'game-calculos', nombre: '🧮 Juego de Cálculos' }
   ];
 
   useEffect(() => {
@@ -64,30 +63,6 @@ const TeacherGameConfig = () => {
     console.log("Juego seleccionado para configurar:", e.target.value);
   };
 
-  const handleResetearGlobal = async () => {
-    if (!selectedCurso || !selectedJuego) return;
-
-    const confirmar = window.confirm(
-      "¿Estás seguro de que querés restaurar los valores por defecto? Se borrarán los cambios personalizados de este curso para volver a la configuración global de ReDa Kids."
-    );
-
-    if (confirmar) {
-      try {
-        setIsResetting(true);
-        
-        await resetCourseGameConfig(selectedCurso, selectedJuego);
-        
-        alert("¡Valores restaurados con éxito a la configuración global del sistema! 🪐");
-
-      } catch (error) {
-        console.error("Error al resetear configuración:", error);
-        alert(`No se pudo resetear la configuración: ${error.message}. (Si estás usando mocks de desarrollo, esto es normal).`);
-      } finally {
-        setIsResetting(false);
-      }
-    }
-  };
-
   return (
     <div 
       style={{ 
@@ -109,7 +84,7 @@ const TeacherGameConfig = () => {
         <div className="header-section" style={{ marginBottom: '30px', textAlign: 'center' }}>
           <h2>⚙️ Configuración de Parámetros por Curso</h2>
           <p style={{ color: '#ffffff' }}>
-            Personalizá las rules de los juegos y niveles de manera específica para cada uno de tus cursos.
+            Personalizá las reglas de los juegos y niveles de manera específica para cada uno de tus cursos.
           </p>
         </div>
           
@@ -192,7 +167,7 @@ const TeacherGameConfig = () => {
         </div>
 
         {selectedCurso && selectedJuego ? (
-          <div style={{ 
+          <div style={{
             background: 'rgba(255, 255, 255, 0.02)',
             padding: '40px',
             borderRadius: '10px',
@@ -200,55 +175,38 @@ const TeacherGameConfig = () => {
             textAlign: 'center',
             marginTop: '20px'
           }}>
-            <h3>📊 Panel de Configuración Activo</h3>
+            <h3>📊 Panel de Configuración</h3>
             <p style={{ color: '#00ffcc' }}>
               Configurando <strong>{listaJuegos.find(j => j.id === selectedJuego)?.nombre}</strong> para el curso seleccionado.
-            </p>
-            
-            <p style={{ fontSize: '14px', color: '#888', marginTop: '10px', marginBottom: '30px' }}>
-              [Acá meteremos la Tabla editable de niveles]
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
               <button
                 type="button"
-                onClick={handleResetearGlobal}
-                disabled={isResetting}
+                disabled
+                title="Función en desarrollo"
                 style={{
                   padding: '12px 28px',
                   borderRadius: '12px',
                   border: 'none',
-                  backgroundColor: isResetting ? '#5a8bae' : '#1e88e5',
+                  backgroundColor: '#5a6b7a',
                   color: '#ffffff',
                   fontWeight: '600',
                   fontSize: '15px',
-                  cursor: isResetting ? 'not-allowed' : 'pointer',
-                  opacity: isResetting ? 0.7 : 1,
-                  boxShadow: '0 4px 14px rgba(30, 136, 229, 0.4)',
-                  transition: 'all 0.2s ease',
+                  cursor: 'not-allowed',
+                  opacity: 0.7,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px'
                 }}
-                onMouseEnter={(e) => {
-                  if (!isResetting) {
-                    e.target.style.backgroundColor = '#1565c0';
-                    e.target.style.boxShadow = '0 6px 20px rgba(21, 101, 192, 0.6)';
-                    e.target.style.transform = 'translateY(-1px)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isResetting) {
-                    e.target.style.backgroundColor = '#1e88e5';
-                    e.target.style.boxShadow = '0 4px 14px rgba(30, 136, 229, 0.4)';
-                    e.target.style.transform = 'translateY(0px)';
-                  }
-                }}
               >
-                {isResetting ? '🔄 Restaurando...' : '🔄 Restaurar Valores por Defecto'}
+                🔄 Restaurar Valores por Defecto
               </button>
             </div>
 
+            <p style={{ fontSize: '13px', color: '#888', marginTop: '12px' }}>
+              🚧 En desarrollo
+            </p>
           </div>
         ) : (
           <div style={{ 
