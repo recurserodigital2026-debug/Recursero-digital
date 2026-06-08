@@ -57,9 +57,9 @@ class MockGrupoRepository implements GrupoRepository {
     async addStudent(groupId: string, studentId: string): Promise<void> {}
     async removeStudent(groupId: string, studentId: string): Promise<void> {}
     async getStudents(groupId: string) { return []; }
-    async assignGame(id: string, groupId: string, gameId: string, level: number): Promise<void> {}
+    async assignGame(id: string, groupId: string, gameId: string, levels: number[]): Promise<void> {}
     async removeGame(groupId: string, gameId: string): Promise<void> {}
-    async updateGame(groupId: string, gameId: string, level: number, isEnabled: boolean): Promise<void> {}
+    async updateGame(groupId: string, gameId: string, levels: number[], isEnabled: boolean): Promise<void> {}
     async getGames(groupId: string) { return []; }
 }
 

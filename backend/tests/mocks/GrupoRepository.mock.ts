@@ -38,18 +38,19 @@ export class MockGrupoRepository implements GrupoRepository {
         return [];
     }
 
-    async assignGame(id: string, groupId: string, gameId: string, level: number): Promise<void> {
-        this.games.push({ id, groupId, gameId, level, isEnabled: true });
+    async assignGame(id: string, groupId: string, gameId: string, levels: number[]): Promise<void> {
+        this.games.push({ id, groupId, gameId, level: levels[0], levels, isEnabled: true });
     }
 
     async removeGame(groupId: string, gameId: string): Promise<void> {
         this.games = this.games.filter(g => !(g.groupId === groupId && g.gameId === gameId));
     }
 
-    async updateGame(groupId: string, gameId: string, level: number, isEnabled: boolean): Promise<void> {
+    async updateGame(groupId: string, gameId: string, levels: number[], isEnabled: boolean): Promise<void> {
         const g = this.games.find(g => g.groupId === groupId && g.gameId === gameId);
         if (g) {
-            g.level = level;
+            g.levels = levels;
+            g.level = levels[0];
             g.isEnabled = isEnabled;
         }
     }
