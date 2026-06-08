@@ -134,7 +134,7 @@ export const levelConfig = [
     },
     {
         name: 'Nivel 4',
-        description: 'Sumas dobles: números iguales',
+        description: 'Sumas de números iguales',
         color: 'from-yellow-400 to-orange-500',
         textColor: 'text-orange-600',
         number: 4
@@ -197,8 +197,8 @@ export const levelDescriptions = {
         1: 'Sumas fáciles de dos cifras',
         2: 'Sumas con decenas exactas: 10, 20, 30… 90',
         3: 'Sumas libres de dos cifras',
-        4: 'Sumas dobles: el mismo número dos veces',
-        5: 'Sumas complementarias que dan 100, 1.000 o 10.000',
+        4: 'Sumas de números iguales: ambos operandos son el mismo número',
+        5: 'Sumas que dan 100, 1.000 o 10.000',
     },
     resta: {
         1: 'Restas fáciles de dos cifras',

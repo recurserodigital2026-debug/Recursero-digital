@@ -1,6 +1,22 @@
-/* eslint-disable camelcase */
-
+/* eslint-disable camelcase *
 exports.shorthands = undefined;
+
+const L4_CONFIG = {
+  operation: 'suma',
+  icon: '➕',
+  color: 'from-yellow-400 to-orange-500',
+  kind: 'identical_numbers',
+  min: 10,
+  max: 99,
+};
+
+const L5_CONFIG = {
+  operation: 'suma',
+  icon: '➕',
+  color: 'from-pink-400 to-rose-500',
+  kind: 'sum_to_target',
+  targets: [100, 1000, 10000],
+};
 
 exports.up = (pgm) => {
   pgm.sql(`
@@ -9,14 +25,18 @@ exports.up = (pgm) => {
       'level-calculos-suma-4',
       'game-calculos',
       10,
-      'Nivel 4 - Sumas Dobles',
-      '¡Suma de números iguales!',
+      'Nivel 4 - Sumas de números iguales',
+      'Sumas dobles: ambos operandos iguales',
       'Intermedio',
       5,
-      '{"operation": "suma", "icon": "➕", "color": "from-yellow-400 to-orange-500", "kind": "doubles", "min": 10, "max": 5000, "step": 10, "maxResult": 10000}'::jsonb,
+      '${JSON.stringify(L4_CONFIG)}'::jsonb,
       true
     )
-    ON CONFLICT (id) DO NOTHING;
+    ON CONFLICT (id) DO UPDATE
+      SET config      = EXCLUDED.config,
+          name        = EXCLUDED.name,
+          description = EXCLUDED.description,
+          difficulty  = EXCLUDED.difficulty;
   `);
 
   pgm.sql(`
@@ -25,14 +45,18 @@ exports.up = (pgm) => {
       'level-calculos-suma-5',
       'game-calculos',
       11,
-      'Nivel 5 - Sumas Complementarias',
-      '¡Sumas que dan 100, 1.000 o 10.000!',
-      'Avanzado',
+      'Nivel 5 - Sumas que dan 100, 1.000 o 10.000',
+      'Complementos a 100, 1.000 o 10.000',
+      'Intermedio',
       5,
-      '{"operation": "suma", "icon": "➕", "color": "from-pink-400 to-rose-500", "kind": "sum_to_round", "step": 10, "minResult": 100, "maxResult": 10000, "roundTargets": [100, 1000, 10000]}'::jsonb,
+      '${JSON.stringify(L5_CONFIG)}'::jsonb,
       true
     )
-    ON CONFLICT (id) DO NOTHING;
+    ON CONFLICT (id) DO UPDATE
+      SET config      = EXCLUDED.config,
+          name        = EXCLUDED.name,
+          description = EXCLUDED.description,
+          difficulty  = EXCLUDED.difficulty;
   `);
 };
 

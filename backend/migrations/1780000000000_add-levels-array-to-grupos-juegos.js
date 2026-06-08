@@ -7,7 +7,7 @@ exports.up = (pgm) => {
     levels: {
       type: 'integer[]',
       notNull: true,
-      default: "'{}'",
+      default: pgm.func("'{}'"),
     },
   });
   // Migrate existing single-level rows to the new array column
