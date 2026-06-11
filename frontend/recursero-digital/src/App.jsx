@@ -29,6 +29,7 @@ import JuegoDescomposicion from './presentation/components/games/JuegoDesco&Comp
 import JuegoEscala from './presentation/components/games/JuegoEscala/JuegoEscala.jsx';
 import JuegoCalculos from './presentation/components/games/JuegoCalculos/JuegoCalculos.jsx';
 import ProtectedRoute from "./presentation/components/common/ProtectedRoute.jsx";
+import TeacherGameConfig from "./presentation/pages/teacher/TeacherGameConfig.jsx";
 
 function App() {
   return (
@@ -182,6 +183,14 @@ function App() {
                 <TeacherStatistics />
               </MainLayout>
             }
+          />
+          <Route
+          path="/docente/config-juegos"
+          element={
+          <MainLayout userRole="docente">
+            <TeacherGameConfig />
+            </MainLayout>
+          }
           />
           <Route
             path="/docente/grupos"
