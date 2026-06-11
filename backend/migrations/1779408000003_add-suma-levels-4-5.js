@@ -1,4 +1,4 @@
-/* eslint-disable camelcase *
+/* eslint-disable camelcase */
 exports.shorthands = undefined;
 
 const L4_CONFIG = {
