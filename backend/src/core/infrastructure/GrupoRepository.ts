@@ -9,8 +9,8 @@ export interface GrupoRepository {
   addStudent(groupId: string, studentId: string): Promise<void>;
   removeStudent(groupId: string, studentId: string): Promise<void>;
   getStudents(groupId: string): Promise<Student[]>;
-  assignGame(id: string, groupId: string, gameId: string, level: number): Promise<void>;
+  assignGame(id: string, groupId: string, gameId: string, levels: number[]): Promise<void>;
   removeGame(groupId: string, gameId: string): Promise<void>;
-  updateGame(groupId: string, gameId: string, level: number, isEnabled: boolean): Promise<void>;
+  updateGame(groupId: string, gameId: string, levels: number[], isEnabled: boolean): Promise<void>;
   getGames(groupId: string): Promise<GrupoJuego[]>;
 }

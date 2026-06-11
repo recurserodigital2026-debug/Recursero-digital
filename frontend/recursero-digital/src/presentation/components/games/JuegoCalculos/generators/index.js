@@ -5,8 +5,21 @@ import * as noCarryAddition from './noCarryAddition';
 import * as noBorrowSubtraction from './noBorrowSubtraction';
 import * as freeForm from './freeForm';
 
+// sum_to_round usa roundTargets en lugar de targets — adaptamos al generador sumToTarget
+const sumToRoundAdapter = {
+    generate: (config) => sumToTarget.generate({ ...config, targets: config.roundTargets || config.targets }),
+    predicate: (calc, config) => sumToTarget.predicate(calc, { ...config, targets: config.roundTargets || config.targets }),
+};
+
+const doublesAdapter = {
+    generate: (config) => identicalNumbers.generate({ ...config, min: config.min ?? 10, max: config.max ?? 99 }),
+    predicate: (calc, config) => identicalNumbers.predicate(calc, { ...config, min: config.min ?? 10, max: config.max ?? 99 }),
+};
+
 const GENERATORS = {
     sum_to_target: sumToTarget,
+    sum_to_round: sumToRoundAdapter,
+    doubles: doublesAdapter,
     whole_multiples: wholeMultiples,
     identical_numbers: identicalNumbers,
     no_carry_sum: noCarryAddition,

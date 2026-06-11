@@ -101,7 +101,8 @@ const JuegoEscritura = () => {
     }, [gameState, currentActivity, currentLevel, backendLevels, resetAttempts, startActivityTimer]);
     
     const handleStartGame = useCallback((level) => {
-        const selectedLevelIndex = level - 1;
+        const selectedLevelIndex = backendLevels.findIndex(l => l.level === level);
+        if (selectedLevelIndex < 0) return;
         setCurrentLevel(selectedLevelIndex);
         
         const lastActivity = getLastActivity(PROGRESS_KEYS.ESCRITURA);

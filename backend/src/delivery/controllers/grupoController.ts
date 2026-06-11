@@ -107,12 +107,12 @@ export const getGrupoGames = async (req: Request, res: Response): Promise<void> 
 export const assignGameToGrupo = async (req: Request, res: Response): Promise<void> => {
     try {
         const { groupId, gameId } = req.params as { groupId: string; gameId: string };
-        const { level } = req.body as { level: number };
-        if (!level) {
-            res.status(400).json({ error: 'El nivel es requerido' });
+        const { levels } = req.body as { levels: number[] };
+        if (!levels || !Array.isArray(levels) || levels.length === 0) {
+            res.status(400).json({ error: 'Se requiere al menos un nivel' });
             return;
         }
-        await container.assignGameToGrupoUseCase.execute(groupId, gameId, Number(level));
+        await container.assignGameToGrupoUseCase.execute(groupId, gameId, levels.map(Number));
         res.status(200).json({ message: 'Juego asignado al grupo exitosamente' });
     } catch (error: any) {
         if (error.message.includes('nivel') || error.message.includes('requerido')) {
@@ -138,12 +138,12 @@ export const removeGameFromGrupo = async (req: Request, res: Response): Promise<
 export const updateGrupoGame = async (req: Request, res: Response): Promise<void> => {
     try {
         const { groupId, gameId } = req.params as { groupId: string; gameId: string };
-        const { level, isEnabled } = req.body as { level: number; isEnabled: boolean };
-        if (level === undefined || isEnabled === undefined) {
-            res.status(400).json({ error: 'level e isEnabled son requeridos' });
+        const { levels, isEnabled } = req.body as { levels: number[]; isEnabled: boolean };
+        if (!levels || !Array.isArray(levels) || levels.length === 0 || isEnabled === undefined) {
+            res.status(400).json({ error: 'levels e isEnabled son requeridos' });
             return;
         }
-        await container.updateGrupoGameUseCase.execute(groupId, gameId, Number(level), Boolean(isEnabled));
+        await container.updateGrupoGameUseCase.execute(groupId, gameId, levels.map(Number), Boolean(isEnabled));
         res.status(200).json({ message: 'Juego del grupo actualizado exitosamente' });
     } catch (error: any) {
         if (error.message.includes('nivel')) {

@@ -47,6 +47,7 @@ export const useGameLevels = (gameId, onlyActive = true, courseId = null) => {
 
 export const transformToDescomposicionFormat = (levels) => {
     return levels.map(level => ({
+        dbLevel: level.level,
         name: level.name,
         range: level.config.range || `${level.config.min} al ${level.config.max}`,
         min: level.config.min,
@@ -58,6 +59,7 @@ export const transformToDescomposicionFormat = (levels) => {
 
 export const transformToEscalaFormat = (levels) => {
     return levels.map(level => ({
+        dbLevel: level.level,
         name: level.name,
         range: level.config.range || `${level.config.min} al ${level.config.max}`,
         operation: level.config.operation,
@@ -83,6 +85,7 @@ export const transformToOrdenamientoFormat = (levels) => {
 
 export const transformToEscrituraFormat = (levels) => {
     return levels.map(level => ({
+        dbLevel: level.level,
         name: level.name,
         difficulty: level.difficulty,
         min: level.config?.min || 1,

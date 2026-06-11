@@ -110,14 +110,18 @@ const GameScreen = ({
     if (!allLevels || allLevels.length === 0) return null;
     const levelNumber = parseInt(level.replace('nivel', ''));
     const backendLevelNumber = getBackendLevel(operation, levelNumber);
-    return allLevels.find(l => l.level === backendLevelNumber);
+    return allLevels.find(l => Number(l.level) === backendLevelNumber) || null;
   }, [allLevels, operation, level]);
-  
-  // Generar preguntas usando la configuración del backend
+
+  // Generar preguntas. Si backendLevelConfig es null, getQuestionsForLevel usa config local de respaldo.
   const questions = useMemo(() => {
-    if (!backendLevelConfig) return [];
-    const levelNumber = parseInt(level.replace('nivel', ''));
-    return getQuestionsForLevel(operation, levelNumber, backendLevelConfig);
+    try {
+      const levelNumber = parseInt(level.replace('nivel', ''));
+      return getQuestionsForLevel(operation, levelNumber, backendLevelConfig);
+    } catch (e) {
+      console.error('Error generando preguntas para nivel:', level, e);
+      return [];
+    }
   }, [operation, level, backendLevelConfig]);
   
   const currentQuestion = questions[currentQuestionIndex];
@@ -251,21 +255,19 @@ const GameScreen = ({
     if(pendingTarget === 'niveles') onBackToLevelSelect();
   };
 
-  if (!backendLevelConfig) {
-    return (
-      <div className="text-center text-white">
-        <p>Cargando configuración del nivel...</p>
-      </div>
-    );
-  }
-
   if (!currentQuestion || questions.length === 0) {
     return (
-      <div className="text-center text-white">
-        <p>Error: No se encontraron preguntas para este nivel.</p>
-        <button onClick={onBackToLevelSelect} className="btn-secondary mt-4">
-          Volver a Niveles
-        </button>
+      <div className="game-container">
+        <div className="level-select-screen">
+          <div className="header-controls">
+            <div className="buttons-group">
+              <button onClick={onBackToLevelSelect} className="btn-back-to-levels">← Niveles</button>
+            </div>
+          </div>
+          <div className="level-select-content" style={{ textAlign: 'center', color: 'white' }}>
+            <p>Este nivel no está disponible. Consultá a tu docente.</p>
+          </div>
+        </div>
       </div>
     );
   }

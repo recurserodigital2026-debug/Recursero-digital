@@ -513,6 +513,45 @@
 .sgam-btn-save:hover:not(:disabled) { opacity: 0.85; }
 .sgam-btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* Multi-level group assignment */
+.sgam-row--group {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.sgam-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sgam-levels-multi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-top: 0.55rem;
+  margin-top: 0.35rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.sgam-level-check {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.sgam-level-check input[type="checkbox"] { accent-color: #6ee7b7; cursor: pointer; }
+.sgam-level-check--on {
+  color: #6ee7b7;
+  background: rgba(110,231,183,0.12);
+  border-color: rgba(110,231,183,0.35);
+}
+
 @media (max-width: 768px) {
   .teacher-students {
     padding: 1rem;

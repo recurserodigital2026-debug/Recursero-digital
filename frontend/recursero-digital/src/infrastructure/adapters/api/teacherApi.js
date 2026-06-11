@@ -350,9 +350,9 @@ export const getGrupoGames = async (groupId) => {
   return await res.json();
 };
 
-export const assignGameToGrupo = async (groupId, gameId, level) => {
+export const assignGameToGrupo = async (groupId, gameId, levels) => {
   const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/games/${gameId}`, {
-    method: 'POST', headers: authHeaders(), body: JSON.stringify({ level })
+    method: 'POST', headers: authHeaders(), body: JSON.stringify({ levels })
   });
   if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al asignar juego al grupo'); }
   return await res.json();
@@ -366,9 +366,9 @@ export const removeGameFromGrupo = async (groupId, gameId) => {
   return await res.json();
 };
 
-export const updateGrupoGame = async (groupId, gameId, level, isEnabled) => {
+export const updateGrupoGame = async (groupId, gameId, levels, isEnabled) => {
   const res = await fetch(`${API_BASE_URL}/grupos/${groupId}/games/${gameId}`, {
-    method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ level, isEnabled })
+    method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ levels, isEnabled })
   });
   if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Error al actualizar juego del grupo'); }
   return await res.json();

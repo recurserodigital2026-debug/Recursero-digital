@@ -1,13 +1,17 @@
 import React from 'react';
 import { operationConfig, getLevelCountForOperation } from './utils';
 
-const StartScreen = ({ onStartGame, onBackToGames }) => {
+const StartScreen = ({ onStartGame, onBackToGames, assignedOperations }) => {
+  const visibleOperations = Object.entries(operationConfig).filter(
+    ([key]) => assignedOperations == null || assignedOperations.has(key)
+  );
+
   return (
     <div className="game-container">
       <div className="start-screen">
         <div className="header-controls">
           <div className="buttons-group">
-            <button 
+            <button
               onClick={onBackToGames}
               className="btn-back-to-levels"
               title="Volver a juegos"
@@ -22,7 +26,7 @@ const StartScreen = ({ onStartGame, onBackToGames }) => {
           <p>Elige una operación y resuélvelas!</p>
 
           <div className="operation-selection">
-            {Object.entries(operationConfig).map(([key, config]) => (
+            {visibleOperations.map(([key, config]) => (
               <button 
                 key={key}
                 className={`operation-card ${config.textColor.replace('text-', '')}`}

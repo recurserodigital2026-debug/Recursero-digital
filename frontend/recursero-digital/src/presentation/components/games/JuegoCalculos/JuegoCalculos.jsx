@@ -11,13 +11,20 @@ import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
-import { getBackendLevel, getLevelCountForOperation, getLocalLevelForOperation } from './utils';
+import { getBackendLevel, getLevelCountForOperation, getLocalLevelForOperation, getOperationForDbLevel } from './utils';
 
 const JuegoCalculos = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/calculos');
   const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
+  const storedLevels = sessionStorage.getItem('assignedLevels:/alumno/juegos/calculos');
+  const assignedLevels = storedLevels
+    ? JSON.parse(storedLevels)
+    : (assignedLevel != null ? [assignedLevel] : null);
+  const assignedOperations = assignedLevels
+    ? new Set(assignedLevels.map(l => getOperationForDbLevel(l)).filter(Boolean))
+    : null;
   const { unlockLevel } = useUserProgress();
   const { 
     incrementAttempts, 
@@ -40,7 +47,7 @@ const JuegoCalculos = () => {
     totalQuestions: 0
   });
 
-  const { levels: allLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.CALCULOS, true, courseId);
+  const { levels: allLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.CALCULOS, false, courseId);
 
   useEffect(() => {
     if (!courseId) {
@@ -118,16 +125,16 @@ const JuegoCalculos = () => {
       unlockLevel(gameId, levelNumber + 1);
     }
 
-    if (isWin && assignedLevel !== null) {
-      const assignedLocalLevel = getLocalLevelForOperation(assignedLevel, selectedOperation);
-      if (assignedLocalLevel !== null && levelNumber === assignedLocalLevel) {
+    if (isWin && assignedLevels !== null) {
+      const completedDbLevel = getBackendLevel(selectedOperation, levelNumber);
+      if (assignedLevels.includes(completedDbLevel)) {
         setAssignedLevelCompleted(true);
         try {
           const payload = JSON.parse(atob(localStorage.getItem('token').split('.')[1]));
           const studentId = payload?.id || payload?.userId;
           if (studentId) {
             localStorage.setItem(
-              `recursero_calculos_done_${studentId}_${selectedOperation}_${assignedLocalLevel}`,
+              `recursero_calculos_done_${studentId}_${selectedOperation}_${levelNumber}`,
               '1'
             );
           }
@@ -171,9 +178,10 @@ const JuegoCalculos = () => {
     switch(gameState) {
       case 'start':
         return (
-          <StartScreen 
+          <StartScreen
             onStartGame={handleStartGame}
             onBackToGames={handleBackToGames}
+            assignedOperations={assignedOperations}
           />
         );
 
@@ -183,7 +191,7 @@ const JuegoCalculos = () => {
             operation={selectedOperation}
             onSelectLevel={handleSelectLevel}
             onBackToStart={handleBackToStart}
-            assignedLevel={assignedLevel}
+            assignedLevels={assignedLevels}
             assignedLevelCompleted={assignedLevelCompleted}
           />
         );

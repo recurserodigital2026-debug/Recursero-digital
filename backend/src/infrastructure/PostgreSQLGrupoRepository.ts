@@ -76,13 +76,14 @@ export class PostgreSQLGrupoRepository implements GrupoRepository {
     });
   }
 
-  async assignGame(id: string, groupId: string, gameId: string, level: number): Promise<void> {
+  async assignGame(id: string, groupId: string, gameId: string, levels: number[]): Promise<void> {
+    const primaryLevel = levels[0] ?? 1;
     await this.db.query(
-      `INSERT INTO grupos_juegos (id, group_id, game_id, level, is_enabled)
-       VALUES ($1, $2, $3, $4, true)
+      `INSERT INTO grupos_juegos (id, group_id, game_id, level, levels, is_enabled)
+       VALUES ($1, $2, $3, $4, $5, true)
        ON CONFLICT (group_id, game_id)
-       DO UPDATE SET level = $4, is_enabled = true, updated_at = CURRENT_TIMESTAMP`,
-      [id, groupId, gameId, level]
+       DO UPDATE SET level = $4, levels = $5, is_enabled = true, updated_at = CURRENT_TIMESTAMP`,
+      [id, groupId, gameId, primaryLevel, levels]
     );
   }
 
@@ -93,11 +94,12 @@ export class PostgreSQLGrupoRepository implements GrupoRepository {
     );
   }
 
-  async updateGame(groupId: string, gameId: string, level: number, isEnabled: boolean): Promise<void> {
+  async updateGame(groupId: string, gameId: string, levels: number[], isEnabled: boolean): Promise<void> {
+    const primaryLevel = levels[0] ?? 1;
     await this.db.query(
-      `UPDATE grupos_juegos SET level = $3, is_enabled = $4, updated_at = CURRENT_TIMESTAMP
+      `UPDATE grupos_juegos SET level = $3, levels = $4, is_enabled = $5, updated_at = CURRENT_TIMESTAMP
        WHERE group_id = $1 AND game_id = $2`,
-      [groupId, gameId, level, isEnabled]
+      [groupId, gameId, primaryLevel, levels, isEnabled]
     );
   }
 
@@ -126,6 +128,7 @@ export class PostgreSQLGrupoRepository implements GrupoRepository {
       groupId: row.group_id,
       gameId: row.game_id,
       level: row.level,
+      levels: row.levels && row.levels.length > 0 ? row.levels : [row.level],
       isEnabled: row.is_enabled,
       game: new Game(
         row.g_id, row.g_name, row.g_description, row.g_image_url,

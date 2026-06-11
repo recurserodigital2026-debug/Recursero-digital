@@ -25,32 +25,11 @@ const LevelSelectScreen = ({ levels, onSelectLevel, assignedLevel }) => {
         } catch(e) { return false; }
     })();
 
-    if (isCompleted) {
-        return (
-            <div className="game-container">
-                <div className="level-select-screen">
-                    <div className="header-controls">
-                        <div className="buttons-group">
-                            <button className="btn-back-to-dashboard" onClick={() => navigate('/alumno/juegos')}>← Juegos</button>
-                        </div>
-                    </div>
-                    <div className="level-select-content">
-                        <h1 className="level-select-title">🔢 Anterior y Posterior</h1>
-                        <div style={COMPLETED_CARD_STYLE}>
-                            <span style={{fontSize:'64px'}}>🏆</span>
-                            <h2 style={{fontSize:'1.5rem',fontWeight:700,color:'#065f46',margin:0}}>¡Ya completaste este nivel!</h2>
-                            <p style={{fontSize:'1rem',color:'#047857',margin:0}}>Aguarda a que tu docente te asigne un nuevo nivel para continuar.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     const levelIcons = ['🔍', '📈', '🎯'];
 
+    const assignedIndex = assignedLevel != null ? levels.findIndex(l => l.dbLevel === assignedLevel) : -1;
     const visibleLevels = assignedLevel != null
-        ? levels.filter((_, i) => i + 1 === assignedLevel)
+        ? levels.filter(l => l.dbLevel === assignedLevel)
         : levels;
 
     return (
@@ -74,7 +53,7 @@ const LevelSelectScreen = ({ levels, onSelectLevel, assignedLevel }) => {
 
                     <div className="level-grid">
                         {visibleLevels.map((level, i) => {
-                            const originalIndex = assignedLevel != null ? assignedLevel - 1 : i;
+                            const originalIndex = assignedLevel != null ? assignedIndex : i;
                             const levelNumber = originalIndex + 1;
                             const isUnlocked = assignedLevel != null ? true : isLevelUnlocked('escala', levelNumber);
                             const isLocked = !isUnlocked;

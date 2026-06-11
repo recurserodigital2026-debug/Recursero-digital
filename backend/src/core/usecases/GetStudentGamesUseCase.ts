@@ -13,7 +13,7 @@ export interface GetStudentGamesRequest {
 export interface StudentGamesResponse {
     studentId: string;
     courseId: string | null;
-    games: (CourseGame & { level?: number })[];
+    games: (CourseGame & { level?: number; levels?: number[] })[];
     source: 'student' | 'group' | 'course';
 }
 
@@ -68,8 +68,9 @@ export class GetStudentGamesUseCase {
                         true,
                         g.level,
                         g.game
-                    ) as CourseGame & { level?: number };
+                    ) as CourseGame & { level?: number; levels?: number[] };
                     cg.level = g.level;
+                    cg.levels = g.levels?.length ? g.levels : [g.level];
                     return cg;
                 });
                 return { studentId: student.id, courseId: student.getCourseId(), games, source: 'group' };
