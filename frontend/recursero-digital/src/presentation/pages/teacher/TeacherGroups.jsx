@@ -15,6 +15,7 @@ import {
   getAllGamesWithLevels,
 } from '../../../infrastructure/adapters/api/teacherApi';
 import '../../styles/pages/teacherGroups.css';
+import '../../styles/pages/teacherStudents.css';
 
 export default function TeacherGroups() {
   const navigate = useNavigate();
@@ -153,7 +154,6 @@ export default function TeacherGroups() {
   };
 
   const handleOpenGamesModal = async () => {
-    6
     setLoadingModal(true);
     setShowGamesModal(true);
     try {
@@ -175,28 +175,23 @@ export default function TeacherGroups() {
     }
   };
 
-  const handleToggleGame = (gameId) => {
-    setPendingGames(prev => {
-      if (prev[gameId]) {
-        const next = { ...prev };
-        delete next[gameId];
-        return next;
-      }
-      const firstLevel = courseGames.find(g => g.gameId === gameId)?.levels?.[0]?.level ?? 1;
-      return { ...prev, [gameId]: { levels: [firstLevel], isEnabled: true } };
-    });
-  };
-
   const handleGameLevelToggle = (gameId, level) => {
     setPendingGames(prev => {
       const current = prev[gameId];
-      if (!current) return prev;
-      const already = current.levels.includes(level);
-      const newLevels = already
-        ? current.levels.filter(l => l !== level)
-        : [...current.levels, level].sort((a, b) => a - b);
-      if (newLevels.length === 0) return prev;
-      return { ...prev, [gameId]: { ...current, levels: newLevels } };
+      const already = current?.levels?.includes(level);
+      if (already) {
+        const newLevels = current.levels.filter(l => l !== level);
+        if (newLevels.length === 0) {
+          const next = { ...prev };
+          delete next[gameId];
+          return next;
+        }
+        return { ...prev, [gameId]: { ...current, levels: newLevels } };
+      }
+      const newLevels = current
+        ? [...current.levels, level].sort((a, b) => a - b)
+        : [level];
+      return { ...prev, [gameId]: { levels: newLevels, isEnabled: true } };
     });
   };
 
@@ -448,47 +443,29 @@ export default function TeacherGroups() {
                 {courseGames.map(game => {
                   const assigned = pendingGames[game.gameId];
                   return (
-                    <div key={game.gameId} className={`sgam-row ${assigned ? 'sgam-row--active' : ''} sgam-row--group`}>
+                    <div key={game.gameId} className={`sgam-row sgam-row--group ${assigned ? 'sgam-row--active' : ''}`}>
                       <div className="sgam-row-top">
-                        <div className="sgam-info">
-                          <span className="sgam-name">{game.gameName}</span>
-                          {assigned && (
-                            <span className="sgam-level-badge">
-                              {assigned.levels.map(l => {
-                                const info = game.levels.find(x => x.level === l);
-                                return info?.name || `Niv. ${l}`;
-                              }).join(', ')}
-                            </span>
-                          )}
-                        </div>
-                        <div className="sgam-controls">
-                          <button
-                            className={`sgam-toggle ${assigned ? 'sgam-toggle--on' : 'sgam-toggle--off'}`}
-                            disabled={savingGames}
-                            onClick={() => handleToggleGame(game.gameId)}
-                          >
-                            {assigned ? 'Desasignar' : 'Asignar'}
-                          </button>
-                        </div>
+                        <span className="sgam-name">{game.gameName}</span>
                       </div>
-                      {assigned && (
-                        <div className="sgam-levels-multi">
-                          {game.levels.map(l => (
+                      <div className="sgam-levels-multi">
+                        {game.levels.map(l => {
+                          const isChecked = assigned?.levels?.includes(l.level) ?? false;
+                          return (
                             <label
                               key={l.level}
-                              className={`sgam-level-check ${assigned.levels.includes(l.level) ? 'sgam-level-check--on' : ''}`}
+                              className={`sgam-level-check ${isChecked ? 'sgam-level-check--on' : ''}`}
                             >
                               <input
                                 type="checkbox"
-                                checked={assigned.levels.includes(l.level)}
+                                checked={isChecked}
                                 disabled={savingGames}
                                 onChange={() => handleGameLevelToggle(game.gameId, l.level)}
                               />
                               {l.name}
                             </label>
-                          ))}
-                        </div>
-                      )}
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 })}
