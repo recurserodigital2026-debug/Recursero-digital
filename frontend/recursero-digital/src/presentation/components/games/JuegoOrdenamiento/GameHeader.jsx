@@ -7,7 +7,9 @@ const GameHeader = ({
   attempts,
   points,
   onBackToGames,
-  onBackToLevels
+  onBackToLevels,
+  soundEnabled,
+  toggleSound
 }) => {
   return (
     <div className="header-controls">
@@ -29,6 +31,30 @@ const GameHeader = ({
       </div>
       
       <div className="game-status">
+        <div className="status-item" style={{ padding: '2px' }}>
+          <button 
+            onClick={toggleSound} 
+            title={soundEnabled ? "Silenciar sonidos" : "Activar sonidos"}
+            style={{
+              background: soundEnabled ? 'rgba(255,255,255,0.2)' : 'rgba(239,68,68,0.25)',
+              border: soundEnabled ? '2px solid #ffb703' : '2px solid #ef4444',
+              borderRadius: '12px',
+              fontSize: '1.4rem',
+              cursor: 'pointer',
+              width: '50px',
+              height: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 3px 0 rgba(0,0,0,0.2)',
+              outline: 'none'
+            }}
+          >
+            {soundEnabled ? '🔊' : '🔇'}
+          </button>
+        </div>
+        
         <div className="status-item">
           <div className="status-icon">🏆</div>
           <div className="status-label">Nivel</div>

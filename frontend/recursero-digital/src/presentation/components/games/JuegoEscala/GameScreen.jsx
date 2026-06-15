@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isValidNumber } from './util';
-
+import { useSoundEffects } from '../../../../hooks/useSoundEffects';
+import FeedbackModal from './FeedbackModal';
 const GameScreen = ({ 
     activity,
     totalActivities,
@@ -19,9 +20,10 @@ const GameScreen = ({
     isProcessing,
     allLevels = [],
     onGameComplete,
+    showFeedback
 }) => {
     const navigate = useNavigate();
-
+    const { soundEnabled, toggleSound } = useSoundEffects();
     const [showExitModal, setShowExitModal] = useState(false);
     const [showWinModal, setShowWinModal] = useState(false);  
     const [pendingTarget, setPendingTarget] = useState(null);
@@ -33,40 +35,32 @@ const GameScreen = ({
         ? allLevels.reduce((max, lvl) => lvl.level > max ? lvl.level : max, 0)
         : 3;
     
-    const isUltimateVictory = currentLevelNumber === maxLevelAllowed;
-    const isLastQuestion = activity === totalActivities;
-    
-    useEffect(() => {
-        if (isLastQuestion && isUltimateVictory && points > 0) {
+    const isUltimateVictory = currentLevelNumber === maxLevelAllowed;    
+   useEffect(() => {
+    if (activity === totalActivities && showFeedback && points > 0) {            
+        if (isUltimateVictory) {
             const pointsFromPreviousLevels = allLevels.reduce((sum, lvl) => {
                 const lvlNum = lvl.level || 0;
                 return lvlNum < currentLevelNumber ? sum + (lvl.puntos || 0) : sum;
             }, 0);
-    
             setFinalTotalPoints(pointsFromPreviousLevels + points);
-                
-            const timer = setTimeout(() => {
-                setShowWinModal(true);
-            }, 1200);
-            return () => clearTimeout(timer);
+            
+            }
         }
-    }, [activity, points, isLastQuestion, isUltimateVictory, allLevels, currentLevelNumber]);
-
+    }, [activity, totalActivities, points, isUltimateVictory, allLevels, currentLevelNumber, showFeedback]);
+    
     const handleInputChange = (field, value) => {
         if (isProcessing) return;
-
-        const isValid = isValidNumber(value);
+        const isValid = value === '' || value === '-' || isValidNumber(value);        
         setInputErrors(prev => ({
             ...prev,
             [field]: !isValid
         }));
-
-        if (isValid) {
-            onAnswersChange(prev => ({
-                ...prev,
-                [field]: value
-            }));
-        }
+        
+        onAnswersChange(prev => ({
+            ...prev,
+            [field]: value
+        }));
     };
 
     const handleKeyDown = (e, field) => {
@@ -74,6 +68,7 @@ const GameScreen = ({
 
         if (e.key === 'Enter') {
             e.preventDefault();
+            e.stopPropagation();
             if (field === 'anterior') {
                 const posteriorInput = document.querySelector('input[aria-label="Número posterior en la secuencia"]');
                 if (posteriorInput) posteriorInput.focus();
@@ -107,7 +102,7 @@ const handleExitClick = (target) => {
         <div className="game-container">
             <div className="game-content escala-game-content"
                 style={{
-                filter: showExitModal ? 'blur(4px)' : 'none',
+                filter: (showExitModal || showFeedback) ? 'blur(4px)' : 'none',                
                 pointerEvents: showExitModal ? 'none' : 'auto',
                 transition: 'filter 0.3s ease'
                 }}
@@ -132,6 +127,29 @@ const handleExitClick = (target) => {
                     </div>
                     
                     <div className="game-status">
+                        <div className="status-item" style={{ padding: '2px' }}>
+                                <button 
+                                    onClick={toggleSound} 
+                                    title={soundEnabled ? "Silenciar sonidos" : "Activar sonidos"}
+                                    style={{
+                                        background: soundEnabled ? 'rgba(255,255,255,0.2)' : 'rgba(239,68,68,0.25)',
+                                        border: soundEnabled ? '2px solid #ffb703' : '2px solid #ef4444',
+                                        borderRadius: '12px',
+                                        fontSize: '1.4rem',
+                                        cursor: 'pointer',
+                                        width: '50px',
+                                        height: '50px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 3px 0 rgba(0,0,0,0.2)',
+                                        outline: 'none'
+                                    }}
+                                >
+                                    {soundEnabled ? '🔊' : '🔇'}
+                                </button>
+                            </div>
                         <div className="status-item">
                             <div className="status-icon">🏆</div>
                             <div className="status-label">Nivel</div>

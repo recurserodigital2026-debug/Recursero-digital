@@ -17,6 +17,7 @@ import ErrorPopup from './ErrorPopup';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
+import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 const JuegoEscritura = () => {
     const { courseId } = useParams();
@@ -34,7 +35,8 @@ const JuegoEscritura = () => {
         isSubmitting,
         submitError 
     } = useGameScoring();
-    
+    const { playSuccess, playError, playVictory } = useSoundEffects();
+
     const [gameState, setGameState] = useState('start');
     const [currentLevel, setCurrentLevel] = useState(0);
     const [currentActivity, setCurrentActivity] = useState(0);
@@ -197,17 +199,19 @@ const JuegoEscritura = () => {
         const allCorrect = correctCount === wordPairs.length;
 
         if (allCorrect) {
+            playSuccess();
             const activityScore = await completeActivity(currentLevel, GAME_IDS.ESCRITURA, currentActivity, currentLevel);
             
             const levelActivities = backendLevels[currentLevel]?.activitiesCount || 5;
             if (currentActivity < levelActivities - 1) {
                 setFeedback({ 
                     title: '✅ ¡Perfecto!', 
-                    text: `¡Excelente! Todas las respuestas son correctas. Ganaste ${activityScore} puntos. Avanza a la siguiente actividad.`, 
+                    text: `¡Excelente! Ganaste ${activityScore} puntos.`, 
                     isCorrect: true 
                 });
                 setGameState('feedback');
             } else {
+                playVictory();
                 unlockLevel(PROGRESS_KEYS.ESCRITURA, currentLevel + 2);
                 if (assignedLevel != null && currentLevel + 1 === assignedLevel) {
                     try {
@@ -218,8 +222,9 @@ const JuegoEscritura = () => {
                 setGameState('congrats');
             }
         } else {
+            playError();
             setFeedback({ 
-                title: '❌ Algunas respuestas incorrectas', 
+                title: '¡Intentalo de nuevo', 
                 text: `Tienes ${correctCount}/${wordPairs.length} correctas. Revisa las respuestas marcadas.`, 
                 isCorrect: false 
             });

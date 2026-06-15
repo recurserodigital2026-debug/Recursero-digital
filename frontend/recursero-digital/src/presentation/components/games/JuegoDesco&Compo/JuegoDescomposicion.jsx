@@ -16,6 +16,7 @@ import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels, transformToDescomposicionFormat } from '../../../../hooks/useGameLevels';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
+import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 const JuegoDescomposicion = () => {
     const { courseId } = useParams();
@@ -35,6 +36,7 @@ const JuegoDescomposicion = () => {
         completeActivity,
         startActivityTimer
     } = useGameScoring();
+    const { playSuccess, playError, playVictory } = useSoundEffects();
 
     const [gameMode, setGameMode] = useState(null); // 'decomposition' o 'composition'
     
@@ -172,7 +174,7 @@ const JuegoDescomposicion = () => {
         if (isCorrect) {
             const activityScore = 50 * (currentLevel + 1);
             completeActivity(currentLevel, GAME_IDS.DESCOMPOSICION, currentActivity, currentLevel);
-
+            playSuccess();
             setIsAnswered(true);
             setFeedback({
                 title: '¡Correcto!',
@@ -180,21 +182,23 @@ const JuegoDescomposicion = () => {
                 isCorrect: true
             });
         } else {
+            playError();
             setFeedback({
                 title: '¡Incorrecto!',
-                text: `¡Inténtalo de nuevo! Revisa tu respuesta y vuelve a intentarlo.`,
+                text: `¡Inténtalo de nuevo!`,
                 isCorrect: false
             });
         }
 
     setShowFeedback(true);
-    }, [currentQuestion, userAnswer, incrementAttempts, currentLevel, attempts, completeActivity, isAnswered]);
-
+}, [currentQuestion, userAnswer, incrementAttempts, currentLevel, completeActivity, isAnswered, playSuccess, playError, currentActivity]);
+    
     const handleContinue = useCallback(() => {
     setShowFeedback(false);
     
         if (feedback.isCorrect) {
             if (currentActivity + 1 >= totalQuestions) {
+                playVictory();
                 if (currentLevel < levels.length - 1) {
                     unlockLevel(PROGRESS_KEYS.DESCOMPOSICION, currentLevel + 2);
                 }
@@ -213,7 +217,7 @@ const JuegoDescomposicion = () => {
         }
 
 
-    }, [feedback.isCorrect, currentActivity, totalQuestions, currentLevel, unlockLevel, resetAttempts, startActivityTimer, levels.length, gameMode, assignedLevel]);
+    }, [feedback.isCorrect, currentActivity, totalQuestions, currentLevel, unlockLevel, resetAttempts, startActivityTimer, levels.length, gameMode, assignedLevel, playVictory]);
 
     const handleNextLevel = useCallback(() => {
         setShowCongrats(false);

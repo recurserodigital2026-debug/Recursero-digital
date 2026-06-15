@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GameHeader from './GameHeader';
 import { getOrderInstruction } from './utils';
+import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 const GameScreen = ({ 
   currentLevel, 
@@ -26,6 +27,7 @@ const GameScreen = ({
 
   const [shouldAnimateHint, setShouldAnimateHint] = useState(false);
   const previousShowHint = useRef(showPermanentHint);
+  const { soundEnabled, toggleSound, playCorrect } = useSoundEffects();
 
   const handleExitClick = (target) => {
     const tieneRespuesta = targetNumbers.length > 0;
@@ -47,6 +49,7 @@ const GameScreen = ({
 
   useEffect(() => {
     if (showPermanentHint && !previousShowHint.current) {
+      if (playCorrect) playCorrect();
       setShouldAnimateHint(true);
       const timer = setTimeout(() => {
         setShouldAnimateHint(false);
@@ -54,7 +57,7 @@ const GameScreen = ({
       return () => clearTimeout(timer);
     }
     previousShowHint.current = showPermanentHint;
-  }, [showPermanentHint]);
+  }, [showPermanentHint, playCorrect]);
 
   const NumberBox = React.memo(({ number, isInTarget = false, onDrop, onRemove }) => {
     const handleDragStart = (e) => {
@@ -178,6 +181,8 @@ return (
             points={points}
             onBackToGames={() => handleExitClick('juegos')}
             onBackToLevels={() => handleExitClick('niveles')}
+            soundEnabled={soundEnabled}
+            toggleSound={toggleSound}
           />
           <h1 className="game-title">🎯 Ordenamiento Numérico</h1>
           <p className="game-instruction">

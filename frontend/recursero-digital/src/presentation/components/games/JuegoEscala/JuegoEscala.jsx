@@ -15,6 +15,7 @@ import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels, transformToEscalaFormat } from '../../../../hooks/useGameLevels';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
+import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 import { 
     GAME_CONFIG, 
@@ -40,7 +41,8 @@ const JuegoEscala = () => {
         completeActivity,
         startActivityTimer
     } = useGameScoring();
-    
+    const { playSuccess, playError, playVictory } = useSoundEffects();
+
     const [gameState, setGameState] = useState(UI_STATES.GAME_STATES.START);
     const [currentLevel, setCurrentLevel] = useState(0);
     const [currentActivity, setCurrentActivity] = useState(0);
@@ -57,7 +59,6 @@ const JuegoEscala = () => {
     const [isProcessing, setIsProcessing] = useState(false);
 
     const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCALA, true, courseId);
-    
     const levels = useMemo(() => transformToEscalaFormat(backendLevels), [backendLevels]);
     
     const totalQuestions = useMemo(() => {
@@ -150,6 +151,7 @@ const JuegoEscala = () => {
         const isCorrect = anteriorCorrect && posteriorCorrect;
 
         if (isCorrect) {
+            playSuccess();
             try {
                 const activityScore = calculateActivityScore(currentLevel, currentAttempts);
                 completeActivity(
@@ -173,12 +175,13 @@ const JuegoEscala = () => {
                 const randomMessage = getRandomMessage(MESSAGES.SUCCESS);
                 setFeedback({
                     title: `🎉 ${randomMessage}`,
-                    text: `¡Respuesta correcta! Continúa con la siguiente actividad.`,
+                    text: `¡Excelente! Continúa con la siguiente actividad.`,
                     isCorrect: true
                 });
             }
         } else {
             // Si es incorrecto, el modal NO mostrará el botón "Siguiente"
+            playError();
             const progressiveHint = getProgressiveHint(currentAttempts, currentQuestion);
             
             setFeedback({
@@ -189,7 +192,7 @@ const JuegoEscala = () => {
         }
 
         setShowFeedback(true);
-    }, [currentQuestion, userAnswers, incrementAttempts, currentLevel, attempts, completeActivity, currentActivity, totalQuestions, isProcessing]);
+    }, [currentQuestion, userAnswers, incrementAttempts, currentLevel, attempts, completeActivity, currentActivity, isProcessing, playSuccess, playError]);
     
     const handleContinue = useCallback(() => {
         setShowFeedback(false);
@@ -198,6 +201,7 @@ const JuegoEscala = () => {
         setIsProcessing(false);
         
         if (currentActivity + 1 >= totalQuestions) {
+            playVictory();
             if (currentLevel < levels.length - 1) {
                 unlockLevel(PROGRESS_KEYS.ESCALA, currentLevel + 2);
             }
@@ -212,7 +216,7 @@ const JuegoEscala = () => {
             setCurrentActivity(prev => prev + 1);
             startActivityTimer();
         }
-    }, [currentActivity, totalQuestions, currentLevel, unlockLevel, startActivityTimer, levels.length]);
+    }, [currentActivity, totalQuestions, currentLevel, unlockLevel, startActivityTimer, levels.length, assignedLevel, playVictory]);
 
     const handleCloseFeedback = useCallback(() => {
         setShowFeedback(false);
@@ -288,16 +292,17 @@ const JuegoEscala = () => {
                     inputErrors={inputErrors}
                     setInputErrors={setInputErrors}
                     isProcessing={isProcessing}
+                    allLevels={levels} 
+                    showFeedback={showFeedback}
                 />
             )}
-
             {showFeedback && (
                 <FeedbackModal
-                    feedback={feedback}
-                    onNext={handleContinue}
-                    onClose={handleCloseFeedback}
-                    isValidationError={isValidationError}
-                    isLastQuestion={currentActivity >= totalQuestions - 1}
+                feedback={feedback}
+                onContinue={handleContinue}  
+                onClose={handleCloseFeedback}
+                isValidationError={isValidationError}
+                isLastQuestion={(currentActivity >= totalQuestions - 1) && feedback.isCorrect}
                 />
             )}
 

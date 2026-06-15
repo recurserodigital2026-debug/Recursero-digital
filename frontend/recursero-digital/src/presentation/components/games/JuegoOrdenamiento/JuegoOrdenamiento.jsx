@@ -12,6 +12,7 @@ import {
   checkOrder, 
   generateHint
 } from './utils';
+import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
@@ -34,6 +35,7 @@ const JuegoOrdenamiento = () => {
     completeActivity,
     startActivityTimer
   } = useGameScoring();
+  const { playSuccess, playError, playVictory } = useSoundEffects();
 
   const [gameState, setGameState] = useState('start');
   const [order, setOrder] = useState('asc'); // 'asc' or 'desc'
@@ -131,6 +133,7 @@ const JuegoOrdenamiento = () => {
   }, [resetScoring, getLastActivity, backendLevels]);
 
   const handleActivityComplete = useCallback(() => {
+    playSuccess();
     const activityScore = completeActivity(currentLevel, GAME_IDS.ORDENAMIENTO, currentActivity, currentLevel);
     const newActivity = currentActivity + 1;
     
@@ -145,9 +148,10 @@ const JuegoOrdenamiento = () => {
     setTargetNumbers([]);
     setFeedbackSuccess(true);
     setShowFeedback(true);
-  }, [currentLevel, currentActivity, completeActivity, attempts]);
+  }, [currentLevel, currentActivity, completeActivity, attempts, playSuccess]);
 
   const handleFailedAttempt = useCallback(() => {
+    playError();
     incrementAttempts();
     setFeedbackSuccess(false);
     setShowFeedback(true);
@@ -156,7 +160,7 @@ const JuegoOrdenamiento = () => {
       setShowFeedback(false);
       setTargetNumbers([]); 
     }, 2500);
-  }, [incrementAttempts]);
+  }, [incrementAttempts, playError]);
 
   const handleContinueAfterSuccess = useCallback(() => {
     setShowFeedback(false);
@@ -168,6 +172,7 @@ const JuegoOrdenamiento = () => {
       setShowPermanentHint(true);
       startActivityTimer();
     } else {
+      playVictory();
       unlockLevel(PROGRESS_KEYS.ORDENAMIENTO, currentLevel + 2);
       if (assignedLevel != null && currentLevel + 1 === assignedLevel) {
         try {
@@ -182,7 +187,7 @@ const JuegoOrdenamiento = () => {
         setShowLevelUp(true)
       }
     }
-  }, [currentActivity, currentLevel, setupLevel, unlockLevel, backendLevels, startActivityTimer]);
+  }, [currentActivity, currentLevel, setupLevel, unlockLevel, backendLevels, startActivityTimer, playVictory, assignedLevel]);
 
   const handleDrop = useCallback((draggedNumber) => {
     const newTargetNumbers = [...targetNumbers, draggedNumber];
