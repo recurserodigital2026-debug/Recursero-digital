@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import '../../../styles/globals/games.css';
 import './JuegoEscritura.css';
+import Spinner from '../../shared/Spinner';
 import { generateDragDropActivity, validateNumberWordPair } from './utils';
 import { transformToEscrituraFormat } from '../../../../hooks/useGameLevels'; 
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
@@ -54,10 +53,6 @@ const JuegoEscritura = () => {
     const totalActivities = useMemo(() => {
         return getTotalActivitiesForLevel(backendLevels, currentLevel, 5);
     }, [backendLevels, currentLevel]);
-    
-    useEffect(() => { 
-        AOS.init(); 
-    }, []);
     
     const startNewActivity = useCallback(() => {
         if (backendLevels.length === 0 || currentLevel < 0 || currentLevel >= backendLevels.length) {
@@ -265,7 +260,7 @@ const JuegoEscritura = () => {
     if (levelsLoading) {
         return (
             <div className="game-wrapper bg-space-gradient">
-                <div>Cargando niveles...</div>
+                <Spinner label="Cargando niveles..." />
             </div>
         );
     }

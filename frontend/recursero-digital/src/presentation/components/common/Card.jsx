@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { apiRequest } from '../../../infrastructure/config/api';
 import '../../styles/components/card.css';
 import DefaultGameImage from '../../../assets/JuegoOrdenamiento-fontpage.png';
+import Spinner from '../shared/Spinner';
 
 const imageModules = import.meta.glob('../../../assets/*', { eager: true });
 const IMAGE_MAP = Object.entries(imageModules).reduce((acc, [path, module]) => {
@@ -107,7 +108,7 @@ export function Card() {
   };
 
   if (loading) {
-    return <div className="container">Cargando juegos...</div>;
+    return <div className="container"><Spinner label="Cargando juegos..." /></div>;
   }
 
   if (error || games.length === 0) {

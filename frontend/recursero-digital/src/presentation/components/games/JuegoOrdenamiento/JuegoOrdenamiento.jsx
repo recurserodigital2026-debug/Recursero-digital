@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoOrdenamiento.css";
+import Spinner from '../../shared/Spinner';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
 import { useUserProgress } from '../../../hooks/useUserProgress';
@@ -238,7 +239,7 @@ const JuegoOrdenamiento = () => {
   if (levelsLoading) {
     return (
       <div className="game-wrapper bg-space-gradient">
-        <div>Cargando niveles...</div>
+        <Spinner label="Cargando niveles..." />
       </div>
     );
   }

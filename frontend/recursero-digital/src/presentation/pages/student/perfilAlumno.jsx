@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useStudentProfile } from "../../hooks/useStudentProfile";
 import "../../styles/pages/perfilAlumno.css";
+import Spinner from "../../components/shared/Spinner";
 
 export default function PerfilAlumno() {
   const { data: studentData, loading, error } = useStudentProfile();
@@ -16,7 +17,7 @@ export default function PerfilAlumno() {
       <div className="perfil-container">
         <div className="perfil-header">
           <div className="loading-message">
-            <h2> Cargando tu perfil...</h2>
+            <Spinner label="Cargando tu perfil..." />
             <p>Recopilando tus aventuras</p>
           </div>
         </div>

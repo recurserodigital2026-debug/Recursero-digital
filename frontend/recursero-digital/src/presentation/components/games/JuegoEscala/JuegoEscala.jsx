@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import './JuegoEscala.css';
+import Spinner from '../../shared/Spinner';
 
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
@@ -64,10 +63,6 @@ const JuegoEscala = () => {
     const totalQuestions = useMemo(() => {
         return getTotalActivitiesForLevel(backendLevels, currentLevel, GAME_CONFIG.TOTAL_QUESTIONS);
     }, [backendLevels, currentLevel]);
-
-    useEffect(() => {
-        AOS.init();
-    }, []);
 
     const generateQuestions = useCallback((level, questionsCount) => {
         const newQuestions = [];
@@ -244,7 +239,7 @@ const JuegoEscala = () => {
     }, [currentLevel, handleSelectLevel]);
 
     if (levelsLoading) {
-        return <div className="game-wrapper bg-space-gradient"><div>Cargando niveles...</div></div>;
+        return <div className="game-wrapper bg-space-gradient"><Spinner label="Cargando niveles..." /></div>;
     }
 
     return (

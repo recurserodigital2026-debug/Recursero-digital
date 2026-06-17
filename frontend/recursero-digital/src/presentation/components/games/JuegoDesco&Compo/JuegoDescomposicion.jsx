@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import '../../../styles/globals/games.css';
 import './JuegoDescomposicion.css';
+import Spinner from '../../shared/Spinner';
 
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
@@ -59,10 +58,6 @@ const JuegoDescomposicion = () => {
     const totalQuestions = useMemo(() => {
         return getTotalActivitiesForLevel(backendLevels, currentLevel, 5);
     }, [backendLevels, currentLevel]);
-
-    useEffect(() => {
-        AOS.init();
-    }, []);
 
     const generateNumber = useCallback((level) => {
         const levelConfig = levels[level];
@@ -243,7 +238,7 @@ const JuegoDescomposicion = () => {
     if (levelsLoading) {
         return (
             <div className="game-wrapper bg-space-gradient">
-                <div>Cargando niveles...</div>
+                <Spinner label="Cargando niveles..." />
             </div>
         );
     }
