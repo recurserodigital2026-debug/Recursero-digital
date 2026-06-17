@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
+import SoundToggle from '../../shared/SoundToggle';
 
 const GameScreen = ({ 
     level, 
@@ -98,6 +99,9 @@ const GameScreen = ({
                     </div>
                     
                     <div className="game-status">
+                        <div className="status-item" style={{ padding: '2px' }}>
+                            <SoundToggle />
+                        </div>
                         <div className="status-item">
                             <div className="status-icon">🏆</div>
                             <div className="status-label">Nivel</div>

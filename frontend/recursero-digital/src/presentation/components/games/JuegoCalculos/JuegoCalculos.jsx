@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoCalculos.css";
+import Spinner from '../../shared/Spinner';
 
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
@@ -11,7 +12,7 @@ import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
-import { getBackendLevel, getLevelCountForOperation, getLocalLevelForOperation, getOperationForDbLevel } from './utils';
+import { getBackendLevel, getLevelCountForOperation, getOperationForDbLevel } from './utils';
 
 const JuegoCalculos = () => {
   const { courseId } = useParams();
@@ -19,19 +20,25 @@ const JuegoCalculos = () => {
   const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/calculos');
   const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
   const storedLevels = sessionStorage.getItem('assignedLevels:/alumno/juegos/calculos');
-  const assignedLevels = storedLevels
-    ? JSON.parse(storedLevels)
-    : (assignedLevel != null ? [assignedLevel] : null);
-  const assignedOperations = assignedLevels
-    ? new Set(assignedLevels.map(l => getOperationForDbLevel(l)).filter(Boolean))
-    : null;
+const assignedLevels = useMemo(() => {
+    return storedLevels
+      ? JSON.parse(storedLevels)
+      : (assignedLevel != null ? [assignedLevel] : null);
+  }, [storedLevels, assignedLevel]);
+
+  const assignedOperations = useMemo(() => {
+    return assignedLevels
+      ? new Set(assignedLevels.map(l => getOperationForDbLevel(l)).filter(Boolean))
+      : null;
+  }, [assignedLevels]);
   const { unlockLevel } = useUserProgress();
-  const { 
-    incrementAttempts, 
-    resetScoring, 
+  const {
+    incrementAttempts,
+    resetScoring,
     completeActivity,
     addPoints,
-    startActivityTimer
+    startActivityTimer,
+    playError
   } = useGameScoring();
 
   // Game state management
@@ -138,25 +145,14 @@ const JuegoCalculos = () => {
               '1'
             );
           }
-        } catch {}
+        } catch  (error) {
+        console.warn("No se pudo guardar el progreso en localStorage", error);
+      }
       }
     }
 
     setGameState('gameComplete');
-  }, [selectedLevel, selectedOperation, unlockLevel, assignedLevel]);
-
-  const handlePlayAgain = useCallback(() => {
-    setGameState('playing');
-    resetScoring();
-    startActivityTimer(); 
-  }, [resetScoring, startActivityTimer]);
-
-  const handlePlayNextLevel = useCallback((nextLevel) => {
-    setSelectedLevel(nextLevel);
-    setGameState('playing');
-    resetScoring();
-    startActivityTimer();
-  }, [resetScoring, startActivityTimer]);
+}, [selectedLevel, selectedOperation, unlockLevel, assignedLevels]); 
 
   const handleUpdateScore = useCallback((points) => {
     addPoints(points);
@@ -164,12 +160,13 @@ const JuegoCalculos = () => {
 
   const handleUpdateAttempts = useCallback(() => {
     incrementAttempts();
-  }, [incrementAttempts]);
+    playError();
+  }, [incrementAttempts, playError]);
 
   if (levelsLoading) {
     return (
       <div className="game-wrapper bg-space-gradient">
-        <div>Cargando niveles...</div>
+        <Spinner label="Cargando niveles..." />
       </div>
     );
   }

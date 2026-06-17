@@ -1,4 +1,5 @@
 import React from 'react';
+import SoundToggle from '../../shared/SoundToggle';
 
 const GameHeader = ({
   currentLevel,
@@ -29,6 +30,10 @@ const GameHeader = ({
       </div>
       
       <div className="game-status">
+        <div className="status-item" style={{ padding: '2px' }}>
+          <SoundToggle />
+        </div>
+
         <div className="status-item">
           <div className="status-icon">🏆</div>
           <div className="status-label">Nivel</div>

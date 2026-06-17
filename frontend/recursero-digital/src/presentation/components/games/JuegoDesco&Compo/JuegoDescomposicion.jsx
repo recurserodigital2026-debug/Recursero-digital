@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import '../../../styles/globals/games.css';
 import './JuegoDescomposicion.css';
+import Spinner from '../../shared/Spinner';
 
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
@@ -26,14 +25,16 @@ const JuegoDescomposicion = () => {
     const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/descomposicion');
     const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getLastActivity } = useUserProgress();
-    const { 
-        points, 
-        attempts, 
-        incrementAttempts, 
-        resetAttempts, 
-        resetScoring, 
+    const {
+        points,
+        attempts,
+        incrementAttempts,
+        resetAttempts,
+        resetScoring,
         completeActivity,
-        startActivityTimer
+        startActivityTimer,
+        playError,
+        playVictory
     } = useGameScoring();
 
     const [gameMode, setGameMode] = useState(null); // 'decomposition' o 'composition'
@@ -57,10 +58,6 @@ const JuegoDescomposicion = () => {
     const totalQuestions = useMemo(() => {
         return getTotalActivitiesForLevel(backendLevels, currentLevel, 5);
     }, [backendLevels, currentLevel]);
-
-    useEffect(() => {
-        AOS.init();
-    }, []);
 
     const generateNumber = useCallback((level) => {
         const levelConfig = levels[level];
@@ -172,7 +169,6 @@ const JuegoDescomposicion = () => {
         if (isCorrect) {
             const activityScore = 50 * (currentLevel + 1);
             completeActivity(currentLevel, GAME_IDS.DESCOMPOSICION, currentActivity, currentLevel);
-
             setIsAnswered(true);
             setFeedback({
                 title: '¡Correcto!',
@@ -180,21 +176,23 @@ const JuegoDescomposicion = () => {
                 isCorrect: true
             });
         } else {
+            playError();
             setFeedback({
                 title: '¡Incorrecto!',
-                text: `¡Inténtalo de nuevo! Revisa tu respuesta y vuelve a intentarlo.`,
+                text: `¡Inténtalo de nuevo!`,
                 isCorrect: false
             });
         }
 
     setShowFeedback(true);
-    }, [currentQuestion, userAnswer, incrementAttempts, currentLevel, attempts, completeActivity, isAnswered]);
-
+}, [currentQuestion, userAnswer, incrementAttempts, currentLevel, completeActivity, isAnswered, playError, currentActivity]);
+    
     const handleContinue = useCallback(() => {
     setShowFeedback(false);
     
         if (feedback.isCorrect) {
             if (currentActivity + 1 >= totalQuestions) {
+                playVictory();
                 if (currentLevel < levels.length - 1) {
                     unlockLevel(PROGRESS_KEYS.DESCOMPOSICION, currentLevel + 2);
                 }
@@ -213,7 +211,7 @@ const JuegoDescomposicion = () => {
         }
 
 
-    }, [feedback.isCorrect, currentActivity, totalQuestions, currentLevel, unlockLevel, resetAttempts, startActivityTimer, levels.length, gameMode, assignedLevel]);
+    }, [feedback.isCorrect, currentActivity, totalQuestions, currentLevel, unlockLevel, resetAttempts, startActivityTimer, levels.length, gameMode, assignedLevel, playVictory]);
 
     const handleNextLevel = useCallback(() => {
         setShowCongrats(false);
@@ -240,7 +238,7 @@ const JuegoDescomposicion = () => {
     if (levelsLoading) {
         return (
             <div className="game-wrapper bg-space-gradient">
-                <div>Cargando niveles...</div>
+                <Spinner label="Cargando niveles..." />
             </div>
         );
     }

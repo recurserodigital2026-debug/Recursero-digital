@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateHintExample } from './utils';
+import SoundToggle from '../../shared/SoundToggle';
 
 const GameScreen = ({ 
     level, 
@@ -22,7 +23,6 @@ const GameScreen = ({
     onGameComplete,
 }) => {
     const navigate = useNavigate();
-    
     const allUsedNumbers = [...numbers];
     const hintExample = generateHintExample(level - 1, allUsedNumbers);
     
@@ -38,24 +38,23 @@ const GameScreen = ({
         : 3;
         
     const isUltimateVictory = currentLevelNumber === maxLevelAllowed;
-    const isLastQuestion = activity === totalActivities;
         
     useEffect(() => {
-        if (isLastQuestion && isUltimateVictory && points > 0) {
-            const pointsFromPreviousLevels = allLevels.reduce((sum, lvl) => {
-                const lvlNum = lvl.level || 0;
-                return lvlNum < currentLevelNumber ? sum + (lvl.puntos || 0) : sum;
-            }, 0);
-        
-            setFinalTotalPoints(pointsFromPreviousLevels + points);
-                    
-            const timer = setTimeout(() => {
-                setShowWinModal(true);
-            }, 1200);
+        if (activity === totalActivities && points > 0) {
+            if (isUltimateVictory) {
+                const pointsFromPreviousLevels = allLevels.reduce((sum, lvl) => {
+                    const lvlNum = lvl.level || 0;
+                    return lvlNum < currentLevelNumber ? sum + (lvl.puntos || 0) : sum;
+                }, 0);
+                setFinalTotalPoints(pointsFromPreviousLevels + points);
+                const timer = setTimeout(() => {
+                    setShowWinModal(true);
+                }, 1200);
                 return () => clearTimeout(timer);
             }
-        }, [activity, points, isLastQuestion, isUltimateVictory, allLevels, currentLevelNumber]);
-        
+        }
+    }, [activity, totalActivities, points, isUltimateVictory, allLevels, currentLevelNumber]);
+
         const handleExitClick = (target) => {
             const tieneRespuesta = dragAnswers && Object.keys(dragAnswers).length > 0;
         
@@ -103,6 +102,9 @@ const GameScreen = ({
                     </div>
                     
                     <div className="game-status">
+                        <div className="status-item" style={{ padding: '2px' }}>
+                            <SoundToggle />
+                        </div>
                         <div className="status-item">
                             <div className="status-icon">🏆</div>
                             <div className="status-label">Nivel</div>

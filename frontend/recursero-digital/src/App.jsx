@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import "./App.css";
+import { SoundProvider } from "./presentation/context/SoundContext";
 import Login from "./presentation/pages/auth/login";
 import LoginForm from "./presentation/pages/auth/LoginForm";
 import HomeAlumno from "./presentation/pages/student/homeAlumno";
@@ -31,7 +33,9 @@ import TeacherGameConfig from "./presentation/pages/teacher/TeacherGameConfig.js
 
 function App() {
   return (
-    <Router>
+    <SoundProvider>
+      <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
+      <Router>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login-form" element={<LoginForm />} />
@@ -259,7 +263,8 @@ function App() {
           />
         </Route>
       </Routes>
-    </Router>
+      </Router>
+    </SoundProvider>
   );
 }
 

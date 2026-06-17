@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import "../../../styles/globals/games.css";
 import "./JuegoOrdenamiento.css";
+import Spinner from '../../shared/Spinner';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
 import { useUserProgress } from '../../../hooks/useUserProgress';
@@ -26,13 +27,15 @@ const JuegoOrdenamiento = () => {
   const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/ordenamiento');
   const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
   const { unlockLevel, getLastActivity } = useUserProgress();
-  const { 
-    points, 
-    attempts, 
-    incrementAttempts, 
-    resetScoring, 
+  const {
+    points,
+    attempts,
+    incrementAttempts,
+    resetScoring,
     completeActivity,
-    startActivityTimer
+    startActivityTimer,
+    playError,
+    playVictory
   } = useGameScoring();
 
   const [gameState, setGameState] = useState('start');
@@ -148,6 +151,7 @@ const JuegoOrdenamiento = () => {
   }, [currentLevel, currentActivity, completeActivity, attempts]);
 
   const handleFailedAttempt = useCallback(() => {
+    playError();
     incrementAttempts();
     setFeedbackSuccess(false);
     setShowFeedback(true);
@@ -156,7 +160,7 @@ const JuegoOrdenamiento = () => {
       setShowFeedback(false);
       setTargetNumbers([]); 
     }, 2500);
-  }, [incrementAttempts]);
+  }, [incrementAttempts, playError]);
 
   const handleContinueAfterSuccess = useCallback(() => {
     setShowFeedback(false);
@@ -168,6 +172,7 @@ const JuegoOrdenamiento = () => {
       setShowPermanentHint(true);
       startActivityTimer();
     } else {
+      playVictory();
       unlockLevel(PROGRESS_KEYS.ORDENAMIENTO, currentLevel + 2);
       if (assignedLevel != null && currentLevel + 1 === assignedLevel) {
         try {
@@ -182,7 +187,7 @@ const JuegoOrdenamiento = () => {
         setShowLevelUp(true)
       }
     }
-  }, [currentActivity, currentLevel, setupLevel, unlockLevel, backendLevels, startActivityTimer]);
+  }, [currentActivity, currentLevel, setupLevel, unlockLevel, backendLevels, startActivityTimer, playVictory, assignedLevel]);
 
   const handleDrop = useCallback((draggedNumber) => {
     const newTargetNumbers = [...targetNumbers, draggedNumber];
@@ -234,7 +239,7 @@ const JuegoOrdenamiento = () => {
   if (levelsLoading) {
     return (
       <div className="game-wrapper bg-space-gradient">
-        <div>Cargando niveles...</div>
+        <Spinner label="Cargando niveles..." />
       </div>
     );
   }

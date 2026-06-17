@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import './JuegoEscala.css';
+import Spinner from '../../shared/Spinner';
 
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
@@ -31,16 +30,18 @@ const JuegoEscala = () => {
     const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/escala');
     const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getLastActivity } = useUserProgress();
-    const { 
-        points, 
-        attempts, 
-        incrementAttempts, 
-        resetAttempts, 
-        resetScoring, 
+    const {
+        points,
+        attempts,
+        incrementAttempts,
+        resetAttempts,
+        resetScoring,
         completeActivity,
-        startActivityTimer
+        startActivityTimer,
+        playError,
+        playVictory
     } = useGameScoring();
-    
+
     const [gameState, setGameState] = useState(UI_STATES.GAME_STATES.START);
     const [currentLevel, setCurrentLevel] = useState(0);
     const [currentActivity, setCurrentActivity] = useState(0);
@@ -57,16 +58,11 @@ const JuegoEscala = () => {
     const [isProcessing, setIsProcessing] = useState(false);
 
     const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ESCALA, true, courseId);
-    
     const levels = useMemo(() => transformToEscalaFormat(backendLevels), [backendLevels]);
     
     const totalQuestions = useMemo(() => {
         return getTotalActivitiesForLevel(backendLevels, currentLevel, GAME_CONFIG.TOTAL_QUESTIONS);
     }, [backendLevels, currentLevel]);
-
-    useEffect(() => {
-        AOS.init();
-    }, []);
 
     const generateQuestions = useCallback((level, questionsCount) => {
         const newQuestions = [];
@@ -173,12 +169,13 @@ const JuegoEscala = () => {
                 const randomMessage = getRandomMessage(MESSAGES.SUCCESS);
                 setFeedback({
                     title: `🎉 ${randomMessage}`,
-                    text: `¡Respuesta correcta! Continúa con la siguiente actividad.`,
+                    text: `¡Excelente! Continúa con la siguiente actividad.`,
                     isCorrect: true
                 });
             }
         } else {
             // Si es incorrecto, el modal NO mostrará el botón "Siguiente"
+            playError();
             const progressiveHint = getProgressiveHint(currentAttempts, currentQuestion);
             
             setFeedback({
@@ -189,7 +186,7 @@ const JuegoEscala = () => {
         }
 
         setShowFeedback(true);
-    }, [currentQuestion, userAnswers, incrementAttempts, currentLevel, attempts, completeActivity, currentActivity, totalQuestions, isProcessing]);
+    }, [currentQuestion, userAnswers, incrementAttempts, currentLevel, attempts, completeActivity, currentActivity, isProcessing, playError]);
     
     const handleContinue = useCallback(() => {
         setShowFeedback(false);
@@ -198,6 +195,7 @@ const JuegoEscala = () => {
         setIsProcessing(false);
         
         if (currentActivity + 1 >= totalQuestions) {
+            playVictory();
             if (currentLevel < levels.length - 1) {
                 unlockLevel(PROGRESS_KEYS.ESCALA, currentLevel + 2);
             }
@@ -212,7 +210,7 @@ const JuegoEscala = () => {
             setCurrentActivity(prev => prev + 1);
             startActivityTimer();
         }
-    }, [currentActivity, totalQuestions, currentLevel, unlockLevel, startActivityTimer, levels.length]);
+    }, [currentActivity, totalQuestions, currentLevel, unlockLevel, startActivityTimer, levels.length, assignedLevel, playVictory]);
 
     const handleCloseFeedback = useCallback(() => {
         setShowFeedback(false);
@@ -241,7 +239,7 @@ const JuegoEscala = () => {
     }, [currentLevel, handleSelectLevel]);
 
     if (levelsLoading) {
-        return <div className="game-wrapper bg-space-gradient"><div>Cargando niveles...</div></div>;
+        return <div className="game-wrapper bg-space-gradient"><Spinner label="Cargando niveles..." /></div>;
     }
 
     return (
@@ -288,16 +286,17 @@ const JuegoEscala = () => {
                     inputErrors={inputErrors}
                     setInputErrors={setInputErrors}
                     isProcessing={isProcessing}
+                    allLevels={levels} 
+                    showFeedback={showFeedback}
                 />
             )}
-
             {showFeedback && (
                 <FeedbackModal
-                    feedback={feedback}
-                    onNext={handleContinue}
-                    onClose={handleCloseFeedback}
-                    isValidationError={isValidationError}
-                    isLastQuestion={currentActivity >= totalQuestions - 1}
+                feedback={feedback}
+                onContinue={handleContinue}  
+                onClose={handleCloseFeedback}
+                isValidationError={isValidationError}
+                isLastQuestion={(currentActivity >= totalQuestions - 1) && feedback.isCorrect}
                 />
             )}
 

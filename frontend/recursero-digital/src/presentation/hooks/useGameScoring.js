@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import useGameScoringAPI from './useGameScoring.api';
+import { useSound } from '../context/SoundContext';
 
 
 const useGameScoring = () => {
@@ -7,6 +8,10 @@ const useGameScoring = () => {
   const [attempts, setAttempts] = useState(0);
   const [activityStartTime, setActivityStartTime] = useState(null); // Tiempo de inicio de la actividad actual
   const { submitGameScore, isSubmitting, submitError } = useGameScoringAPI();
+  // Punto único de disparo de sonido para los 5 juegos: el acierto suena
+  // automáticamente en completeActivity. playError/playVictory se re-exportan
+  // para que cada juego los dispare en su rama correcta (sin importar useSound).
+  const { playSuccess, playError, playVictory } = useSound();
 
 
   const calculateActivityScore = useCallback((level, currentAttempts = null) => {
@@ -44,9 +49,10 @@ const useGameScoring = () => {
 
 
   const completeActivity = useCallback(async (level, gameType = null, activity = null, maxUnlockedLevel = null, additionalData = {}) => {
+    playSuccess();
     const activityScore = calculateActivityScore(level);
     addPoints(activityScore);
-    
+
     if (gameType) {
       try {
         const endTime = new Date().toISOString();
@@ -71,7 +77,7 @@ const useGameScoring = () => {
     setActivityStartTime(null);
     resetAttempts();
     return activityScore;
-  }, [calculateActivityScore, addPoints, resetAttempts, submitGameScore, points, attempts, activityStartTime]);
+  }, [calculateActivityScore, addPoints, resetAttempts, submitGameScore, points, attempts, activityStartTime, playSuccess]);
 
 
   const getScoringInfo = useCallback((level) => {
@@ -99,7 +105,10 @@ const useGameScoring = () => {
     startActivityTimer,
     isSubmitting,
     submitError,
-    submitGameScore
+    submitGameScore,
+    // Sonido compartido (desde SoundContext) para disparar en la rama correcta
+    playError,
+    playVictory
   };
 };
 

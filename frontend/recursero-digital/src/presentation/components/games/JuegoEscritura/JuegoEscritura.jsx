@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import '../../../styles/globals/games.css';
 import './JuegoEscritura.css';
+import Spinner from '../../shared/Spinner';
 import { generateDragDropActivity, validateNumberWordPair } from './utils';
 import { transformToEscrituraFormat } from '../../../../hooks/useGameLevels'; 
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
@@ -23,18 +22,19 @@ const JuegoEscritura = () => {
     const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/escritura');
     const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getMaxUnlockedLevel, getLastActivity } = useUserProgress();
-    const { 
-        points, 
-        attempts, 
-        incrementAttempts, 
-        resetAttempts, 
-        resetScoring, 
+    const {
+        points,
+        attempts,
+        resetAttempts,
+        resetScoring,
         completeActivity,
         startActivityTimer,
         isSubmitting,
-        submitError 
+        submitError,
+        playError,
+        playVictory
     } = useGameScoring();
-    
+
     const [gameState, setGameState] = useState('start');
     const [currentLevel, setCurrentLevel] = useState(0);
     const [currentActivity, setCurrentActivity] = useState(0);
@@ -53,10 +53,6 @@ const JuegoEscritura = () => {
     const totalActivities = useMemo(() => {
         return getTotalActivitiesForLevel(backendLevels, currentLevel, 5);
     }, [backendLevels, currentLevel]);
-    
-    useEffect(() => { 
-        AOS.init(); 
-    }, []);
     
     const startNewActivity = useCallback(() => {
         if (backendLevels.length === 0 || currentLevel < 0 || currentLevel >= backendLevels.length) {
@@ -203,11 +199,12 @@ const JuegoEscritura = () => {
             if (currentActivity < levelActivities - 1) {
                 setFeedback({ 
                     title: '✅ ¡Perfecto!', 
-                    text: `¡Excelente! Todas las respuestas son correctas. Ganaste ${activityScore} puntos. Avanza a la siguiente actividad.`, 
+                    text: `¡Excelente! Ganaste ${activityScore} puntos.`, 
                     isCorrect: true 
                 });
                 setGameState('feedback');
             } else {
+                playVictory();
                 unlockLevel(PROGRESS_KEYS.ESCRITURA, currentLevel + 2);
                 if (assignedLevel != null && currentLevel + 1 === assignedLevel) {
                     try {
@@ -218,8 +215,9 @@ const JuegoEscritura = () => {
                 setGameState('congrats');
             }
         } else {
+            playError();
             setFeedback({ 
-                title: '❌ Algunas respuestas incorrectas', 
+                title: '¡Intentalo de nuevo', 
                 text: `Tienes ${correctCount}/${wordPairs.length} correctas. Revisa las respuestas marcadas.`, 
                 isCorrect: false 
             });
@@ -262,7 +260,7 @@ const JuegoEscritura = () => {
     if (levelsLoading) {
         return (
             <div className="game-wrapper bg-space-gradient">
-                <div>Cargando niveles...</div>
+                <Spinner label="Cargando niveles..." />
             </div>
         );
     }

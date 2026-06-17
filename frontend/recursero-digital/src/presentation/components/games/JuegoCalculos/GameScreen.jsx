@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSound } from '../../../context/SoundContext';
+import SoundToggle from '../../shared/SoundToggle';
+import FeedbackModal from './FeedbackModal';
 import {
   getQuestionsForLevel,
   validateAnswer,
@@ -89,15 +92,15 @@ const GameScreen = ({
   onStartActivityTimer
 }) => {
   const navigate = useNavigate();
+  const { playVictory } = useSound();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [score, setScore] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [feedbackType, setFeedbackType] = useState(''); // 'success' or 'error'
+  const [feedbackData, setFeedbackData] = useState({ isCorrect: false, message: '', pointsEarned: 0 });  
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
-  const [attempts, setAttempts] = useState(0); // Attempts for current question
-  const [totalAttempts, setTotalAttempts] = useState(0); // Total attempts for the entire game
+  const [attempts, setAttempts] = useState(0);
+  const [totalAttempts, setTotalAttempts] = useState(0); 
   const [correctAnswers, setCorrectAnswers] = useState(0);
   
   const[showExitModal, setShowExitModal] = useState(false);
@@ -132,8 +135,7 @@ const GameScreen = ({
     setUserAnswer('');
     setScore(0);
     setShowFeedback(false);
-    setFeedbackMessage('');
-    setFeedbackType('');
+    setFeedbackData({ isCorrect: false, message: '', pointsEarned: 0 });   
     setIsAnswerSubmitted(false);
     setAttempts(0);
     setTotalAttempts(0);
@@ -172,50 +174,64 @@ const GameScreen = ({
         onActivityComplete(currentQuestionIndex, attempts, 1, 1, isLastQuestion);
       }
       
-      setFeedbackMessage(`${getRandomEncouragement()} +${pointsEarned} puntos`);
-      setFeedbackType('success');
+      setFeedbackData({
+          isCorrect: true,
+          message: `${getRandomEncouragement()}`,
+          pointsEarned: pointsEarned
+      });      
       setShowFeedback(true);
-
-      setTimeout(() => {
-        if (isLastQuestion) {
-          const pointsInCurrentLevel = score + pointsEarned;
-          const isWin = newCorrectAnswers >= Math.ceil(questions.length * 0.6);
-          
-          if (isWin && isUltimateVictory) {
-            const currentBackendLevel = backendLevelConfig?.level || 0;
-
-            const totalScoreAcumulado = allLevels.reduce((sum, lvl) => {
-              return lvl.level < currentBackendLevel ? sum + (lvl.puntos || 0) : sum;
-            }, 0);
-
-            const granTotalCompleto = totalScoreAcumulado + pointsInCurrentLevel;
-
-            setScore(granTotalCompleto);
-            setIsAnswerSubmitted(true);
-            setShowWinModal(true);
-          } else {
-            const finalScore = score + pointsEarned;
-            onGameComplete(isWin, finalScore, newCorrectAnswers, questions.length, totalAttempts);
-          } 
-        } else {
-          nextQuestion();
-        }
-      }, 1500);
     } else {
       setAttempts(prev => prev + 1);
       setTotalAttempts(prev => prev + 1);
       onUpdateAttempts();
       
-      setFeedbackMessage(getRandomMotivation());
-      setFeedbackType('error');
+      setFeedbackData({
+          isCorrect: false,
+          message: getRandomMotivation(),
+          pointsEarned: 0
+      });
       setShowFeedback(true);
-
-      setTimeout(() => {
-        setUserAnswer('');
-        setIsAnswerSubmitted(false);
-        setShowFeedback(false);
-      }, 2000);
     }
+  };
+
+  const handleFeedbackContinue = () => {
+      setShowFeedback(false);
+      
+      if (feedbackData.isCorrect) {
+          if (isLastQuestion) {
+              const pointsInCurrentLevel = score;
+              const newCorrectAnswers = correctAnswers;
+              const isWin = newCorrectAnswers >= Math.ceil(questions.length * 0.6);
+              
+              const currentLevelNumber = parseInt(level.replace('nivel', ''));
+              const maxLevelAllowed = (operation === 'suma') ? 5 : 3;
+              const isUltimateVictory = currentLevelNumber === maxLevelAllowed;
+
+              if (isWin && isUltimateVictory) {
+                if (playVictory) playVictory();
+                const currentBackendLevel = backendLevelConfig?.level || 0;
+
+                const totalScoreAcumulado = allLevels.reduce((sum, lvl) => {
+                  return lvl.level < currentBackendLevel ? sum + (lvl.puntos || 0) : sum;
+                }, 0);
+
+                const granTotalCompleto = totalScoreAcumulado + pointsInCurrentLevel;
+
+                setScore(granTotalCompleto);
+                setIsAnswerSubmitted(true);
+                setShowWinModal(true);
+              } else {
+                if (isWin && playVictory) playVictory();
+                onGameComplete(isWin, pointsInCurrentLevel, newCorrectAnswers, questions.length, totalAttempts);
+              } 
+          } else {
+              nextQuestion();
+          }
+      } else {
+          setUserAnswer('');
+          setIsAnswerSubmitted(false);
+          if (inputRef.current) inputRef.current.focus();
+      }
   };
 
   const calculatePoints = () => {
@@ -235,6 +251,8 @@ const GameScreen = ({
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !isAnswerSubmitted) {
+      e.preventDefault();
+      e.stopPropagation();
       handleSubmitAnswer();
     }
   };
@@ -299,7 +317,10 @@ const GameScreen = ({
           </div>
           
           <div className="game-status">
-            <div className="status-item">
+            <div className="status-item" style={{ padding: '2px' }}>
+              <SoundToggle />
+              </div>
+              <div className="status-item">
               <div className="status-icon">🏆</div>
               <div className="status-label">Nivel</div>
               <div className="status-value">{getLevelNumber(level)}</div>
@@ -381,13 +402,6 @@ const GameScreen = ({
         </div>
       </div>
 
-      {/* Feedback y pista */}
-      {showFeedback && (
-        <div className={`feedback-message ${feedbackType === 'success' ? 'feedback-success' : 'feedback-error'}`}>
-          {feedbackMessage}
-        </div>
-      )}
-
       {/* Pista permanente */}
       <div className="permanent-hint">
         <div className="permanent-hint-header">
@@ -400,7 +414,8 @@ const GameScreen = ({
           </p>
         </div>
       </div>
-    </div>
+      </div>
+    
       {showExitModal && (
         <div className="modal-overlay" style={{ zIndex: 9999 }}>
           <div className="modal-content congrats-model" style={{ maxWidth: '420px'}}>
@@ -514,6 +529,14 @@ const GameScreen = ({
 
           </div>
         </div>
+      )}
+      {showFeedback && (
+          <FeedbackModal 
+              isCorrect={feedbackData.isCorrect}
+              message={feedbackData.message}
+              pointsEarned={feedbackData.pointsEarned}
+              onContinue={handleFeedbackContinue}
+          />
       )}
     </div>
   );
