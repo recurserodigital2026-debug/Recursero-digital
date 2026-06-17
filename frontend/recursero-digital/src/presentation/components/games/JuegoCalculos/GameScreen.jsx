@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSoundEffects } from '../../../../hooks/useSoundEffects';
+import { useSound } from '../../../context/SoundContext';
+import SoundToggle from '../../shared/SoundToggle';
 import FeedbackModal from './FeedbackModal';
 import {
   getQuestionsForLevel,
@@ -91,7 +92,7 @@ const GameScreen = ({
   onStartActivityTimer
 }) => {
   const navigate = useNavigate();
-  const { playSuccess, playError, soundEnabled, toggleSound, playVictory } = useSoundEffects();  
+  const { playVictory } = useSound();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [score, setScore] = useState(0);
@@ -159,7 +160,6 @@ const GameScreen = ({
     setIsAnswerSubmitted(true);
 
     if (isCorrect) {
-      playSuccess();
       const pointsEarned = calculatePoints();
       setScore(prev => prev + pointsEarned);
       const newCorrectAnswers = correctAnswers + 1;
@@ -181,8 +181,6 @@ const GameScreen = ({
       });      
       setShowFeedback(true);
     } else {
-      playError();
-
       setAttempts(prev => prev + 1);
       setTotalAttempts(prev => prev + 1);
       onUpdateAttempts();
@@ -320,27 +318,7 @@ const GameScreen = ({
           
           <div className="game-status">
             <div className="status-item" style={{ padding: '2px' }}>
-              <button 
-                onClick={toggleSound} 
-                title={soundEnabled ? "Silenciar sonidos" : "Activar sonidos"}
-                style={{
-                  background: soundEnabled ? 'rgba(255, 255, 255, 0.2)' : 'rgba(239, 68, 68, 0.25)',
-                  border: soundEnabled ? '2px solid #ffb703' : '2px solid #ef4444',
-                  borderRadius: '12px',
-                  fontSize: '1.4rem',
-                  cursor: 'pointer',
-                  width: '50px',
-                  height: '50px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 3px 0 rgba(0,0,0,0.2)',
-                  outline: 'none'
-                }}
-              >
-                {soundEnabled ? '🔊' : '🔇'}
-              </button>
+              <SoundToggle />
               </div>
               <div className="status-item">
               <div className="status-icon">🏆</div>

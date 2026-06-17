@@ -15,7 +15,7 @@ const ErrorPopup = ({ show, onClose }) => {
 
     return (
         <div className="error-popup-overlay">
-            <div className="error-popup" data-aos="fade-in" data-aos-duration="300">
+            <div className="error-popup">
                 <div className="error-icon">❌</div>
                 <h3>¡Intenta de nuevo!</h3>
                 <p>Esa combinación no es correcta</p>

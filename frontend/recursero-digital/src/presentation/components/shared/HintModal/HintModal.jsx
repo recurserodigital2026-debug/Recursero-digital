@@ -11,7 +11,7 @@ const HintModal = ({
 }) => {
     return (
         <div className="modal-overlay">
-            <div className={`hint-modal-content ${theme}`} data-aos="zoom-in">
+            <div className={`hint-modal-content ${theme}`}>
                 <div className="hint-modal-icon">
                     {icon}
                 </div>

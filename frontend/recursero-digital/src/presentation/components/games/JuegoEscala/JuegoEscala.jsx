@@ -15,7 +15,6 @@ import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels, transformToEscalaFormat } from '../../../../hooks/useGameLevels';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
-import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 import { 
     GAME_CONFIG, 
@@ -32,16 +31,17 @@ const JuegoEscala = () => {
     const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/escala');
     const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getLastActivity } = useUserProgress();
-    const { 
-        points, 
-        attempts, 
-        incrementAttempts, 
-        resetAttempts, 
-        resetScoring, 
+    const {
+        points,
+        attempts,
+        incrementAttempts,
+        resetAttempts,
+        resetScoring,
         completeActivity,
-        startActivityTimer
+        startActivityTimer,
+        playError,
+        playVictory
     } = useGameScoring();
-    const { playSuccess, playError, playVictory } = useSoundEffects();
 
     const [gameState, setGameState] = useState(UI_STATES.GAME_STATES.START);
     const [currentLevel, setCurrentLevel] = useState(0);
@@ -151,7 +151,6 @@ const JuegoEscala = () => {
         const isCorrect = anteriorCorrect && posteriorCorrect;
 
         if (isCorrect) {
-            playSuccess();
             try {
                 const activityScore = calculateActivityScore(currentLevel, currentAttempts);
                 completeActivity(
@@ -192,7 +191,7 @@ const JuegoEscala = () => {
         }
 
         setShowFeedback(true);
-    }, [currentQuestion, userAnswers, incrementAttempts, currentLevel, attempts, completeActivity, currentActivity, isProcessing, playSuccess, playError]);
+    }, [currentQuestion, userAnswers, incrementAttempts, currentLevel, attempts, completeActivity, currentActivity, isProcessing, playError]);
     
     const handleContinue = useCallback(() => {
         setShowFeedback(false);

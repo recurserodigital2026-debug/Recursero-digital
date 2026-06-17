@@ -1,3 +1,5 @@
+import toast from 'react-hot-toast';
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://recurserodigital-gzad.onrender.com/api';
 
 export const AUTH_ENDPOINTS = {
@@ -9,7 +11,10 @@ export const AUTH_ENDPOINTS = {
 
 export const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
+  // `silent: true` permite al caller manejar el error él mismo (sin toast global).
+  const { silent = false, ...fetchOptions } = options;
+
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
@@ -23,10 +28,10 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   const config = {
     ...defaultOptions,
-    ...options,
+    ...fetchOptions,
     headers: {
       ...defaultOptions.headers,
-      ...options.headers,
+      ...fetchOptions.headers,
     },
     credentials: 'include',
   };
@@ -54,6 +59,12 @@ export const apiRequest = async (endpoint, options = {}) => {
       data = { error: 'La respuesta del servidor no es JSON válido' };
     }
     
+    // Errores de servidor (5xx) se notifican de forma centralizada. Los 4xx
+    // (validación / credenciales) los maneja cada caller en su propio flujo.
+    if (!response.ok && response.status >= 500 && !silent) {
+      toast.error(data?.error || 'Ocurrió un error en el servidor. Intentá de nuevo.');
+    }
+
     return {
       ok: response.ok,
       status: response.status,
@@ -61,6 +72,9 @@ export const apiRequest = async (endpoint, options = {}) => {
     };
   } catch (error) {
     console.error('Error en la petición API:', error);
+    if (!silent) {
+      toast.error('No se pudo conectar con el servidor. Revisá tu conexión.');
+    }
     throw error;
   }
 };

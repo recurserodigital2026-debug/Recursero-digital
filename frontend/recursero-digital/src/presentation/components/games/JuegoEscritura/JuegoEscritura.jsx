@@ -17,25 +17,24 @@ import ErrorPopup from './ErrorPopup';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
-import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 const JuegoEscritura = () => {
     const { courseId } = useParams();
     const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/escritura');
     const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getMaxUnlockedLevel, getLastActivity } = useUserProgress();
-    const { 
-        points, 
-        attempts, 
-        incrementAttempts, 
-        resetAttempts, 
-        resetScoring, 
+    const {
+        points,
+        attempts,
+        resetAttempts,
+        resetScoring,
         completeActivity,
         startActivityTimer,
         isSubmitting,
-        submitError 
+        submitError,
+        playError,
+        playVictory
     } = useGameScoring();
-    const { playSuccess, playError, playVictory } = useSoundEffects();
 
     const [gameState, setGameState] = useState('start');
     const [currentLevel, setCurrentLevel] = useState(0);
@@ -199,7 +198,6 @@ const JuegoEscritura = () => {
         const allCorrect = correctCount === wordPairs.length;
 
         if (allCorrect) {
-            playSuccess();
             const activityScore = await completeActivity(currentLevel, GAME_IDS.ESCRITURA, currentActivity, currentLevel);
             
             const levelActivities = backendLevels[currentLevel]?.activitiesCount || 5;

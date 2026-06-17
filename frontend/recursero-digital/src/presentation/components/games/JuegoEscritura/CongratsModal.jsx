@@ -10,7 +10,7 @@ const CongratsModal = ({ level, points, courseId, onNextLevel }) => {
 
     return (
         <div className="modal-overlay">
-            <div className="paper-note modal-content congrats" data-aos="zoom-in">
+            <div className="paper-note modal-content congrats">
                 <h2>🎉 ¡Felicidades!</h2>
                 <p>¡Completaste el Nivel {level}!</p>
                 <div className="points-display">

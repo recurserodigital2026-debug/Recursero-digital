@@ -13,10 +13,21 @@ export class PostgreSQLStudentStatisticsRepository implements StudentStatisticsR
     try {
       await this.db.query(
         `INSERT INTO student_statistics (
-          id, student_id, game_id, level, activity, points, total_points, 
-          attempts, correct_answers, total_questions, completion_time, 
+          id, student_id, game_id, level, activity, points, total_points,
+          attempts, correct_answers, total_questions, completion_time,
           is_completed, max_unlocked_level, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        ON CONFLICT (student_id, game_id, level, activity)
+        DO UPDATE SET
+          points = EXCLUDED.points,
+          total_points = EXCLUDED.total_points,
+          attempts = EXCLUDED.attempts,
+          correct_answers = EXCLUDED.correct_answers,
+          total_questions = EXCLUDED.total_questions,
+          completion_time = EXCLUDED.completion_time,
+          is_completed = EXCLUDED.is_completed,
+          max_unlocked_level = EXCLUDED.max_unlocked_level,
+          updated_at = EXCLUDED.updated_at`,
         [
           statistics.id,
           statistics.studentId,

@@ -31,12 +31,13 @@ const assignedLevels = useMemo(() => {
       : null;
   }, [assignedLevels]);
   const { unlockLevel } = useUserProgress();
-  const { 
-    incrementAttempts, 
-    resetScoring, 
+  const {
+    incrementAttempts,
+    resetScoring,
     completeActivity,
     addPoints,
-    startActivityTimer
+    startActivityTimer,
+    playError
   } = useGameScoring();
 
   // Game state management
@@ -158,7 +159,8 @@ const assignedLevels = useMemo(() => {
 
   const handleUpdateAttempts = useCallback(() => {
     incrementAttempts();
-  }, [incrementAttempts]);
+    playError();
+  }, [incrementAttempts, playError]);
 
   if (levelsLoading) {
     return (

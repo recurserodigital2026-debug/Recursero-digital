@@ -3,6 +3,7 @@ import Logo from '../../../assets/logo.png';
 import '../../styles/layouts/header.css';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest, AUTH_ENDPOINTS } from '../../../infrastructure/config/api';
+import SoundToggle from '../shared/SoundToggle';
 
 export function Header() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export function Header() {
           <h1>ReDa Kids</h1>
         </div>
         <div className="search-and-mode">
+        <SoundToggle />
         <div className='boton-cerrar'>
           <button className='cerrar-sesion' onClick={handleCerrarSesion}>Cerrar Sesion</button>
         </div>

@@ -5,7 +5,7 @@ const CongratsModal = ({ level, points, hasNextLevel, onNextLevel }) => {
     const navigate = useNavigate();
     return (
     <div className="modal-overlay">
-        <div className="modal-content congrats slide-in" data-aos="zoom-in">
+        <div className="modal-content congrats slide-in">
             <div style={{
                 fontSize: '4rem',
                 textAlign: 'center',

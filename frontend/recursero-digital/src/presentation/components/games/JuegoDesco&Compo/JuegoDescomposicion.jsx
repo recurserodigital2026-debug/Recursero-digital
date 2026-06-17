@@ -16,7 +16,6 @@ import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels, transformToDescomposicionFormat } from '../../../../hooks/useGameLevels';
 import { GAME_IDS, PROGRESS_KEYS } from '../../../../constants/games';
 import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
-import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 const JuegoDescomposicion = () => {
     const { courseId } = useParams();
@@ -27,16 +26,17 @@ const JuegoDescomposicion = () => {
     const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/descomposicion');
     const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
     const { unlockLevel, getLastActivity } = useUserProgress();
-    const { 
-        points, 
-        attempts, 
-        incrementAttempts, 
-        resetAttempts, 
-        resetScoring, 
+    const {
+        points,
+        attempts,
+        incrementAttempts,
+        resetAttempts,
+        resetScoring,
         completeActivity,
-        startActivityTimer
+        startActivityTimer,
+        playError,
+        playVictory
     } = useGameScoring();
-    const { playSuccess, playError, playVictory } = useSoundEffects();
 
     const [gameMode, setGameMode] = useState(null); // 'decomposition' o 'composition'
     
@@ -174,7 +174,6 @@ const JuegoDescomposicion = () => {
         if (isCorrect) {
             const activityScore = 50 * (currentLevel + 1);
             completeActivity(currentLevel, GAME_IDS.DESCOMPOSICION, currentActivity, currentLevel);
-            playSuccess();
             setIsAnswered(true);
             setFeedback({
                 title: '¡Correcto!',
@@ -191,7 +190,7 @@ const JuegoDescomposicion = () => {
         }
 
     setShowFeedback(true);
-}, [currentQuestion, userAnswer, incrementAttempts, currentLevel, completeActivity, isAnswered, playSuccess, playError, currentActivity]);
+}, [currentQuestion, userAnswer, incrementAttempts, currentLevel, completeActivity, isAnswered, playError, currentActivity]);
     
     const handleContinue = useCallback(() => {
     setShowFeedback(false);

@@ -12,7 +12,6 @@ import {
   checkOrder, 
   generateHint
 } from './utils';
-import { useSoundEffects } from '../../../../hooks/useSoundEffects';
 
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
@@ -27,15 +26,16 @@ const JuegoOrdenamiento = () => {
   const storedLevel = sessionStorage.getItem('assignedLevel:/alumno/juegos/ordenamiento');
   const assignedLevel = storedLevel != null ? Number(storedLevel) : null;
   const { unlockLevel, getLastActivity } = useUserProgress();
-  const { 
-    points, 
-    attempts, 
-    incrementAttempts, 
-    resetScoring, 
+  const {
+    points,
+    attempts,
+    incrementAttempts,
+    resetScoring,
     completeActivity,
-    startActivityTimer
+    startActivityTimer,
+    playError,
+    playVictory
   } = useGameScoring();
-  const { playSuccess, playError, playVictory } = useSoundEffects();
 
   const [gameState, setGameState] = useState('start');
   const [order, setOrder] = useState('asc'); // 'asc' or 'desc'
@@ -133,7 +133,6 @@ const JuegoOrdenamiento = () => {
   }, [resetScoring, getLastActivity, backendLevels]);
 
   const handleActivityComplete = useCallback(() => {
-    playSuccess();
     const activityScore = completeActivity(currentLevel, GAME_IDS.ORDENAMIENTO, currentActivity, currentLevel);
     const newActivity = currentActivity + 1;
     
@@ -148,7 +147,7 @@ const JuegoOrdenamiento = () => {
     setTargetNumbers([]);
     setFeedbackSuccess(true);
     setShowFeedback(true);
-  }, [currentLevel, currentActivity, completeActivity, attempts, playSuccess]);
+  }, [currentLevel, currentActivity, completeActivity, attempts]);
 
   const handleFailedAttempt = useCallback(() => {
     playError();

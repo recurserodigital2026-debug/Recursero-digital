@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSoundEffects } from '../../../../hooks/useSoundEffects';
+import SoundToggle from '../../shared/SoundToggle';
 
 const GameScreen = ({ 
     level, 
@@ -23,7 +23,6 @@ const GameScreen = ({
     const [showWinModal, setShowWinModal] = useState(false);  
     const [pendingTarget, setPendingTarget] = useState(null);
     const [finalTotalPoints, setFinalTotalPoints] = useState(points);
-    const { soundEnabled, toggleSound } = useSoundEffects();
 
     const currentLevelNumber = parseInt(String(level).replace(/[^0-9]/g, ''), 10);
 
@@ -101,25 +100,8 @@ const GameScreen = ({
                     
                     <div className="game-status">
                         <div className="status-item" style={{ padding: '2px' }}>
-                            <button 
-                            onClick={toggleSound} 
-                            title={soundEnabled ? "Silenciar sonidos" : "Activar sonidos"}
-                            style={{
-                                 background: soundEnabled ? 'rgba(255,255,255,0.2)' : 'rgba(239,68,68,0.25)',
-                                 border: soundEnabled ? '2px solid #ffb703' : '2px solid #ef4444',
-                                 borderRadius: '12px',
-                                 fontSize: '1.4rem',
-                                 cursor: 'pointer',
-                                 width: '50px',
-                                 height: '50px',
-                                 display: 'flex',
-                                 alignItems: 'center',
-                                 justifyContent: 'center',
-                                 }}
-                                 >
-                                    {soundEnabled ? '🔊' : '🔇'}
-                                </button>
-                            </div>
+                            <SoundToggle />
+                        </div>
                         <div className="status-item">
                             <div className="status-icon">🏆</div>
                             <div className="status-label">Nivel</div>

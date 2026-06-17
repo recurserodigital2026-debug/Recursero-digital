@@ -14,7 +14,7 @@ const FeedbackModal = ({ feedback, onContinue }) => {
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content slide-in" data-aos="zoom-in">
+            <div className="modal-content slide-in">
                 <div className="desco-feedback-icon">
                     {feedback.isCorrect ? '🎉' : '😢'}
                 </div>
