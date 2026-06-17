@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSound } from '../../../context/SoundContext';
 import SoundToggle from '../../shared/SoundToggle';
-import FeedbackModal from './FeedbackModal';
+import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
 import {
   getQuestionsForLevel,
   validateAnswer,

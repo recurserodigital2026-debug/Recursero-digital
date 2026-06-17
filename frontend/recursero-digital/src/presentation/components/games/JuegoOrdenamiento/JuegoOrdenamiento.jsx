@@ -18,8 +18,8 @@ import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
 import GameCompleteScreen from './GameCompleteScreen';
-import CongratsModal from './CongratsModal';
-import FeedbackModal from './FeedbackModal';
+import CongratsModal from '../../shared/CongratsModal/CongratsModal';
+import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
 
 const JuegoOrdenamiento = () => {
   const { courseId } = useParams();
@@ -308,14 +308,12 @@ const JuegoOrdenamiento = () => {
 
       {showLevelUp && (
         <CongratsModal
-          level={currentLevel + 1}
-          points={points}
-          onNextLevel={assignedLevel == null ? handleNextLevel : undefined}
-          onBackToLevels={() => {
-            setShowLevelUp(false);
-            setGameState('level-select');
-          }}
-          totalLevels={backendLevels.length}
+        isVisible={showLevelUp}
+        titleNivel={`Ordenamiento - Nivel ${currentLevel + 1}`}
+        finalScore={points}
+        totalQuestions={5} 
+        correctAnswers={5} 
+        totalAttempts={points > 0 ? 1 : 0}
         />
       )}
     </div>

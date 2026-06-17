@@ -10,8 +10,8 @@ import { getTotalActivitiesForLevel } from '../../../../utils/gameLevels';
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
-import FeedbackModal from './FeedbackModal';
-import CongratsModal from './CongratsModal';
+import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
+import CongratsModal from '../../shared/CongratsModal/CongratsModal';
 import ErrorPopup from './ErrorPopup';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
@@ -291,13 +291,16 @@ const JuegoEscritura = () => {
             
             {gameState === 'feedback' && <FeedbackModal feedback={feedback} onContinue={handleContinue} />}
             
-            {gameState === 'congrats' && <CongratsModal
-                level={currentLevel + 1}
-                points={points}
-                courseId={courseId}
-                onNextLevel={assignedLevel == null ? handleNextLevel : undefined}
-                onBackToLevels={() => setGameState('level-select')}
-            />}
+            {gameState === 'congrats' && (
+                <CongratsModal
+                isVisible={gameState === 'congrats'}
+                titleNivel={`Escritura - Nivel ${currentLevel + 1}`}
+                finalScore={points}
+                totalQuestions={5}
+                correctAnswers={5}
+                totalAttempts={points > 0 ? 1 : 0}
+                />
+            )}
             
             <ErrorPopup show={showErrorPopup} onClose={handleCloseErrorPopup} />
 

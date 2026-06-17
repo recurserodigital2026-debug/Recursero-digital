@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isValidNumber } from './util';
 import SoundToggle from '../../shared/SoundToggle';
-import FeedbackModal from './FeedbackModal';
 const GameScreen = ({ 
     activity,
     totalActivities,

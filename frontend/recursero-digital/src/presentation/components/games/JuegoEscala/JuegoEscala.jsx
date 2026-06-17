@@ -6,8 +6,8 @@ import Spinner from '../../shared/Spinner';
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
-import FeedbackModal from './FeedbackModal';
-import CongratsModal from './CongratsModal';
+import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
+import CongratsModal from '../../shared/CongratsModal/CongratsModal';
 import HintModal from '../../shared/HintModal';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
@@ -302,12 +302,12 @@ const JuegoEscala = () => {
 
             {showCongrats && (
                 <CongratsModal
-                    score={points}
-                    totalQuestions={totalQuestions * GAME_CONFIG.BASE_SCORE * (currentLevel + 1)}
-                    levelName={levels[currentLevel].name}
-                    nextLevelUnlocked={assignedLevel == null && currentLevel < levels.length - 1}
-                    onPlayAgain={handlePlayAgain}
-                    onBackToLevels={handleBackToLevels}
+                isVisible={showCongrats}
+                titleNivel={`Escala - ${levels[currentLevel].name}`} 
+                finalScore={points} 
+                totalQuestions={totalQuestions} 
+                correctAnswers={totalQuestions} 
+                totalAttempts={points > 0 ? 1 : 0}
                 />
             )}
 

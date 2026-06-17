@@ -7,8 +7,8 @@ import Spinner from '../../shared/Spinner';
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
-import FeedbackModal from './FeedbackModal';
-import CongratsModal from './CongratsModal';
+import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
+import CongratsModal from '../../shared/CongratsModal/CongratsModal';
 import HintModal from '../../shared/HintModal';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
@@ -286,11 +286,12 @@ const JuegoDescomposicion = () => {
 
             {showCongrats && (
                 <CongratsModal
-                    level={currentLevel + 1}
-                    points={points}
-                    hasNextLevel={assignedLevel == null && currentLevel < levels.length - 1}
-                    onNextLevel={handleNextLevel}
-                    onBackToLevels={handleBackToLevels}
+                    isVisible={showCongrats}
+                    titleNivel={`Descomposición y Composición - Nivel ${currentLevel + 1}`}
+                    finalScore={points}
+                    totalQuestions={5} 
+                    correctAnswers={points > 0 ? Math.min(Math.floor(points / 10), 5) : 0} 
+                    totalAttempts={points > 0 ? 1 : 0}
                 />
             )}
 
