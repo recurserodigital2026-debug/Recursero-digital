@@ -71,6 +71,7 @@ export class DatabaseConnection {
         [
           'node-pg-migrate',
           'up',
+          '--no-check-order',
           '-m',
           path.join(__dirname, '../../migrations')
         ],
