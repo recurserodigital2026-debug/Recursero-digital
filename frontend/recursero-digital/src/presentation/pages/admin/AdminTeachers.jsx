@@ -1,18 +1,33 @@
 import React, { useState, useMemo } from 'react';
 import '../../styles/pages/adminTeachers.css';
+import ListControls from '../../components/shared/ListControls';
 
 export default function AdminTeachers({ teachers = [], onEdit, onToggleStatus }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('activo');
+  const [sortBy, setSortBy] = useState('nombre-asc');
 
   const filteredTeachers = useMemo(() => {
-    return teachers.filter(teacher => {
-      const matchesSearch = searchTerm === '' ||
-        teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        teacher.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-      return matchesSearch;
+    const term = searchTerm.trim().toLowerCase();
+    const result = teachers.filter(teacher => {
+      const matchesSearch = term === '' ||
+        teacher.name.toLowerCase().includes(term) ||
+        (teacher.email || '').toLowerCase().includes(term);
+      const isActive = teacher.enable !== false;
+      const matchesStatus = statusFilter === 'todos' ||
+        (statusFilter === 'activo' && isActive) ||
+        (statusFilter === 'inactivo' && !isActive);
+      return matchesSearch && matchesStatus;
     });
-  }, [teachers, searchTerm]);
+
+    result.sort((a, b) =>
+      sortBy === 'nombre-desc'
+        ? b.name.localeCompare(a.name)
+        : a.name.localeCompare(b.name)
+    );
+
+    return result;
+  }, [teachers, searchTerm, statusFilter, sortBy]);
 
   if (!teachers || teachers.length === 0) {
     return (
@@ -26,17 +41,31 @@ export default function AdminTeachers({ teachers = [], onEdit, onToggleStatus })
     <div className="admin-teachers">
 
       <div className="teachers-content">
-        <div className="teachers-filters">
-          <div className="filter-group">
-            <label>Buscar docente:</label>
-            <input
-              type="text"
-              placeholder="Nombre o email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
+        <ListControls
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Nombre o email..."
+          filters={[
+            {
+              label: 'Estado',
+              value: statusFilter,
+              onChange: setStatusFilter,
+              options: [
+                { label: 'Todos', value: 'todos' },
+                { label: 'Activos', value: 'activo' },
+                { label: 'Inactivos', value: 'inactivo' },
+              ],
+            },
+          ]}
+          sort={{
+            value: sortBy,
+            onChange: setSortBy,
+            options: [
+              { label: 'Nombre (A-Z)', value: 'nombre-asc' },
+              { label: 'Nombre (Z-A)', value: 'nombre-desc' },
+            ],
+          }}
+        />
 
         <div className="teachers-grid">
           {filteredTeachers.length === 0 ? (

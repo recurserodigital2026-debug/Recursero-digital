@@ -1,14 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import AddUserForm from "./AddUserForm";
 import EditStudentForm from "./EditStudentForm";
 import EditTeacherForm from "./EditTeacherForm";
 import BulkUploadForm from "./BulkUploadForm";
 import "../../styles/pages/adminUsers.css";
 import AdminTeachers from "../admin/AdminTeachers";
+import ListControls from "../../components/shared/ListControls";
 import { createStudent, getAllStudents, createTeacher, getAllTeachers, getAllCourses, getCourseStudents, updateStudent, deleteStudent, enableStudent, updateTeacher, deleteTeacher, enableTeacher, bulkUploadStudents } from "../../services/adminService";
 
 export default function AdminUsers() {
   const [activeTab, setActiveTab] = useState("students");
+  const [studentSearch, setStudentSearch] = useState("");
+  const [studentCourseFilter, setStudentCourseFilter] = useState("todos");
+  const [studentStatusFilter, setStudentStatusFilter] = useState("activo");
+  const [studentSortBy, setStudentSortBy] = useState("nombre-asc");
   const [showAddUserForm, setShowAddUserForm] = useState(false);
   const [showBulkUploadForm, setShowBulkUploadForm] = useState(false);
   const [showEditStudentForm, setShowEditStudentForm] = useState(false);
@@ -20,6 +26,40 @@ export default function AdminUsers() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const studentCourseOptions = useMemo(() => {
+    const named = courses.map(c => ({ label: c.name, value: String(c.id) }));
+    return [
+      { label: 'Todos los cursos', value: 'todos' },
+      ...named,
+      { label: 'Sin curso', value: 'sin-curso' },
+    ];
+  }, [courses]);
+
+  const filteredStudents = useMemo(() => {
+    const term = studentSearch.trim().toLowerCase();
+    const result = students.filter(student => {
+      const matchesSearch = term === '' ||
+        (student.name || '').toLowerCase().includes(term) ||
+        (student.username || '').toLowerCase().includes(term);
+      const matchesCourse = studentCourseFilter === 'todos' ||
+        (studentCourseFilter === 'sin-curso' && !student.courseId) ||
+        String(student.courseId) === studentCourseFilter;
+      const isActive = student.enable !== false;
+      const matchesStatus = studentStatusFilter === 'todos' ||
+        (studentStatusFilter === 'activo' && isActive) ||
+        (studentStatusFilter === 'inactivo' && !isActive);
+      return matchesSearch && matchesCourse && matchesStatus;
+    });
+
+    result.sort((a, b) =>
+      studentSortBy === 'nombre-desc'
+        ? (b.name || '').localeCompare(a.name || '')
+        : (a.name || '').localeCompare(b.name || '')
+    );
+
+    return result;
+  }, [students, studentSearch, studentCourseFilter, studentStatusFilter, studentSortBy]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -139,16 +179,18 @@ export default function AdminUsers() {
       );
       
       setShowBulkUploadForm(false);
-      
-      let message = result.message;
+
+      toast.success(result.message || "Carga masiva completada");
       if (result.errorDetails && result.errorDetails.length > 0) {
-        message += "\n\nDetalles de errores:\n" + result.errorDetails.join("\n");
+        const detail = "Detalles de errores:\n" + result.errorDetails.join("\n");
+        setError(detail);
+        toast.error(`${result.errorDetails.length} fila(s) con errores. Revisá el detalle.`);
       }
-      alert(message);
-      
+
     } catch (err) {
       console.error("Error en carga masiva:", err);
       setError(err.message || "Error en la carga masiva de estudiantes");
+      toast.error(err.message || "Error en la carga masiva de estudiantes");
     } finally {
       setLoading(false);
     }
@@ -174,12 +216,14 @@ export default function AdminUsers() {
       setLoading(true);
       setError(null);
       
-      if (student.enable === false) {
+      const wasDisabled = student.enable === false;
+      if (wasDisabled) {
         await enableStudent(student.id);
       } else {
         await deleteStudent(student.id);
       }
-      
+      toast.success(wasDisabled ? "Estudiante activado" : "Estudiante desactivado");
+
       const data = await getAllStudents();
       setStudents(
         data.map((s) => {
@@ -200,6 +244,7 @@ export default function AdminUsers() {
     } catch (err) {
       console.error("Error al cambiar estado del estudiante:", err);
       setError(err.message || "Error al cambiar estado del estudiante");
+      toast.error(err.message || "Error al cambiar estado del estudiante");
     } finally {
       setLoading(false);
     }
@@ -215,22 +260,24 @@ export default function AdminUsers() {
       setLoading(true);
       setError(null);
       
-      if (teacher.enable === false) {
+      const wasDisabled = teacher.enable === false;
+      if (wasDisabled) {
         await enableTeacher(teacher.id);
       } else {
         await deleteTeacher(teacher.id);
       }
-      
+      toast.success(wasDisabled ? "Docente activado" : "Docente desactivado");
+
       const [teachersData, coursesData] = await Promise.all([
         getAllTeachers(),
         getAllCourses()
       ]);
-      
+
       const teachersWithDetails = await Promise.all(
         teachersData.map(async (teacher) => {
           const teacherCourses = coursesData.filter(course => course.teacherId === teacher.id);
           const allStudents = new Set();
-          
+
           for (const course of teacherCourses) {
             try {
               const courseStudents = await getCourseStudents(course.id);
@@ -241,7 +288,7 @@ export default function AdminUsers() {
               console.warn(`No se pudieron obtener estudiantes del curso ${course.id}:`, err);
             }
           }
-          
+
           return {
             id: teacher.id,
             name: teacher.fullName || `${teacher.name} ${teacher.surname}`,
@@ -257,11 +304,12 @@ export default function AdminUsers() {
           };
         })
       );
-      
+
       setTeachers(teachersWithDetails);
     } catch (err) {
       console.error("Error al cambiar estado del docente:", err);
       setError(err.message || "Error al cambiar estado del docente");
+      toast.error(err.message || "Error al cambiar estado del docente");
     } finally {
       setLoading(false);
     }
@@ -292,9 +340,11 @@ export default function AdminUsers() {
       );
       
       handleCloseForm();
+      toast.success("Estudiante actualizado correctamente");
     } catch (err) {
       console.error("Error al actualizar estudiante:", err);
       setError(err.message || "Error al actualizar estudiante");
+      toast.error(err.message || "Error al actualizar estudiante");
     } finally {
       setLoading(false);
     }
@@ -342,9 +392,11 @@ export default function AdminUsers() {
       
       setTeachers(teachersWithDetails);
       handleCloseForm();
+      toast.success("Docente actualizado correctamente");
     } catch (err) {
       console.error("Error al actualizar docente:", err);
       setError(err.message || "Error al actualizar docente");
+      toast.error(err.message || "Error al actualizar docente");
     } finally {
       setLoading(false);
     }
@@ -427,6 +479,7 @@ export default function AdminUsers() {
 
       setFormError(null);
       setShowAddUserForm(false);
+      toast.success(activeTab === "students" ? "Estudiante creado correctamente" : "Docente creado correctamente");
     } catch (err) {
       console.error("Error al crear usuario:", err);
       const errorMessage = err.message || "Error al crear usuario";
@@ -473,6 +526,37 @@ export default function AdminUsers() {
       {activeTab === "students" && (
         <div className="users-table">
           <h2>Estudiantes</h2>
+          <ListControls
+            searchValue={studentSearch}
+            onSearchChange={setStudentSearch}
+            searchPlaceholder="Nombre o username..."
+            filters={[
+              {
+                label: 'Curso',
+                value: studentCourseFilter,
+                onChange: setStudentCourseFilter,
+                options: studentCourseOptions,
+              },
+              {
+                label: 'Estado',
+                value: studentStatusFilter,
+                onChange: setStudentStatusFilter,
+                options: [
+                  { label: 'Todos', value: 'todos' },
+                  { label: 'Activos', value: 'activo' },
+                  { label: 'Inactivos', value: 'inactivo' },
+                ],
+              },
+            ]}
+            sort={{
+              value: studentSortBy,
+              onChange: setStudentSortBy,
+              options: [
+                { label: 'Nombre (A-Z)', value: 'nombre-asc' },
+                { label: 'Nombre (Z-A)', value: 'nombre-desc' },
+              ],
+            }}
+          />
           <table>
             <thead>
               <tr>
@@ -483,7 +567,11 @@ export default function AdminUsers() {
               </tr>
             </thead>
             <tbody>
-              {students.map((student) => (
+              {filteredStudents.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="no-results">No se encontraron estudiantes con los criterios de búsqueda</td>
+                </tr>
+              ) : filteredStudents.map((student) => (
                 <tr key={student.id}>
                   <td>{student.name}</td>
                   <td>{student.username}</td>
