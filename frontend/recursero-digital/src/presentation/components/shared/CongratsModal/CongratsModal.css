@@ -1,0 +1,199 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: clamp(0.5rem, 1vh, 1rem);
+  overflow: hidden;
+}
+
+.modal-content.congrats-modal {
+  background: var(--space-gradient, #1a1c2e);
+  border: 3px solid var(--space-yellow, #fbbf24);
+  border-radius: 20px;
+  padding: clamp(1rem, 2vh, 1.5rem);
+  max-width: 450px;
+  width: 100%;
+  max-height: 85vh;
+  text-align: center;
+  transform: scale(1);
+  transition: all 0.3s ease;
+  box-shadow: 0 20px 40px rgba(30, 58, 138, 0.5);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.modal-content.congrats-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content.congrats-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.modal-content.congrats-modal::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+}
+
+.congrats-modal .modal-icon {
+  width: clamp(80px, 15vw, 120px);
+  height: clamp(80px, 15vw, 120px);
+  margin: 0 auto clamp(1rem, 2vh, 1.5rem);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-icon {
+  background: var(--button-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+}
+
+.icon-emoji {
+  font-size: clamp(3rem, 6vw, 4rem);
+  display: block;
+}
+
+.modal-title {
+  font-size: clamp(1.8rem, 4vw, 2.3rem);
+  font-weight: 700;
+  margin-bottom: clamp(0.8rem, 1.5vh, 1.2rem);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.success-title {
+  color: var(--space-yellow, #fbbf24);
+}
+
+.error-icon {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+}
+
+.error-title {
+  color: #fca5a5;
+}
+
+@keyframes starBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.1); }
+}
+
+.congrats-stars {
+  display: flex;
+  justify-content: center;
+  gap: clamp(0.3rem, 1.2vw, 0.7rem);
+  margin-bottom: clamp(1rem, 2vh, 1.4rem);
+}
+
+.congrats-star {
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  line-height: 1;
+  display: inline-block;
+}
+
+.congrats-star.filled {
+  animation: starBounce 0.6s ease;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.7));
+}
+
+.congrats-star.empty {
+  color: rgba(255, 255, 255, 0.35);
+  filter: grayscale(1);
+}
+
+.modal-stats {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border: 2px solid var(--space-yellow, #fbbf24);
+  border-radius: 18px;
+  padding: clamp(1.3rem, 2.5vh, 1.6rem);
+  margin-bottom: clamp(1.3rem, 2.5vh, 1.6rem);
+  backdrop-filter: blur(5px);
+}
+
+.stats-title {
+  color: white;
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  margin-bottom: clamp(1rem, 1.8vh, 1.2rem);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: clamp(0.8rem, 1.5vw, 1rem);
+  margin-bottom: clamp(1rem, 2vh, 1.3rem);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: clamp(0.7rem, 1.4vw, 0.85rem);
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.stat-value {
+  display: block;
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  color: var(--space-yellow, #fbbf24);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.performance-message {
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  font-weight: 700;
+  margin-top: 0.5rem;
+  margin-bottom: clamp(0.6rem, 1.2vh, 0.8rem);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.completion-message,
+.next-challenge {
+  font-size: clamp(0.85rem, 1.7vw, 1rem);
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.4rem;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.7rem, 1.4vh, 0.9rem);
+}
+
+.modal-btn {
+  width: 100%;
+  padding: clamp(0.7rem, 1.6vh, 0.9rem) clamp(1.2rem, 2.5vw, 1.5rem);
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  font-weight: 700;
+  border-radius: 12px;
+  border: 2px solid var(--space-yellow, #fbbf24);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--button-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.modal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}

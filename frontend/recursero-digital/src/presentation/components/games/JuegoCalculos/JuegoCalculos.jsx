@@ -7,7 +7,8 @@ import Spinner from '../../shared/Spinner';
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
-import CongratsModal from './CongratsModal';
+import CongratsModal from '../../shared/CongratsModal/CongratsModal';
+import { starsFromErrors } from '../../shared/CongratsModal/stars';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
 import { useGameLevels } from '../../../../hooks/useGameLevels';
@@ -222,15 +223,14 @@ const assignedLevels = useMemo(() => {
               onUpdateAttempts={handleUpdateAttempts}
             />
             <CongratsModal
-              isVisible={true}
-              isWin={gameResults.isWin}
-              operation={selectedOperation}
-              level={selectedLevel}
-              finalScore={gameResults.finalScore}
-              totalQuestions={gameResults.totalQuestions}
-              correctAnswers={gameResults.correctAnswers}
-              totalAttempts={gameResults.totalAttempts}
-              onBackToGames={handleBackToGames}
+            isVisible={true}
+            isWin={gameResults?.isWin ?? true}
+            titleNivel={gameResults?.titleNivel || "Nivel de Cálculos"}
+            finalScore={gameResults?.finalScore || 0}
+            totalQuestions={gameResults?.totalQuestions || 0}
+            correctAnswers={gameResults?.correctAnswers || 0}
+            totalAttempts={(gameResults?.totalAttempts || 0) + (gameResults?.totalQuestions || 0)}
+            stars={starsFromErrors(gameResults?.totalAttempts || 0, gameResults?.totalQuestions || 0)}
             />
           </>
         );

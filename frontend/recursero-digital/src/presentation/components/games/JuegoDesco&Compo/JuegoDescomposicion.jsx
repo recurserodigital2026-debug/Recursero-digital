@@ -7,8 +7,9 @@ import Spinner from '../../shared/Spinner';
 import StartScreen from './StartScreen';
 import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
-import FeedbackModal from './FeedbackModal';
-import CongratsModal from './CongratsModal';
+import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
+import CongratsModal from '../../shared/CongratsModal/CongratsModal';
+import { starsFromErrors } from '../../shared/CongratsModal/stars';
 import HintModal from '../../shared/HintModal';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
@@ -50,6 +51,7 @@ const JuegoDescomposicion = () => {
     const [feedback, setFeedback] = useState({ title: '', text: '', isCorrect: false });
     const [questions, setQuestions] = useState([]);
     const [isAnswered, setIsAnswered] = useState(false);
+    const [levelErrors, setLevelErrors] = useState(0); // errores acumulados del nivel (para estrellas)
 
     const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.DESCOMPOSICION, true, courseId);
 
@@ -123,6 +125,7 @@ const JuegoDescomposicion = () => {
         setCurrentLevel(0);
         setCurrentActivity(0);
         resetScoring();
+        setLevelErrors(0);
         setShowFeedback(false);
       }, [resetScoring]);
 
@@ -138,6 +141,7 @@ const JuegoDescomposicion = () => {
         setQuestions(generateQuestions(level, questionsCount));
         resetScoring();
         resetAttempts();
+        setLevelErrors(0);
         setGameState('playing');
         
     }, [generateQuestions, resetScoring, resetAttempts, backendLevels]);
@@ -177,6 +181,7 @@ const JuegoDescomposicion = () => {
             });
         } else {
             playError();
+            setLevelErrors(prev => prev + 1);
             setFeedback({
                 title: '¡Incorrecto!',
                 text: `¡Inténtalo de nuevo!`,
@@ -212,15 +217,6 @@ const JuegoDescomposicion = () => {
 
 
     }, [feedback.isCorrect, currentActivity, totalQuestions, currentLevel, unlockLevel, resetAttempts, startActivityTimer, levels.length, gameMode, assignedLevel, playVictory]);
-
-    const handleNextLevel = useCallback(() => {
-        setShowCongrats(false);
-        if (currentLevel < levels.length - 1) {
-            handleSelectLevel(currentLevel + 1);
-        } else {
-            setGameState('levelSelect');
-        }
-    }, [currentLevel, handleSelectLevel, levels.length]);
 
     const handleBackToLevels = useCallback(() => {
         setShowCongrats(false);
@@ -286,11 +282,13 @@ const JuegoDescomposicion = () => {
 
             {showCongrats && (
                 <CongratsModal
-                    level={currentLevel + 1}
-                    points={points}
-                    hasNextLevel={assignedLevel == null && currentLevel < levels.length - 1}
-                    onNextLevel={handleNextLevel}
-                    onBackToLevels={handleBackToLevels}
+                    isVisible={showCongrats}
+                    titleNivel={`Descomposición y Composición - Nivel ${currentLevel + 1}`}
+                    finalScore={points}
+                    totalQuestions={totalQuestions}
+                    correctAnswers={totalQuestions}
+                    totalAttempts={levelErrors + totalQuestions}
+                    stars={starsFromErrors(levelErrors, totalQuestions)}
                 />
             )}
 
