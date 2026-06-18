@@ -45,8 +45,10 @@ export default function MainLayout({ children, userRole = "alumno" }) {
     : userRole === "docente"
     ? [
         { id: "home", label: "🏠 Inicio", path: "/docente/dashboard" },
-        { id: "statistics", label: "📊 Estadísticas", path: "/docente/estadisticas" },
-        { id: "games", label: "⚙️ Configuración Juegos", path: "/docente/config-juegos" }
+        { id: "statistics", label: "📊 Estadísticas", path: "/docente/estadisticas" }
+        // Oculto para la entrega: la "Configuración Juegos" del docente no se desarrolla.
+        // La ruta /docente/config-juegos sigue existiendo; sólo se quita el acceso desde el menú.
+        // { id: "games", label: "⚙️ Configuración Juegos", path: "/docente/config-juegos" }
       ]
     : [
         { id: "home", label: "🏠 Inicio", path: "/admin" },

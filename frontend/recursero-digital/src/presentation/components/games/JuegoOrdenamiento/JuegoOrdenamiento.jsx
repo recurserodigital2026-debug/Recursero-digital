@@ -19,6 +19,7 @@ import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
 import GameCompleteScreen from './GameCompleteScreen';
 import CongratsModal from '../../shared/CongratsModal/CongratsModal';
+import { starsFromErrors } from '../../shared/CongratsModal/stars';
 import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
 
 const JuegoOrdenamiento = () => {
@@ -52,6 +53,7 @@ const JuegoOrdenamiento = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
   const [showPermanentHint, setShowPermanentHint] = useState(false);
+  const [levelErrors, setLevelErrors] = useState(0); // errores acumulados del nivel (para estrellas)
 
   const { levels: backendLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.ORDENAMIENTO, true, courseId);
   const levelRanges = useMemo(() => transformToOrdenamientoFormat(backendLevels), [backendLevels]);
@@ -83,6 +85,7 @@ const JuegoOrdenamiento = () => {
     setCurrentActivity(0);
     setOrder('asc');
     resetScoring();
+    setLevelErrors(0);
     setNumbers([]);
     setSortedNumbers([]);
     setShowGameComplete(false);
@@ -128,6 +131,7 @@ const JuegoOrdenamiento = () => {
     
     setCurrentActivity(startingActivity);
     resetScoring();
+    setLevelErrors(0);
     setLevelResults([]);
     setShowPermanentHint(false);
     setGameState('game');
@@ -153,6 +157,7 @@ const JuegoOrdenamiento = () => {
   const handleFailedAttempt = useCallback(() => {
     playError();
     incrementAttempts();
+    setLevelErrors(prev => prev + 1);
     setFeedbackSuccess(false);
     setShowFeedback(true);
     
@@ -206,22 +211,6 @@ const JuegoOrdenamiento = () => {
   const handleRemove = useCallback((numberToRemove) => {
     setTargetNumbers(prev => prev.filter(num => num !== numberToRemove));
   }, []);
-
-  const handleNextLevel = useCallback(() => {
-    setShowLevelUp(false);
-    if (currentLevel >= levelRanges.length - 1) {
-      setGameState('level-select');
-    } else {
-      const nextLevel = currentLevel + 1;
-      setCurrentLevel(nextLevel);
-      setCurrentActivity(0);
-      setLevelResults([]);
-      setShowPermanentHint(false);
-      resetScoring();
-      setGameState('game');
-      setTimeout(() => setupLevel(nextLevel), 100);
-    }
-  }, [currentLevel, setupLevel, levelRanges.length, resetScoring]);
 
   const getHint = useCallback(() => {
     return generateHint(numbers, order);
@@ -311,9 +300,10 @@ const JuegoOrdenamiento = () => {
         isVisible={showLevelUp}
         titleNivel={`Ordenamiento - Nivel ${currentLevel + 1}`}
         finalScore={points}
-        totalQuestions={5} 
-        correctAnswers={5} 
-        totalAttempts={points > 0 ? 1 : 0}
+        totalQuestions={totalActivities}
+        correctAnswers={totalActivities}
+        totalAttempts={levelErrors + totalActivities}
+        stars={starsFromErrors(levelErrors, totalActivities)}
         />
       )}
     </div>

@@ -8,6 +8,7 @@ import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
 import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
 import CongratsModal from '../../shared/CongratsModal/CongratsModal';
+import { starsFromErrors } from '../../shared/CongratsModal/stars';
 import HintModal from '../../shared/HintModal';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
@@ -49,6 +50,7 @@ const JuegoEscala = () => {
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [showFeedback, setShowFeedback] = useState(false);
     const [showCongrats, setShowCongrats] = useState(false);
+    const [levelErrors, setLevelErrors] = useState(0); // errores acumulados del nivel (para estrellas)
     const [showHint, setShowHint] = useState(false);
     const [feedback, setFeedback] = useState({ title: '', text: '', isCorrect: false });
     const [isValidationError, setIsValidationError] = useState(false);
@@ -107,6 +109,7 @@ const JuegoEscala = () => {
         
         resetScoring(); // Reinicia el puntaje global del nivel a 0
         resetAttempts();
+        setLevelErrors(0);
         startActivityTimer();
         setGameState(UI_STATES.GAME_STATES.PLAYING);
     }, [generateQuestions, resetScoring, resetAttempts, startActivityTimer, getLastActivity, backendLevels]);
@@ -176,6 +179,7 @@ const JuegoEscala = () => {
         } else {
             // Si es incorrecto, el modal NO mostrará el botón "Siguiente"
             playError();
+            setLevelErrors(prev => prev + 1);
             const progressiveHint = getProgressiveHint(currentAttempts, currentQuestion);
             
             setFeedback({
@@ -219,24 +223,10 @@ const JuegoEscala = () => {
         setIsProcessing(false); 
     }, []);
 
-    const handleNextLevel = useCallback(() => {
-        setShowCongrats(false);
-        if (currentLevel < levels.length - 1) {
-            handleSelectLevel(currentLevel + 1);
-        } else {
-            setGameState(UI_STATES.GAME_STATES.LEVEL_SELECT);
-        }
-    }, [currentLevel, handleSelectLevel, levels.length]);
-
     const handleBackToLevels = useCallback(() => {
         setShowCongrats(false);
         setGameState(UI_STATES.GAME_STATES.LEVEL_SELECT);
     }, []);
-
-    const handlePlayAgain = useCallback(() => {
-        setShowCongrats(false);
-        handleSelectLevel(currentLevel, true);
-    }, [currentLevel, handleSelectLevel]);
 
     if (levelsLoading) {
         return <div className="game-wrapper bg-space-gradient"><Spinner label="Cargando niveles..." /></div>;
@@ -303,11 +293,12 @@ const JuegoEscala = () => {
             {showCongrats && (
                 <CongratsModal
                 isVisible={showCongrats}
-                titleNivel={`Escala - ${levels[currentLevel].name}`} 
-                finalScore={points} 
-                totalQuestions={totalQuestions} 
-                correctAnswers={totalQuestions} 
-                totalAttempts={points > 0 ? 1 : 0}
+                titleNivel={`Escala - ${levels[currentLevel].name}`}
+                finalScore={points}
+                totalQuestions={totalQuestions}
+                correctAnswers={totalQuestions}
+                totalAttempts={levelErrors + totalQuestions}
+                stars={starsFromErrors(levelErrors, totalQuestions)}
                 />
             )}
 

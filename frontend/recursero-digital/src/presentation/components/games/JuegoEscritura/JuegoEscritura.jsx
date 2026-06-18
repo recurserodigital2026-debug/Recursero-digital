@@ -12,6 +12,7 @@ import LevelSelectScreen from './LevelSelectScreen';
 import GameScreen from './GameScreen';
 import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
 import CongratsModal from '../../shared/CongratsModal/CongratsModal';
+import { starsFromErrors } from '../../shared/CongratsModal/stars';
 import ErrorPopup from './ErrorPopup';
 import { useUserProgress } from '../../../hooks/useUserProgress';
 import useGameScoring from '../../../hooks/useGameScoring';
@@ -43,6 +44,7 @@ const JuegoEscritura = () => {
     const [dragAnswers, setDragAnswers] = useState({});
     const [usedNumbers, setUsedNumbers] = useState(new Set());
     const [feedback, setFeedback] = useState({ title: '', text: '', isCorrect: false });
+    const [levelErrors, setLevelErrors] = useState(0); // errores acumulados del nivel (para estrellas)
     const [showErrorPopup, setShowErrorPopup] = useState(false);
     const lastGeneratedActivity = useRef({ level: -1, activity: -1 });
     
@@ -120,6 +122,7 @@ const JuegoEscritura = () => {
         
         setCurrentActivity(startingActivity);
         resetScoring();
+        setLevelErrors(0);
         setGameState('game');
     }, [resetScoring, getLastActivity, backendLevels]);
     
@@ -152,18 +155,6 @@ const JuegoEscritura = () => {
     }));
 };
     
-    const handleNextLevel = useCallback(() => {
-        if (currentLevel >= backendLevels.length - 1) {
-            setGameState('level-select');
-        } else {
-            const nextLevel = currentLevel + 1;
-            setCurrentLevel(nextLevel);
-            setCurrentActivity(0);
-            resetScoring();
-            setGameState('game');
-        }
-    }, [currentLevel, backendLevels.length, resetScoring]);
-
     const handleCheckAnswer = async () => {
         const allAnswersProvided = wordPairs.every((_, index) => dragAnswers[index] !== undefined);
         
@@ -216,8 +207,9 @@ const JuegoEscritura = () => {
             }
         } else {
             playError();
-            setFeedback({ 
-                title: '¡Intentalo de nuevo', 
+            setLevelErrors(prev => prev + 1);
+            setFeedback({
+                title: '¡Intentalo de nuevo',
                 text: `Tienes ${correctCount}/${wordPairs.length} correctas. Revisa las respuestas marcadas.`, 
                 isCorrect: false 
             });
@@ -296,9 +288,10 @@ const JuegoEscritura = () => {
                 isVisible={gameState === 'congrats'}
                 titleNivel={`Escritura - Nivel ${currentLevel + 1}`}
                 finalScore={points}
-                totalQuestions={5}
-                correctAnswers={5}
-                totalAttempts={points > 0 ? 1 : 0}
+                totalQuestions={totalActivities}
+                correctAnswers={totalActivities}
+                totalAttempts={levelErrors + totalActivities}
+                stars={starsFromErrors(levelErrors, totalActivities)}
                 />
             )}
             
