@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import '../../styles/pages/adminCourses.css';
 import { createCourse, getAllCourses, updateCourse, deleteCourse, getAllTeachers, getCourseStudents } from '../../services/adminService';
 import AddCourseForm from './AddCourseForm';
 import EditCourseForm from './EditCourseForm';
-import DeleteCourseForm from './DeleteCourseForm';
+import ListControls from '../../components/shared/ListControls';
+import ConfirmModal from '../../components/shared/ConfirmModal';
 
 export default function AdminCourses() {
   const [courses, setCourses] = useState([]);
@@ -13,6 +15,42 @@ export default function AdminCourses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [teacherFilter, setTeacherFilter] = useState('todos');
+  const [sortBy, setSortBy] = useState('nombre-asc');
+
+  const teacherOptions = useMemo(() => {
+    const names = Array.from(new Set(courses.map(c => c.teacher))).sort((a, b) => a.localeCompare(b));
+    return [{ label: 'Todos los docentes', value: 'todos' }, ...names.map(n => ({ label: n, value: n }))];
+  }, [courses]);
+
+  const filteredCourses = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    const result = courses.filter(course => {
+      const matchesSearch = term === '' ||
+        course.name.toLowerCase().includes(term) ||
+        course.teacher.toLowerCase().includes(term);
+      const matchesTeacher = teacherFilter === 'todos' || course.teacher === teacherFilter;
+      return matchesSearch && matchesTeacher;
+    });
+
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'nombre-desc':
+          return b.name.localeCompare(a.name);
+        case 'estudiantes-desc':
+          return b.students - a.students;
+        case 'estudiantes-asc':
+          return a.students - b.students;
+        case 'nombre-asc':
+        default:
+          return a.name.localeCompare(b.name);
+      }
+    });
+
+    return result;
+  }, [courses, searchTerm, teacherFilter, sortBy]);
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -111,9 +149,11 @@ export default function AdminCourses() {
       
       setCourses(coursesWithDetails);
       setShowAddCourseForm(false);
+      toast.success('Curso creado correctamente');
     } catch (err) {
       console.error('Error al crear curso:', err);
       setError(err.message || 'Error al crear curso');
+      toast.error(err.message || 'Error al crear curso');
     } finally {
       setLoading(false);
     }
@@ -166,9 +206,11 @@ export default function AdminCourses() {
       setCourses(coursesWithDetails);
       setShowEditCourseForm(false);
       setSelectedCourse(null);
+      toast.success('Curso actualizado correctamente');
     } catch (err) {
       console.error('Error al actualizar curso:', err);
       setError(err.message || 'Error al actualizar curso');
+      toast.error(err.message || 'Error al actualizar curso');
     } finally {
       setLoading(false);
     }
@@ -184,13 +226,15 @@ export default function AdminCourses() {
       setLoading(true);
       setError(null);
       await deleteCourse(course.id);
-      
+
       setCourses(prev => prev.filter(c => c.id !== course.id));
       setShowDeleteCourseForm(false);
       setSelectedCourse(null);
+      toast.success('Curso eliminado correctamente');
     } catch (err) {
       console.error('Error al eliminar curso:', err);
       setError(err.message || 'Error al eliminar curso');
+      toast.error(err.message || 'Error al eliminar curso');
     } finally {
       setLoading(false);
     }
@@ -207,9 +251,34 @@ export default function AdminCourses() {
 
       {error && <div className="error-message-admin">{error}</div>}
 
+      <ListControls
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Nombre o docente..."
+        filters={[
+          {
+            label: 'Docente',
+            value: teacherFilter,
+            onChange: setTeacherFilter,
+            options: teacherOptions,
+          },
+        ]}
+        sort={{
+          value: sortBy,
+          onChange: setSortBy,
+          options: [
+            { label: 'Nombre (A-Z)', value: 'nombre-asc' },
+            { label: 'Nombre (Z-A)', value: 'nombre-desc' },
+            { label: 'Más estudiantes', value: 'estudiantes-desc' },
+            { label: 'Menos estudiantes', value: 'estudiantes-asc' },
+          ],
+        }}
+      />
 
       <div className="courses-grid">
-        {courses.map(course => (
+        {filteredCourses.length === 0 ? (
+          <p className="no-results">No se encontraron cursos con los criterios de búsqueda</p>
+        ) : filteredCourses.map(course => (
           <div key={course.id} className="course-card">
             <div className="course-header">
               <h3>{course.name}</h3>
@@ -265,10 +334,14 @@ export default function AdminCourses() {
       )}
 
       {showDeleteCourseForm && selectedCourse && (
-        <DeleteCourseForm
+        <ConfirmModal
+          title="Eliminar Curso"
+          message={`¿Eliminar el curso "${selectedCourse.name}"? Esta acción no se puede deshacer.`}
+          confirmLabel="Eliminar Curso"
+          danger
+          loading={loading}
+          onConfirm={() => handleConfirmDelete(selectedCourse)}
           onClose={handleCloseForm}
-          onConfirm={handleConfirmDelete}
-          course={selectedCourse}
         />
       )}
     </div>
