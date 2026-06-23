@@ -1,0 +1,18 @@
+# Assets con hash en el nombre: cache agresivo e inmutable.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# El HTML, el service worker y el manifest NO se cachean,
+# así la PWA detecta y aplica updates al instante.
+/index.html
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Cache-Control: no-cache
+
+# Cabeceras de seguridad básicas para todo el sitio.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin

@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://recurserodigital-gzad.onrender.com/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://recursero-digital-production.up.railway.app/api';
 
 export const AUTH_ENDPOINTS = {
   LOGIN_STUDENT: '/login/student',
