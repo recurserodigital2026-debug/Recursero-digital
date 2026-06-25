@@ -93,6 +93,14 @@ export class UpdateGameLevelUseCase {
             'no_carry_sum',
             'no_borrow_sub',
             'free_form',
+            // División (por ejes)
+            'division_repeated_subtraction',
+            'division_word_remainder',
+            'division_facts',
+            'division_with_remainder',
+            'division_by_powers_of_ten',
+            'division_scaling',
+            'division_estimation',
         ];
         const { kind } = config as { kind?: string };
         if (!kind || !validKinds.includes(kind)) {
@@ -158,6 +166,125 @@ export class UpdateGameLevelUseCase {
                 }
                 if (!['suma', 'resta'].includes((config as any).operation)) {
                     throw new Error('config.operation debe ser "suma" o "resta" para free_form');
+                }
+                break;
+            }
+            case 'division_repeated_subtraction': {
+                const c = config as any;
+                if (c.operation !== 'division') {
+                    throw new Error('config.operation debe ser "division" para division_repeated_subtraction');
+                }
+                if (!Array.isArray(c.groupSizes) || c.groupSizes.length === 0 ||
+                    !c.groupSizes.every((n: any) => Number.isInteger(n) && n >= 1)) {
+                    throw new Error('config.groupSizes debe ser un arreglo no vacío de enteros ≥ 1 para division_repeated_subtraction');
+                }
+                if (!Number.isInteger(c.maxGroups) || c.maxGroups < 1) {
+                    throw new Error('config.maxGroups debe ser un entero ≥ 1 para division_repeated_subtraction');
+                }
+                break;
+            }
+            case 'division_word_remainder': {
+                const c = config as any;
+                if (c.operation !== 'division') {
+                    throw new Error('config.operation debe ser "division" para division_word_remainder');
+                }
+                if (!Array.isArray(c.divisorRange) || c.divisorRange.length !== 2) {
+                    throw new Error('config.divisorRange debe ser [min, max] para division_word_remainder');
+                }
+                {
+                    const [mn, mx] = c.divisorRange;
+                    if (!Number.isInteger(mn) || !Number.isInteger(mx) || mn < 2 || mn > mx) {
+                        throw new Error('config.divisorRange inválido (2 ≤ min ≤ max) para division_word_remainder');
+                    }
+                    if (!Number.isInteger(c.dividendMax) || c.dividendMax < mn) {
+                        throw new Error('config.dividendMax inválido para division_word_remainder');
+                    }
+                }
+                if (typeof c.allowExact !== 'boolean') {
+                    throw new Error('config.allowExact debe ser booleano para division_word_remainder');
+                }
+                break;
+            }
+            case 'division_facts': {
+                const c = config as any;
+                if (c.operation !== 'division') {
+                    throw new Error('config.operation debe ser "division" para division_facts');
+                }
+                if (!Number.isInteger(c.maxDivisor) || c.maxDivisor < 2 || c.maxDivisor > 10) {
+                    throw new Error('config.maxDivisor debe estar entre 2 y 10 para division_facts');
+                }
+                if (!Number.isInteger(c.maxQuotient) || c.maxQuotient < 2 || c.maxQuotient > 10) {
+                    throw new Error('config.maxQuotient debe estar entre 2 y 10 para division_facts');
+                }
+                break;
+            }
+            case 'division_with_remainder': {
+                const c = config as any;
+                if (c.operation !== 'division') {
+                    throw new Error('config.operation debe ser "division" para division_with_remainder');
+                }
+                if (!Array.isArray(c.divisorRange) || c.divisorRange.length !== 2) {
+                    throw new Error('config.divisorRange debe ser [min, max] para division_with_remainder');
+                }
+                {
+                    const [mn, mx] = c.divisorRange;
+                    if (!Number.isInteger(mn) || !Number.isInteger(mx) || mn < 2 || mn > mx) {
+                        throw new Error('config.divisorRange inválido (min ≥ 2) para division_with_remainder');
+                    }
+                    if (!Number.isInteger(c.dividendMax) || c.dividendMax < mn) {
+                        throw new Error('config.dividendMax inválido para division_with_remainder');
+                    }
+                }
+                break;
+            }
+            case 'division_by_powers_of_ten': {
+                const c = config as any;
+                if (c.operation !== 'division') {
+                    throw new Error('config.operation debe ser "division" para division_by_powers_of_ten');
+                }
+                {
+                    const allowed = [10, 100, 1000];
+                    if (!Array.isArray(c.divisors) || c.divisors.length === 0 ||
+                        !c.divisors.every((d: any) => allowed.includes(d))) {
+                        throw new Error('config.divisors debe ser un subconjunto no vacío de {10,100,1000} para division_by_powers_of_ten');
+                    }
+                }
+                if (!Number.isInteger(c.itemsPerExercise) || c.itemsPerExercise < 1) {
+                    throw new Error('config.itemsPerExercise debe ser un entero ≥ 1 para division_by_powers_of_ten');
+                }
+                break;
+            }
+            case 'division_scaling': {
+                const c = config as any;
+                if (c.operation !== 'division') {
+                    throw new Error('config.operation debe ser "division" para division_scaling');
+                }
+                if (!Array.isArray(c.baseFacts) || c.baseFacts.length === 0 ||
+                    !c.baseFacts.every((f: any) =>
+                        Array.isArray(f) && f.length === 3 && f[1] !== 0 &&
+                        f[0] % f[1] === 0 && f[0] / f[1] === f[2])) {
+                    throw new Error('config.baseFacts debe ser un arreglo no vacío de [a,b,c] con a%b===0 y a/b===c para division_scaling');
+                }
+                {
+                    const allowedScales = [10, 100, 1000];
+                    if (!Array.isArray(c.scales) || c.scales.length === 0 ||
+                        !c.scales.every((s: any) => allowedScales.includes(s))) {
+                        throw new Error('config.scales debe ser un subconjunto no vacío de {10,100,1000} para division_scaling');
+                    }
+                }
+                break;
+            }
+            case 'division_estimation': {
+                const c = config as any;
+                if (c.operation !== 'division') {
+                    throw new Error('config.operation debe ser "division" para division_estimation');
+                }
+                {
+                    const allowedShapes = ['threshold', 'nearest'];
+                    if (!Array.isArray(c.shapes) || c.shapes.length === 0 ||
+                        !c.shapes.every((s: any) => allowedShapes.includes(s))) {
+                        throw new Error('config.shapes debe ser un subconjunto no vacío de {threshold,nearest} para division_estimation');
+                    }
                 }
                 break;
             }

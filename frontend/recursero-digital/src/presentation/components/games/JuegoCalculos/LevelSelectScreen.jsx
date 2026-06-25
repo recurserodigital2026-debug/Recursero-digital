@@ -34,10 +34,12 @@ const LevelSelectScreen = ({ operation, onSelectLevel, onBackToStart, assignedLe
 
   const isLevelAvailable = (levelNumber) => {
     if (assignedLocalLevels?.length > 0) return assignedLocalLevels.includes(levelNumber);
+    // Los 8 ejes de división son temáticos (no una escalera de dificultad): libre elección.
+    if (operation === 'division') return true;
     return isLevelUnlocked(`calculos-${operation}`, levelNumber);
   };
 
-  const levelIcons = ['🎯', '⚡', '🚀', '🌟', '👑', '💎', '🏆'];
+  const levelIcons = ['🎯', '⚡', '🚀', '🌟', '👑', '💎', '🏆', '🧠'];
   const allLevels = levelConfig.slice(0, getLevelCountForOperation(operation));
   const visibleLevels = assignedLocalLevels?.length > 0
     ? allLevels.filter((_, i) => assignedLocalLevels.includes(i + 1))

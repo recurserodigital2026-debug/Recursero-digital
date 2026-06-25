@@ -26,6 +26,25 @@ const generateSumOrSubtractQuestion = (config) => {
     return dispatchCalculation(config);
 };
 
+const DIVISION_KINDS = new Set([
+    'division_repeated_subtraction',
+    'division_word_remainder',
+    'division_facts',
+    'division_with_remainder',
+    'division_by_powers_of_ten',
+    'division_scaling',
+    'division_estimation',
+]);
+
+const generateDivisionQuestion = (config) => {
+    if (!config || !DIVISION_KINDS.has(config.kind)) {
+        throw new Error(
+            `Configuración de nivel inválida: kind='${config?.kind}'. Esperado un tipo de división (${[...DIVISION_KINDS].join(', ')}).`
+        );
+    }
+    return dispatchCalculation(config);
+};
+
 const generateMultiplyQuestion = (config, withUnknown = false) => {
    const nivel = Number(config.nivel);
 
@@ -106,6 +125,12 @@ export const operationConfig = {
         icon: '✖️',
         color: 'from-blue-400 to-indigo-500',
         textColor: 'text-blue-600'
+    },
+    division: {
+        name: 'División',
+        icon: '➗',
+        color: 'from-cyan-400 to-blue-500',
+        textColor: 'text-cyan-600'
     }
 };
 
@@ -145,6 +170,27 @@ export const levelConfig = [
         color: 'from-pink-400 to-rose-500',
         textColor: 'text-rose-600',
         number: 5
+    },
+    {
+        name: 'Nivel 6',
+        description: 'Nivel 6',
+        color: 'from-cyan-400 to-blue-500',
+        textColor: 'text-cyan-600',
+        number: 6
+    },
+    {
+        name: 'Nivel 7',
+        description: 'Nivel 7',
+        color: 'from-teal-400 to-emerald-500',
+        textColor: 'text-teal-600',
+        number: 7
+    },
+    {
+        name: 'Nivel 8',
+        description: 'Nivel 8',
+        color: 'from-fuchsia-400 to-purple-500',
+        textColor: 'text-fuchsia-600',
+        number: 8
     }
 ];
 
@@ -153,7 +199,9 @@ export const levelConfig = [
 // L5 rotates target per question across {100, 1.000, 10.000} (migration
 // 1779408000000), so there is no L6/L7 in the frontend.
 const SUMA_EXTRA_BACKEND_LEVELS = { 4: 10, 5: 11 };
-const OPERATION_OFFSET = { suma: 0, resta: 3, multiplicacion: 6 };
+// División ocupa los niveles backend 12–19 (offset 11), sin colisionar con
+// suma (1–3, 10–11), resta (4–6) ni multiplicación (7–9). Ver FR-011.
+const OPERATION_OFFSET = { suma: 0, resta: 3, multiplicacion: 6, division: 11 };
 
 export const getBackendLevel = (operation, localLevel) => {
     if (operation === 'suma' && SUMA_EXTRA_BACKEND_LEVELS[localLevel]) {
@@ -183,10 +231,17 @@ export const getLocalLevelForOperation = (assignedDbLevel, operation) => {
         if (assignedDbLevel >= 7 && assignedDbLevel <= 9) return assignedDbLevel - 6;
         if (assignedDbLevel >= 1 && assignedDbLevel <= 3) return assignedDbLevel;
     }
+    if (operation === 'division') {
+        if (assignedDbLevel >= 12 && assignedDbLevel <= 18) return assignedDbLevel - 11;
+    }
     return null;
 };
 
-export const getLevelCountForOperation = (operation) => (operation === 'suma' ? 5 : 3);
+export const getLevelCountForOperation = (operation) => {
+    if (operation === 'suma') return 5;
+    if (operation === 'division') return 7;
+    return 3;
+};
 
 // Per-operation, per-level pedagogical description. Single source of truth used
 // by LevelSelectScreen for both the level card and the tips block. Keep entries
@@ -209,6 +264,15 @@ export const levelDescriptions = {
         1: 'Tablas básicas. Recuerda las multiplicaciones fundamentales',
         2: 'Por 10, 100, 1000. ¡Solo agrega ceros!',
         3: 'Encuentra el factor. Divide el resultado por el número conocido',
+    },
+    division: {
+        1: 'Reparto con resta sucesiva: contá cuántos grupos se forman',
+        2: '¿Alcanza justo o falta? Cociente y resto en problemas',
+        3: 'Dividir directamente con la tabla pitagórica',
+        4: 'Divisiones con resto distinto de cero',
+        5: 'Dividir por 10, 100 y 1.000',
+        6: 'Usá cálculos conocidos para resolver nuevos',
+        7: 'Cálculo aproximado: estimá el resultado',
     },
 };
 
@@ -233,6 +297,15 @@ const FALLBACK_CONFIGS = {
         1: { kind: 'no_borrow_sub', digitCount: 2 },
         2: { kind: 'whole_multiples', step: 10, min: 10, max: 90 },
         3: { kind: 'free_form', digitCount: 2 },
+    },
+    division: {
+        1: { kind: 'division_repeated_subtraction', groupSizes: [3, 4, 5, 6], maxGroups: 12 },
+        2: { kind: 'division_word_remainder', divisorRange: [3, 6], dividendMax: 60, allowExact: true },
+        3: { kind: 'division_facts', maxDivisor: 10, maxQuotient: 10 },
+        4: { kind: 'division_with_remainder', divisorRange: [2, 9], dividendMax: 99 },
+        5: { kind: 'division_by_powers_of_ten', divisors: [10, 100, 1000], itemsPerExercise: 3 },
+        6: { kind: 'division_scaling', baseFacts: [[10, 5, 2], [40, 4, 10]], scales: [10, 100], derivations: ['scale', 'decompose'], maxAddendMultiple: 2 },
+        7: { kind: 'division_estimation', shapes: ['threshold', 'nearest'], dividendMax: 320, divisorMax: 30 },
     },
 };
 
@@ -268,6 +341,21 @@ export const getQuestionsForLevel = (operation, levelNumber, levelConfig) => {
                 }
                 break;
             }
+            case 'division': {
+                const configWithOp = { ...config, operation: 'division' };
+                const seen = new Set();
+                const sig = (q) =>
+                    `${q.pregunta}|${JSON.stringify(q.items ?? q.respuestas ?? q.opciones ?? q.respuesta ?? '')}`;
+                for (let i = 0; i < activitiesCount; i++) {
+                    const q = generateWithRetry(
+                        () => generateDivisionQuestion(configWithOp),
+                        (c) => !seen.has(sig(c))
+                    );
+                    seen.add(sig(q));
+                    questions.push(q);
+                }
+                break;
+            }
             case 'multiplicacion': {
                 const indices = [0, 1, 2, 3, 4];
                 const unknownIndices = indices
@@ -297,6 +385,35 @@ export const getQuestionsForLevel = (operation, levelNumber, levelConfig) => {
 
 export const validateAnswer = (userAnswer, correctAnswer) => {
     return parseInt(userAnswer) === correctAnswer;
+};
+
+// Generalized answer check by inputMode. suma/resta/multiplicación questions have no
+// inputMode → 'single' scalar path (identical to validateAnswer). División questions
+// carry an inputMode and (for multi-part) are correct only when ALL parts match (FR-005).
+const toInt = (v) => parseInt(v, 10);
+
+export const checkAnswer = (question, answer) => {
+    const mode = question?.inputMode || 'single';
+    switch (mode) {
+        case 'single':
+        case 'repeated_subtraction':
+            return toInt(answer) === question.respuesta;
+        case 'quotient_remainder':
+            return (
+                toInt(answer?.cociente) === question.respuestas.cociente &&
+                toInt(answer?.resto) === question.respuestas.resto
+            );
+        case 'multi_blank':
+            return (
+                Array.isArray(answer) &&
+                answer.length === question.items.length &&
+                question.items.every((it, i) => toInt(answer[i]) === it.respuesta)
+            );
+        case 'multiple_choice':
+            return answer === question.respuestaCorrecta;
+        default:
+            return false;
+    }
 };
 
 export const getOperationName = (operation) => {
