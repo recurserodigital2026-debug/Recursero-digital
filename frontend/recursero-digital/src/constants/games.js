@@ -14,4 +14,5 @@ export const PROGRESS_KEYS = {
   CALCULOS_SUMA: 'calculos-suma',
   CALCULOS_RESTA: 'calculos-resta',
   CALCULOS_MULTIPLICACION: 'calculos-multiplicacion',
+  CALCULOS_DIVISION: 'calculos-division',
 };

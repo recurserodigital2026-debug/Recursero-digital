@@ -433,5 +433,86 @@ describe('UpdateGameLevelUseCase', () => {
             expect(updated?.getIsActive()).toBe(false);
         });
     });
+
+    describe('execute - División kinds', () => {
+        const seed = () => {
+            const level = new GameLevel('level-div', 'game-calculos', 12, 'Test', 'Desc', 'Fácil', 5, { min: 1, max: 100 });
+            repository.addLevel(level);
+        };
+
+        const validDivisionConfigs: GameLevelConfig[] = [
+            { kind: 'division_repeated_subtraction', operation: 'division', groupSizes: [3, 4, 5, 6], maxGroups: 12 } as any,
+            { kind: 'division_word_remainder', operation: 'division', divisorRange: [3, 6], dividendMax: 60, allowExact: true } as any,
+            { kind: 'division_facts', operation: 'division', maxDivisor: 10, maxQuotient: 10 } as any,
+            { kind: 'division_with_remainder', operation: 'division', divisorRange: [2, 9], dividendMax: 99 } as any,
+            { kind: 'division_by_powers_of_ten', operation: 'division', divisors: [10, 100, 1000], itemsPerExercise: 3 } as any,
+            { kind: 'division_scaling', operation: 'division', baseFacts: [[10, 5, 2], [40, 4, 10]], scales: [10, 100], derivations: ['scale', 'decompose'], maxAddendMultiple: 2 } as any,
+            { kind: 'division_estimation', operation: 'division', shapes: ['threshold', 'nearest'], dividendMax: 320, divisorMax: 30 } as any,
+        ];
+
+        it('should accept every valid división config.kind', async () => {
+            seed();
+            for (const cfg of validDivisionConfigs) {
+                const result = await useCase.execute({ id: 'level-div', config: cfg });
+                expect(result.level.config.kind).toBe((cfg as any).kind);
+            }
+        });
+
+        it('should reject any división kind with wrong operation', async () => {
+            seed();
+            await expect(
+                useCase.execute({ id: 'level-div', config: { kind: 'division_facts', operation: 'suma', maxDivisor: 10, maxQuotient: 10 } as any })
+            ).rejects.toThrow('config.operation debe ser "division" para division_facts');
+        });
+
+        it('should reject division_facts missing maxQuotient', async () => {
+            seed();
+            await expect(
+                useCase.execute({ id: 'level-div', config: { kind: 'division_facts', operation: 'division', maxDivisor: 10 } as any })
+            ).rejects.toThrow('config.maxQuotient debe estar entre 2 y 10');
+        });
+
+        it('should reject division_with_remainder with divisor min < 2', async () => {
+            seed();
+            await expect(
+                useCase.execute({ id: 'level-div', config: { kind: 'division_with_remainder', operation: 'division', divisorRange: [1, 9], dividendMax: 99 } as any })
+            ).rejects.toThrow('config.divisorRange inválido');
+        });
+
+        it('should reject division_repeated_subtraction with empty groupSizes', async () => {
+            seed();
+            await expect(
+                useCase.execute({ id: 'level-div', config: { kind: 'division_repeated_subtraction', operation: 'division', groupSizes: [], maxGroups: 12 } as any })
+            ).rejects.toThrow('config.groupSizes');
+        });
+
+        it('should reject division_word_remainder missing allowExact', async () => {
+            seed();
+            await expect(
+                useCase.execute({ id: 'level-div', config: { kind: 'division_word_remainder', operation: 'division', divisorRange: [3, 6], dividendMax: 60 } as any })
+            ).rejects.toThrow('config.allowExact debe ser booleano');
+        });
+
+        it('should reject division_by_powers_of_ten with a non power-of-ten divisor', async () => {
+            seed();
+            await expect(
+                useCase.execute({ id: 'level-div', config: { kind: 'division_by_powers_of_ten', operation: 'division', divisors: [10, 7], itemsPerExercise: 3 } as any })
+            ).rejects.toThrow('config.divisors debe ser un subconjunto');
+        });
+
+        it('should reject division_scaling with an inconsistent base fact', async () => {
+            seed();
+            await expect(
+                useCase.execute({ id: 'level-div', config: { kind: 'division_scaling', operation: 'division', baseFacts: [[10, 3, 4]], scales: [10] } as any })
+            ).rejects.toThrow('config.baseFacts');
+        });
+
+        it('should reject division_estimation with an invalid shape', async () => {
+            seed();
+            await expect(
+                useCase.execute({ id: 'level-div', config: { kind: 'division_estimation', operation: 'division', shapes: ['weird'] } as any })
+            ).rejects.toThrow('config.shapes debe ser un subconjunto');
+        });
+    });
 });
 

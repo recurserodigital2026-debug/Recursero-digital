@@ -42,6 +42,7 @@ const StartScreen = ({ onStartGame, onBackToGames, assignedOperations }) => {
                   {key === 'suma' && 'Operaciones básicas hasta números grandes'}
                   {key === 'resta' && 'Ejercicios progresivos y desafiantes'}
                   {key === 'multiplicacion' && 'Completa resultados y factores'}
+                  {key === 'division' && 'Repartos, restos y tablas: 7 ejes de división'}
                 </div>
                 <div className="operation-levels">
                   {getLevelCountForOperation(key)} niveles de dificultad

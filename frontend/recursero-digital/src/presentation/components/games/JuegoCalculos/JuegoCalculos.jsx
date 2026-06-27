@@ -54,6 +54,8 @@ const assignedLevels = useMemo(() => {
     correctAnswers: 0,
     totalQuestions: 0
   });
+  // Errores acumulados del nivel (para estrellas por eficiencia), igual que JuegoOrdenamiento.
+  const [levelErrors, setLevelErrors] = useState(0);
 
   const { levels: allLevels, loading: levelsLoading } = useGameLevels(GAME_IDS.CALCULOS, false, courseId);
 
@@ -76,6 +78,7 @@ const assignedLevels = useMemo(() => {
   const handleSelectLevel = useCallback((level) => {
     setSelectedLevel(level);
     setGameState('playing');
+    setLevelErrors(0);
     resetScoring();
     startActivityTimer();
   }, [resetScoring, startActivityTimer]);
@@ -160,6 +163,7 @@ const assignedLevels = useMemo(() => {
   }, [addPoints]);
 
   const handleUpdateAttempts = useCallback(() => {
+    setLevelErrors(prev => prev + 1);
     incrementAttempts();
     playError();
   }, [incrementAttempts, playError]);
@@ -229,8 +233,8 @@ const assignedLevels = useMemo(() => {
             finalScore={gameResults?.finalScore || 0}
             totalQuestions={gameResults?.totalQuestions || 0}
             correctAnswers={gameResults?.correctAnswers || 0}
-            totalAttempts={(gameResults?.totalAttempts || 0) + (gameResults?.totalQuestions || 0)}
-            stars={starsFromErrors(gameResults?.totalAttempts || 0, gameResults?.totalQuestions || 0)}
+            totalAttempts={levelErrors + (gameResults?.totalQuestions || 0)}
+            stars={starsFromErrors(levelErrors, gameResults?.totalQuestions || 0)}
             />
           </>
         );

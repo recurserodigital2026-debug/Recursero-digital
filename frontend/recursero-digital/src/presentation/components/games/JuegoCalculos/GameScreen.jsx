@@ -5,7 +5,7 @@ import SoundToggle from '../../shared/SoundToggle';
 import FeedbackModal from '../../shared/FeedbackModal/FeedbackModal';
 import {
   getQuestionsForLevel,
-  validateAnswer,
+  checkAnswer,
   getOperationName,
   getLevelName,
   getRandomEncouragement,
@@ -95,6 +95,10 @@ const GameScreen = ({
   const { playVictory } = useSound();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
+  // División multi-mode answer state (suma/resta/multiplicación keep using userAnswer).
+  const [qrAnswer, setQrAnswer] = useState({ cociente: '', resto: '' });
+  const [blankAnswers, setBlankAnswers] = useState([]);
+  const [choiceAnswer, setChoiceAnswer] = useState(null);
   const [score, setScore] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackData, setFeedbackData] = useState({ isCorrect: false, message: '', pointsEarned: 0 });  
@@ -129,10 +133,42 @@ const GameScreen = ({
   
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  const currentMode = currentQuestion?.inputMode || 'single';
+
+  const resetAnswers = () => {
+    setUserAnswer('');
+    setQrAnswer({ cociente: '', resto: '' });
+    setBlankAnswers([]);
+    setChoiceAnswer(null);
+  };
+
+  const getStructuredAnswer = () => {
+    switch (currentMode) {
+      case 'quotient_remainder': return qrAnswer;
+      case 'multi_blank': return blankAnswers;
+      case 'multiple_choice': return choiceAnswer;
+      default: return userAnswer;
+    }
+  };
+
+  const isAnswerReady = () => {
+    switch (currentMode) {
+      case 'quotient_remainder':
+        return qrAnswer.cociente.trim() !== '' && qrAnswer.resto.trim() !== '';
+      case 'multi_blank':
+        return (currentQuestion.items || []).every(
+          (_, i) => (blankAnswers[i] ?? '').toString().trim() !== ''
+        );
+      case 'multiple_choice':
+        return choiceAnswer !== null && choiceAnswer !== undefined;
+      default:
+        return userAnswer.trim() !== '';
+    }
+  };
 
   useEffect(() => {
     setCurrentQuestionIndex(0);
-    setUserAnswer('');
+    resetAnswers();
     setScore(0);
     setShowFeedback(false);
     setFeedbackData({ isCorrect: false, message: '', pointsEarned: 0 });   
@@ -152,11 +188,10 @@ const GameScreen = ({
   }, [currentQuestionIndex, onStartActivityTimer]);
 
   const handleSubmitAnswer = () => {
-    if (userAnswer.trim() === '' || isAnswerSubmitted) return;
+    if (!isAnswerReady() || isAnswerSubmitted) return;
 
-    const userAnswerNum = parseInt(userAnswer);
-    const isCorrect = validateAnswer(userAnswerNum, currentQuestion.respuesta);
-    
+    const isCorrect = checkAnswer(currentQuestion, getStructuredAnswer());
+
     setIsAnswerSubmitted(true);
 
     if (isCorrect) {
@@ -168,7 +203,9 @@ const GameScreen = ({
 
       const currentLevelNumber = parseInt(level.replace('nivel', ''));
       const maxLevelAllowed = (operation === 'suma') ? 5 : 3;
-      const isUltimateVictory = currentLevelNumber === maxLevelAllowed;;
+      // División usa siempre el CongratsModal (con estrellas %); nunca el cartel
+      // "completaste todos los niveles" sin estrellas. Ver SC-004.
+      const isUltimateVictory = operation !== 'division' && currentLevelNumber === maxLevelAllowed;
 
       if (onActivityComplete && !(isLastQuestion && isUltimateVictory)) {
         onActivityComplete(currentQuestionIndex, attempts, 1, 1, isLastQuestion);
@@ -205,7 +242,7 @@ const GameScreen = ({
               
               const currentLevelNumber = parseInt(level.replace('nivel', ''));
               const maxLevelAllowed = (operation === 'suma') ? 5 : 3;
-              const isUltimateVictory = currentLevelNumber === maxLevelAllowed;
+              const isUltimateVictory = operation !== 'division' && currentLevelNumber === maxLevelAllowed;
 
               if (isWin && isUltimateVictory) {
                 if (playVictory) playVictory();
@@ -228,7 +265,7 @@ const GameScreen = ({
               nextQuestion();
           }
       } else {
-          setUserAnswer('');
+          resetAnswers();
           setIsAnswerSubmitted(false);
           if (inputRef.current) inputRef.current.focus();
       }
@@ -243,7 +280,7 @@ const GameScreen = ({
 
   const nextQuestion = () => {
     setCurrentQuestionIndex(prev => prev + 1);
-    setUserAnswer('');
+    resetAnswers();
     setShowFeedback(false);
     setIsAnswerSubmitted(false);
     setAttempts(0);
@@ -355,43 +392,182 @@ const GameScreen = ({
 
         {/* Sección de respuesta */}
         <div className="answer-card">
-          <div className="answer-section">
-            <div className="calculation-display">
-              <span className="question-text">{currentQuestion.pregunta.replace(' =', '')}</span>
-            </div>
+          {currentMode === 'single' && (
+            <div className="answer-section">
+              <div className="calculation-display">
+                <span className="question-text">{currentQuestion.pregunta.replace(' =', '')}</span>
+              </div>
               <MultiplicationVisual multiplicationVisual={currentQuestion?.soporteVisual} />
-          <div className="equals-display">
-            <span className="equals-sign">=</span>
-          </div>
-            <input
-              ref={inputRef}
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={userAnswer}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, '');
-                setUserAnswer(value);
-              }}
-              onKeyPress={handleKeyPress}
-              disabled={isAnswerSubmitted}
-              className="answer-input-styled"
-              placeholder="Tu respuesta"
-            />
-          </div>
+              <div className="equals-display">
+                <span className="equals-sign">=</span>
+              </div>
+              <input
+                ref={inputRef}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value.replace(/[^0-9]/g, ''))}
+                onKeyPress={handleKeyPress}
+                disabled={isAnswerSubmitted}
+                className="answer-input-styled"
+                placeholder="Tu respuesta"
+              />
+            </div>
+          )}
+
+          {currentMode === 'quotient_remainder' && (
+            <div className="answer-section">
+              <div className="calculation-display">
+                <span className="question-text">{currentQuestion.pregunta}</span>
+              </div>
+              <div className="qr-inputs" style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                  <span>Cociente</span>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={qrAnswer.cociente}
+                    onChange={(e) => setQrAnswer((p) => ({ ...p, cociente: e.target.value.replace(/[^0-9]/g, '') }))}
+                    onKeyPress={handleKeyPress}
+                    disabled={isAnswerSubmitted}
+                    className="answer-input-styled"
+                    placeholder="Cociente"
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                  <span>Resto</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={qrAnswer.resto}
+                    onChange={(e) => setQrAnswer((p) => ({ ...p, resto: e.target.value.replace(/[^0-9]/g, '') }))}
+                    onKeyPress={handleKeyPress}
+                    disabled={isAnswerSubmitted}
+                    className="answer-input-styled"
+                    placeholder="Resto"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
+          {currentMode === 'multi_blank' && (
+            <div className="answer-section">
+              <div className="calculation-display">
+                <span className="question-text">{currentQuestion.pregunta}</span>
+              </div>
+              {currentQuestion?.soporteVisual?.datoBase && (
+                <div className="division-base-fact" style={{ textAlign: 'center', fontWeight: 'bold', margin: '8px 0' }}>
+                  💡 {currentQuestion.soporteVisual.datoBase}
+                </div>
+              )}
+              <div className="multi-blank-items" style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+                {(currentQuestion.items || []).map((item, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className="question-text">{item.texto}</span>
+                    <input
+                      ref={i === 0 ? inputRef : null}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={blankAnswers[i] ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        setBlankAnswers((prev) => {
+                          const next = [...prev];
+                          next[i] = value;
+                          return next;
+                        });
+                      }}
+                      onKeyPress={handleKeyPress}
+                      disabled={isAnswerSubmitted}
+                      className="answer-input-styled"
+                      placeholder="?"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentMode === 'repeated_subtraction' && (
+            <div className="answer-section">
+              <div className="calculation-display">
+                <span className="question-text">{currentQuestion.pregunta}</span>
+              </div>
+              {currentQuestion?.soporteVisual && (
+                <div className="reparto-visual" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', margin: '10px 0' }}>
+                  {Array.from({ length: currentQuestion.soporteVisual.total }).map((_, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        width: '14px', height: '14px', borderRadius: '50%',
+                        backgroundColor: '#333',
+                        opacity: Math.floor(i / currentQuestion.soporteVisual.grupo) % 2 === 0 ? 1 : 0.45,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+              <input
+                ref={inputRef}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value.replace(/[^0-9]/g, ''))}
+                onKeyPress={handleKeyPress}
+                disabled={isAnswerSubmitted}
+                className="answer-input-styled"
+                placeholder="Cantidad de grupos"
+              />
+            </div>
+          )}
+
+          {currentMode === 'multiple_choice' && (
+            <div className="answer-section">
+              <div className="calculation-display">
+                <span className="question-text">{currentQuestion.pregunta}</span>
+              </div>
+              <div className="choice-options" style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+                {(currentQuestion.opciones || []).map((op) => (
+                  <button
+                    key={String(op.valor)}
+                    type="button"
+                    onClick={() => !isAnswerSubmitted && setChoiceAnswer(op.valor)}
+                    disabled={isAnswerSubmitted}
+                    className={`choice-option-btn ${choiceAnswer === op.valor ? 'selected' : ''}`}
+                    style={{
+                      padding: '10px 20px', borderRadius: '12px', border: '2px solid #333',
+                      cursor: isAnswerSubmitted ? 'default' : 'pointer', minWidth: '200px',
+                      fontWeight: 'bold',
+                      backgroundColor: choiceAnswer === op.valor ? '#4A7856' : '#ebeaf1',
+                      color: choiceAnswer === op.valor ? '#fff' : '#000',
+                    }}
+                  >
+                    {op.texto}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="calculos-button-group">
             <button
               onClick={handleSubmitAnswer}
-              disabled={userAnswer.trim() === '' || isAnswerSubmitted}
+              disabled={!isAnswerReady() || isAnswerSubmitted}
               className="btn-verify"
               title="Verificar respuesta"
             >
               {isAnswerSubmitted ? '⏳ Enviado' : '✓ Verificar'}
             </button>
-            
+
             <button
-              onClick={() => setUserAnswer('')}
+              onClick={resetAnswers}
               className="btn-clear"
               title="Limpiar respuesta"
               disabled={isAnswerSubmitted}

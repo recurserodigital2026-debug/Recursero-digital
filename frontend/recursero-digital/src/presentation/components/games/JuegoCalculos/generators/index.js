@@ -4,6 +4,13 @@ import * as identicalNumbers from './identicalNumbers';
 import * as noCarryAddition from './noCarryAddition';
 import * as noBorrowSubtraction from './noBorrowSubtraction';
 import * as freeForm from './freeForm';
+import * as divisionFacts from './divisionFacts';
+import * as wordRemainder from './wordRemainder';
+import * as divisionWithRemainder from './divisionWithRemainder';
+import * as divisionByPowersOfTen from './divisionByPowersOfTen';
+import * as divisionScaling from './divisionScaling';
+import * as repeatedSubtraction from './repeatedSubtraction';
+import * as divisionEstimation from './divisionEstimation';
 
 // sum_to_round usa roundTargets en lugar de targets — adaptamos al generador sumToTarget
 const sumToRoundAdapter = {
@@ -25,6 +32,14 @@ const GENERATORS = {
     no_carry_sum: noCarryAddition,
     no_borrow_sub: noBorrowSubtraction,
     free_form: freeForm,
+    // División (por ejes)
+    division_facts: divisionFacts,
+    division_word_remainder: wordRemainder,
+    division_with_remainder: divisionWithRemainder,
+    division_by_powers_of_ten: divisionByPowersOfTen,
+    division_scaling: divisionScaling,
+    division_repeated_subtraction: repeatedSubtraction,
+    division_estimation: divisionEstimation,
 };
 
 const MAX_PREDICATE_RETRIES = 10;

@@ -143,7 +143,11 @@ export function Card() {
                             <img src={game.imageUrl} alt={game.name} className="imagegame"/>
                             <div className='textgame'>
                                 <h2 className="titlegame">{game.name}</h2>
-                                {game.assignedLevel ? (
+                                {game.assignedLevels?.length > 1 ? (
+                                  <p className="descriptiongame card-nivel-asignado">
+                                    Niveles asignados: <strong>{[...game.assignedLevels].sort((a, b) => a - b).join(', ')}</strong>
+                                  </p>
+                                ) : game.assignedLevel ? (
                                   <p className="descriptiongame card-nivel-asignado">
                                     Nivel asignado: <strong>Nivel {game.assignedLevel}</strong>
                                   </p>
